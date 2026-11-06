@@ -5,37 +5,47 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Proview Licences</title>
 <meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&display=swap">
 <link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAADVElEQVR4Xu2XzW8bVRTFf2/87ThNY7uNHSeUhKROAhFyo0qogkpILKCVukRCQixQ1X8BseFvQEIs2LKDDUvEJi0CpC6a0oiaFIjbpnFs58N1Yyf+zMxDbwZbTpgxAtR4k6NZPfvec+6Z++68J7BBbHRK2q3/XxRyq+JojkMLz4v4KLqFaO0fj4tcoZvLFHCc5EcL7jjQL4h+VN+NvjtwIsDt1HxCWCPijQ8/4cxL8zRrewjhQiJRj5ogeqPGozuLPLj5NbI9uqREaC6koTN75QOSb75L8XGaHz7/yJbKWYAmMHSD9Xs/MrXwNg1vpSNASVNCWs0aC1dvEBoa4c43n5mqlA5F7nJ7ic++hs9/muLDFac6nQUocoW1e9+z+MXHuNweDMPoOOMNDpK8eBXdHyC58A7rv/xE4Y8lNJcbQz8g/EKS8OkE1dwa2bs3/72ANlSyx8u3bBPIep2Ft67TKpdJTKZMAW3EJy/gE14KTx5Q2Vr/7wJ6IegPQ7WObFaJxmZwef3ozTpuj5dYYhZRa7H12xJSWm7aoUcTambgcGSc+QvXaB00zfj218vrC3EmNkW9VEIY4DsbZ3h8jp2HPxOJJxkaGGF/O89mZrlnET13gers89OXmZ68RKNRxe32dXaAYegYegv9oMleUCJDfkYmLrKTuUti9BV80s32k/vsPsuZfSM72+QwHAUoAo83wNmxeSq1MnuVLer1qmWBNNCkxoHeYPXXRYKzLzNz7n1ORScIhCJEx2aQbo18IY21LZWb9kcMRwEKoxMpQuOTNBv73P7uS55uZkDNhyPJQo2nnEtdweMPMXfpPQZicarUyWfTZh4HbhM9R/HY/GXE0Cme1YqUth5ZEV3ZhNDQhIu9nSyltTQeX4DB6DTa0DClco5KccMU3KsJHQUMRhKEz6cwBvxs5lbMJJrr8N/VmhSWtfmV26aA/VIR3eWikE1bMX9NVCc4Cph4/RrB8RdpemH9vjUH7Ky03q1ge3WJcnGDQCBCJV9kc9WaCf90uHTsgfBcioas8vutr9jdyJh2S8NmPysBQtCsVVj+9lOisVdp1CrsZjOWALuYLpwcSE4OJP13wO66dFxQ3P13QFXbDxfanB0HjlNEN9ffrssKz+u2ZFfkn06vYE8xvPYwAAAAAElFTkSuQmCC">
 <style>
   :root {
-    --bg: #f5f6f8; --card: #ffffff; --ink: #18202b; --muted: #667085; --line: #e3e6eb;
-    --brand: #0b5cad; --brand-ink: #ffffff; --brand-soft: #e8f1fb;
+    /* Proview Tech design system */
+    --bg: #F5F7FA; --card: #FFFFFF; --ink: #1A2330; --ink2: #3D4955; --muted: #5B6672; --line: #E2E8F0; --line-input: #8793A0;
+    --brand: #1565C0; --brand-dark: #0D47A1; --brand-ink: #FFFFFF; --brand-soft: #E8F1FC; --brand-subtle: #F4F8FD;
+    --g: #1F8A4C; --a: #D97706; --r: #C0392B;
     --ok: #127a46; --ok-soft: #e6f5ec; --warn: #9a5b00; --warn-soft: #fff3dc;
     --bad: #b42318; --bad-soft: #fdecea; --none: #475467; --none-soft: #eef0f3;
     --radius: 10px;
   }
   * { box-sizing: border-box; }
   html, body { margin: 0; background: var(--bg); color: var(--ink);
-    font: 14px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+    font: 14px/1.45 "Harmonia Sans", "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif; }
   button, input, select, textarea { font: inherit; color: inherit; }
-  a { color: var(--brand); }
+  a { color: var(--brand); } a:hover { color: var(--brand-dark); }
   .hidden { display: none !important; }
 
-  header.top { background: #141418; color: #fff; padding: 0 20px; height: 56px; display: flex; align-items: center; gap: 16px; position: sticky; top: 0; z-index: 5; }
+  header.top { background: var(--card); color: var(--ink); border-bottom: 1px solid var(--line); padding: 0 32px; height: 68px; display: flex; align-items: center; gap: 24px; position: sticky; top: 0; z-index: 5; }
   header.top .hbrand { display:flex; align-items:center; gap:10px; }
-  header.top nav { display: flex; gap: 4px; margin-left: 12px; }
-  header.top nav button { background: none; border: 0; color: #c9d4e3; padding: 8px 12px; border-radius: 8px; cursor: pointer; }
-  header.top nav button.on { background: rgba(255,255,255,.12); color: #fff; }
+  header.top .hbrand .wordmark { color: var(--ink); font-weight: 700; font-size: 18px; letter-spacing: .04em; }
+  header.top .hbrand .wordmark span { background: none; -webkit-background-clip: border-box; background-clip: border-box; color: var(--brand); }
+  header.top nav { display: flex; gap: 6px; }
+  header.top nav button { background: none; border: 0; color: var(--ink2); padding: 9px 14px; border-radius: 10px; cursor: pointer; font-size: 15px; }
+  header.top nav button:hover { background: var(--brand-subtle); }
+  header.top nav button.on { background: var(--brand-soft); color: var(--brand-dark); font-weight: 600; }
   header.top .sp { flex: 1; }
-  header.top .who { color: #c9d4e3; font-size: 13px; }
-  header.top .lnk { background: none; border: 1px solid rgba(255,255,255,.25); color: #fff; padding: 6px 10px; border-radius: 8px; cursor: pointer; }
+  header.top .who { color: var(--muted); font-size: 13px; }
+  header.top .lnk { background: none; border: 1px solid var(--line-input); color: var(--ink2); height: 40px; padding: 0 14px; border-radius: 10px; cursor: pointer; }
+  header.top .hbtn { height: 40px; padding: 0 16px; border-radius: 10px; border: 0; background: var(--brand); color: #fff; font-weight: 600; cursor: pointer; }
+  header.top .hbtn:hover { background: var(--brand-dark); }
 
-  main { max-width: 1180px; margin: 0 auto; padding: 20px; }
+  main { max-width: 1240px; margin: 0 auto; padding: 28px 32px 48px; }
   .bar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 14px; }
   .bar input[type=search] { flex: 1; min-width: 220px; padding: 9px 12px; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
   .btn { border: 1px solid var(--line); background: #fff; padding: 8px 12px; border-radius: 8px; cursor: pointer; white-space: nowrap; }
   .btn:hover { border-color: #c5cbd3; }
-  .btn.primary { background: var(--brand); border-color: var(--brand); color: var(--brand-ink); }
+  .btn.primary { background: var(--brand); border-color: var(--brand); color: var(--brand-ink); font-weight: 600; }
+  .btn.primary:hover { background: var(--brand-dark); border-color: var(--brand-dark); }
   .btn.danger { color: var(--bad); }
   .btn.sm { padding: 4px 9px; font-size: 13px; }
   .btn:disabled { opacity: .55; cursor: default; }
@@ -47,13 +57,41 @@
   .chip .dot { width: 8px; height: 8px; border-radius: 50%; background: #c5cbd3; }
   .chip.ok .dot { background: var(--ok); } .chip.bad .dot { background: var(--bad); }
 
-  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; margin-bottom: 16px; }
-  .stat { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 12px 14px; cursor: pointer; }
-  .stat .n { font-size: 24px; font-weight: 700; }
-  .stat .l { color: var(--muted); font-size: 13px; }
-  .stat.warn .n { color: var(--warn); } .stat.bad .n { color: var(--bad); }
+  /* customers: option C · customer cards */
+  .ctop { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; }
+  .ctop h1 { margin: 0; font-size: 28px; line-height: 36px; flex: 1; font-weight: 700; }
+  .pchips { display: flex; gap: 6px; flex-wrap: wrap; }
+  .pchip { height: 38px; padding: 0 14px; border-radius: 999px; border: 1px solid var(--line); background: var(--card); color: var(--ink2); font-size: 14px; cursor: pointer; }
+  .pchip:hover { background: var(--brand-subtle); }
+  .pchip.on { border-color: transparent; background: var(--brand-soft); color: var(--brand-dark); font-weight: 600; }
+  .csearch { min-width: 240px; height: 40px; border-radius: 10px; border: 1px solid var(--line-input); padding: 0 14px; font-size: 14px; background: var(--card); }
+  .ghost { height: 40px; padding: 0 14px; border-radius: 10px; border: 1px solid var(--line-input); background: var(--card); color: var(--ink2); cursor: pointer; }
+  .ckey { display: flex; gap: 18px; flex-wrap: wrap; font-size: 14px; color: var(--ink2); margin-bottom: 18px; }
+  .ckey span { display: flex; align-items: center; gap: 6px; }
+  .sdot { width: 9px; height: 9px; border-radius: 50%; flex: none; display: inline-block; }
+  .sdot.g { background: var(--g); } .sdot.a { background: var(--a); } .sdot.r { background: var(--r); } .sdot.n { background: #A0AAB4; }
+  .cgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 20px; }
+  .ccard { background: var(--card); border: 1px solid var(--line); border-radius: 14px; display: flex; flex-direction: column; box-shadow: 0 1px 2px rgba(16,24,40,.06), 0 4px 16px rgba(16,24,40,.06); }
+  .ccard.bad { border-color: #F3C4BE; box-shadow: 0 0 0 1px #F3C4BE, 0 4px 16px rgba(16,24,40,.06); }
+  .ccard .ch { display: flex; align-items: flex-start; gap: 10px; padding: 16px 18px 12px; }
+  .ccard .ch h3 { margin: 0; font-size: 17px; line-height: 24px; font-weight: 600; }
+  .ccard .ch .cm { font-size: 14px; color: var(--muted); word-break: break-word; }
+  .spill { font-size: 13px; font-weight: 600; padding: 5px 10px; border-radius: 999px; white-space: nowrap; }
+  .spill.g { color: #1B6E3A; background: #E7F5EC; } .spill.a { color: #8A4B05; background: #FEF3E2; } .spill.r { color: #8A2A20; background: #FDECEA; } .spill.n { color: var(--muted); background: #EEF1F5; }
+  .ccard .pl { display: flex; align-items: center; gap: 12px; padding: 10px 18px; border-top: 1px solid var(--line); font-size: 15px; }
+  .ccard .pi { width: 32px; height: 32px; border-radius: 8px; background: var(--brand-soft); color: var(--brand); display: grid; place-items: center; flex: none; }
+  .ccard .pl .pt { flex: 1; }
+  .ccard .pl .pr { font-size: 14px; color: var(--muted); white-space: nowrap; }
+  .ccard .pl .pr.r { color: #8A2A20; font-weight: 600; } .ccard .pl .pr.a { color: #8A4B05; font-weight: 600; }
+  .ccard .cempty { padding: 12px 18px; border-top: 1px solid var(--line); font-size: 14px; color: var(--muted); }
+  .ccard .cf { display: flex; justify-content: space-between; align-items: center; padding: 12px 18px; border-top: 1px solid var(--line); font-size: 14px; color: var(--muted); margin-top: auto; }
+  .ccard .cf a { font-weight: 600; text-decoration: none; cursor: pointer; }
+  .ccard .cf .addlic { height: 36px; padding: 0 14px; border-radius: 10px; border: 0; background: var(--brand); color: #fff; font-weight: 600; cursor: pointer; }
+  .ccard .cf .addlic:hover { background: var(--brand-dark); }
+  .dback { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; text-decoration: none; cursor: pointer; margin-bottom: 14px; }
+  @media (max-width: 820px) { main { padding: 20px 14px; } header.top { padding: 0 14px; gap: 12px; height: auto; min-height: 60px; flex-wrap: wrap; } .csearch { min-width: 0; flex: 1; } }
 
-  .cust { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); margin-bottom: 10px; }
+  .cust { background: var(--card); border: 1px solid var(--line); border-radius: 14px; margin-bottom: 10px; }
   .cust > .head { display: flex; align-items: center; gap: 12px; padding: 12px 14px; cursor: pointer; }
   .cust > .head .name { font-weight: 600; font-size: 15px; }
   .cust > .head .meta { color: var(--muted); font-size: 13px; }
@@ -189,6 +227,7 @@
       <button data-tab="payments">Payments</button>
     </nav>
     <div class="sp"></div>
+    <button class="hbtn" id="newCustBtn">New customer</button>
     <div class="who" id="who"></div>
     <button class="lnk" id="signOut">Sign out</button>
   </header>
@@ -198,24 +237,18 @@
 
     <!-- CUSTOMERS -->
     <section data-view="customers">
-      <div class="stats" id="stats"></div>
-      <div class="bar">
-        <input type="search" id="q" placeholder="Search customers, emails, screens, sites, staff…">
-        <select id="prodFilter" title="Product">
-          <option value="">All products</option>
-          <option value="signage">Signage</option>
-          <option value="bookings">Bookings</option>
-          <option value="employee">Employee</option>
-        </select>
-        <select id="statusFilter" title="Status">
-          <option value="">Any status</option>
-          <option value="expiring">Expiring in 30 days</option>
-          <option value="grace">In grace period</option>
-          <option value="expired">Expired / no licence</option>
-          <option value="trial">On trial</option>
-        </select>
-        <button class="btn" id="syncBtn">↻ Sync now</button>
-        <button class="btn primary" id="newCustBtn">+ New customer</button>
+      <div id="custTop">
+        <div class="ctop">
+          <h1>Customers</h1>
+          <div class="pchips" id="pchips" role="group" aria-label="Filter by product"></div>
+          <label style="display:flex"><span class="hidden">Search customers</span><input type="search" class="csearch" id="q" placeholder="Search"></label>
+          <button class="ghost" id="syncBtn" title="Pull the latest from all three apps">↻ Sync</button>
+        </div>
+        <div class="ckey">
+          <span><i class="sdot g"></i>Licensed</span>
+          <span><i class="sdot a"></i>Renews within 30 days / trial</span>
+          <span><i class="sdot r"></i>Expired or no licence</span>
+        </div>
       </div>
       <div id="custList"></div>
       <div class="bulk hidden" id="bulkBar">
@@ -345,7 +378,7 @@ function status(u) {
 }
 
 // ---------- data ----------
-let S = { customers: [], accounts: [], units: [], audit: [], email: "" , open: new Set(), sel: new Map(), lastSync: null };
+let S = { customers: [], accounts: [], units: [], audit: [], email: "" , detail: null, prod: "", sel: new Map(), lastSync: null };
 
 async function hub(action, extra = {}) {
   const { data, error } = await sb.functions.invoke("licence-hub", { body: { action, ...extra } });
@@ -386,7 +419,7 @@ async function doSync(quiet = false) {
     if (r.customers_created) toast(`${r.customers_created} new customer record(s) created from the apps`);
     await loadAll();
   } catch (e) { toast("Sync failed: " + e.message, true); }
-  finally { btn.disabled = false; btn.textContent = "↻ Sync now"; }
+  finally { btn.disabled = false; btn.textContent = "↻ Sync"; }
 }
 
 function renderSyncChips() {
@@ -401,38 +434,44 @@ function renderSyncChips() {
 function unitsForAccount(a) { return S.units.filter((u) => u.product === a.product && u.account_ext_id === a.ext_id && !u.gone); }
 function accountsForCustomer(c) { return S.accounts.filter((a) => a.customer_id === c.id && !a.gone); }
 
-function matches(c, q, prod, st) {
-  const accts = accountsForCustomer(c).filter((a) => !prod || a.product === prod);
-  if (prod && !accts.length) return false;
-  const units = accts.flatMap(unitsForAccount);
-  if (st) {
-    const ok = units.some((u) => {
-      const s = status(u);
-      if (st === "trial") return isTrial(u.license_type) && s.k !== "expired";
-      if (st === "expired") return s.k === "expired" || s.k === "none";
-      return s.k === st;
-    });
-    if (!ok) return false;
-  }
+function matches(c, q, prod) {
+  const accts = accountsForCustomer(c);
+  if (prod && !accts.some((a) => a.product === prod)) return false;
   if (!q) return true;
+  const units = accts.flatMap(unitsForAccount);
   const hay = [c.name, c.contact_email, c.phone, c.notes, ...accts.flatMap((a) => [a.name, a.contact_email]), ...units.flatMap((u) => [u.name, u.detail])]
     .filter(Boolean).join(" ").toLowerCase();
   return q.split(/\s+/).every((w) => hay.includes(w));
 }
 
-function renderStats() {
+// green = licensed · amber = renews within 30 days or on trial · red = expired (incl. grace) or no licence
+function tone(u) {
+  const s = status(u);
+  if (["none", "expired", "grace"].includes(s.k)) return "r";
+  if (s.k === "expiring" || (isTrial(u.license_type) && s.k === "ok")) return "a";
+  return "g";
+}
+const TONE_RANK = { r: 0, a: 1, g: 2 };
+const ICONS = {
+  signage: '<rect x="3" y="4" width="18" height="12" rx="2"></rect><path d="M8 20h8M12 16v4"></path>',
+  bookings: '<rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M16 3v4M8 3v4M3 10h18"></path>',
+  employee: '<circle cx="9" cy="8" r="3.5"></circle><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"></path>',
+};
+const icon = (k) => `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[k]}</svg>`;
+const UNIT_WORD = { signage: ["screen", "screens"], bookings: ["site", "sites"], employee: ["staff", "staff"] };
+const shortDate = (d) => { const x = new Date(d); return x.toLocaleDateString("en-GB", { day: "numeric", month: "short", ...(x.getFullYear() !== new Date().getFullYear() ? { year: "numeric" } : {}) }); };
+const renewAt = (units) => Math.min(...units.filter((u) => u.license_type !== "lifetime" && u.expires_at && tone(u) !== "r").map((u) => +new Date(u.expires_at)), Infinity);
+
+function custSummary(c) {
+  const units = accountsForCustomer(c).flatMap(unitsForAccount);
+  const worst = units.reduce((w, u) => Math.min(w, TONE_RANK[tone(u)]), 3);
+  return { units, worst: ["r", "a", "g", "n"][worst], renew: renewAt(units), bad: units.filter((u) => tone(u) === "r") };
+}
+
+function renderChips() {
   const live = S.units.filter((u) => !u.gone);
-  const by = (k) => live.filter((u) => status(u).k === k).length;
-  const active = live.filter((u) => ["ok", "expiring"].includes(status(u).k) && !isTrial(u.license_type)).length;
-  const trials = live.filter((u) => isTrial(u.license_type) && status(u).k !== "expired").length;
-  $("#stats").innerHTML = `
-    <div class="stat" data-f=""><div class="n">${S.customers.length}</div><div class="l">Customers</div></div>
-    <div class="stat" data-f=""><div class="n">${active}</div><div class="l">Paid licences active</div></div>
-    <div class="stat" data-f="trial"><div class="n">${trials}</div><div class="l">On trial</div></div>
-    <div class="stat warn" data-f="expiring"><div class="n">${by("expiring")}</div><div class="l">Expiring in 30 days</div></div>
-    <div class="stat warn" data-f="grace"><div class="n">${by("grace")}</div><div class="l">In grace period</div></div>
-    <div class="stat bad" data-f="expired"><div class="n">${by("expired") + by("none")}</div><div class="l">Expired / no licence</div></div>`;
-  $$("#stats .stat").forEach((el) => el.onclick = () => { $("#statusFilter").value = el.dataset.f; renderCustomers(); });
+  const chip = (k, label) => `<button type="button" class="pchip ${S.prod === k ? "on" : ""}" data-prod="${k}" aria-pressed="${S.prod === k}">${label}</button>`;
+  $("#pchips").innerHTML = chip("", "All products") + Object.entries(PRODUCTS).map(([k, p]) => chip(k, `${p.label} ${live.filter((u) => u.product === k).length}`)).join("");
 }
 
 function unitRow(u) {
@@ -469,22 +508,46 @@ function accountBlock(a) {
   </div>`;
 }
 
+function productLine(prod, units) {
+  const [one, many] = UNIT_WORD[prod];
+  const bad = units.filter((u) => tone(u) === "r"), warn = units.filter((u) => tone(u) === "a");
+  const t = bad.length ? "r" : warn.length ? "a" : units.length ? "g" : "n";
+  let right;
+  if (!units.length) right = `<span class="pr">none yet</span>`;
+  else if (bad.length) right = `<span class="pr r">${bad.length} unlicensed</span>`;
+  else {
+    const next = renewAt(units);
+    right = next === Infinity ? `<span class="pr">Lifetime</span>` : `<span class="pr ${t === "a" ? "a" : ""}">to ${esc(shortDate(next))}</span>`;
+  }
+  return `<div class="pl"><div class="pi">${icon(prod)}</div><span class="pt">${PRODUCTS[prod].label} · ${units.length} ${units.length === 1 ? one : many}</span><i class="sdot ${t}"></i>${right}</div>`;
+}
+
 function custCard(c) {
   const accts = accountsForCustomer(c);
-  const units = accts.flatMap(unitsForAccount);
-  const worst = units.map(status).sort((a, b) => rank(a) - rank(b))[0];
-  const prods = [...new Set(accts.map((a) => a.product))];
-  const open = S.open.has(c.id);
-  return `<div class="cust ${open ? "open" : ""}" data-cust="${c.id}">
-    <div class="head" data-toggle="${c.id}">
-      <span class="caret">▶</span>
-      <div><div class="name">${esc(c.name)}</div><div class="meta">${esc(c.contact_email || "no email")}${c.phone ? " · " + esc(c.phone) : ""}</div></div>
-      <div class="sp"></div>
-      <div class="prodtags">${prods.map((k) => `<span class="ptag">${PRODUCTS[k].label}</span>`).join("") || `<span class="small">no products linked</span>`}</div>
-      <span class="small">${units.length} licence${units.length === 1 ? "" : "s"}</span>
-      ${worst ? `<span class="pill ${worst.cls}">${esc(worst.k === "ok" ? "All OK" : worst.label)}</span>` : ""}
+  const sum = custSummary(c);
+  const prods = Object.keys(PRODUCTS).filter((k) => accts.some((a) => a.product === k));
+  const pill = sum.worst === "r" ? `<span class="spill r">Action needed</span>` : sum.worst === "a" ? `<span class="spill a">Renewing soon</span>`
+    : sum.units.length ? `<span class="spill g">All OK</span>` : `<span class="spill n">No licences</span>`;
+  const licensed = sum.units.length - sum.bad.length;
+  const meta = [c.contact_email, c.phone].filter(Boolean).map(esc).join(" · ") || "No contact details";
+  return `<article class="ccard ${sum.worst === "r" ? "bad" : ""}" data-cust="${c.id}">
+    <div class="ch"><div style="flex:1;min-width:0"><h3>${esc(c.name)}</h3><div class="cm">${meta}</div></div>${pill}</div>
+    ${prods.map((k) => productLine(k, sum.units.filter((u) => u.product === k))).join("") || `<div class="cempty">No products linked yet.</div>`}
+    <div class="cf">
+      <span>${sum.bad.length ? `${licensed} of ${sum.units.length} licensed` : `${sum.units.length} licence${sum.units.length === 1 ? "" : "s"}`}</span>
+      ${sum.bad.length ? `<button type="button" class="addlic" data-addlic="${c.id}">Add licence</button>` : `<a data-open="${c.id}">Open</a>`}
     </div>
-    ${open ? `<div class="body">
+  </article>`;
+}
+
+function custDetail(c) {
+  const accts = accountsForCustomer(c);
+  const sum = custSummary(c);
+  const pill = sum.worst === "r" ? `<span class="spill r">Action needed</span>` : sum.worst === "a" ? `<span class="spill a">Renewing soon</span>` : sum.units.length ? `<span class="spill g">All OK</span>` : "";
+  return `<a class="dback" data-back="1">← All customers</a>
+  <div class="cust open" data-cust="${c.id}">
+    <div class="head" style="cursor:default"><div><div class="name" style="font-size:20px">${esc(c.name)}</div><div class="meta">${esc(c.contact_email || "no email")}${c.phone ? " · " + esc(c.phone) : ""}</div></div><div class="sp"></div>${pill}</div>
+    <div class="body">
       <div class="details">
         <div><label>Customer name</label><input type="text" data-f="name" value="${esc(c.name)}"></div>
         <div><label>Contact email</label><input type="email" data-f="contact_email" value="${esc(c.contact_email || "")}"></div>
@@ -497,26 +560,27 @@ function custCard(c) {
         ${accts.length ? "" : `<button class="btn sm danger" data-delcust="${c.id}">Delete customer</button>`}
       </div>
       ${accts.map(accountBlock).join("") || `<div class="empty mt">No app accounts linked. Use “Move…” on an account under another customer to link it here.</div>`}
-    </div>` : ""}
+    </div>
   </div>`;
 }
-function rank(s) { return { expired: 0, none: 1, grace: 2, expiring: 3, ok: 4 }[s.k]; }
 
 function renderCustomers() {
-  const q = $("#q").value.trim().toLowerCase(), prod = $("#prodFilter").value, st = $("#statusFilter").value;
-  const list = S.customers.filter((c) => matches(c, q, prod, st));
-  // customers needing attention first, then alphabetical
-  list.sort((a, b) => {
-    const wa = Math.min(...accountsForCustomer(a).flatMap(unitsForAccount).map((u) => rank(status(u))), 9);
-    const wb = Math.min(...accountsForCustomer(b).flatMap(unitsForAccount).map((u) => rank(status(u))), 9);
-    return (st ? wa - wb : 0) || a.name.localeCompare(b.name);
-  });
-  $("#custList").innerHTML = list.length ? list.map(custCard).join("")
-    : `<div class="empty">${S.customers.length ? "No customers match." : "No customers yet. Press “Sync now” to pull them in from the apps."}</div>`;
+  renderChips();
+  const c = S.detail && S.customers.find((x) => x.id === S.detail);
+  $("#custTop").classList.toggle("hidden", !!c);
+  if (c) { $("#custList").innerHTML = custDetail(c); renderBulk(); return; }
+  S.detail = null;
+  const q = $("#q").value.trim().toLowerCase();
+  const list = S.customers.filter((x) => matches(x, q, S.prod)).map((x) => ({ c: x, s: custSummary(x) }));
+  // problem cards first, then soonest renewal, then name
+  list.sort((a, b) => (a.s.worst === "r" ? 0 : 1) - (b.s.worst === "r" ? 0 : 1) || a.s.renew - b.s.renew || a.c.name.localeCompare(b.c.name));
+  $("#custList").innerHTML = list.length ? `<div class="cgrid">${list.map((x) => custCard(x.c)).join("")}</div>`
+    : `<div class="empty">${S.customers.length ? "No customers match." : "No customers yet. Press “Sync” to pull them in from the apps."}</div>`;
   renderBulk();
 }
+function openDetail(id) { S.detail = id; renderCustomers(); window.scrollTo({ top: 0 }); }
 
-function render() { renderStats(); renderCustomers(); renderExpiring(); }
+function render() { renderCustomers(); renderExpiring(); }
 
 // ---------- expiring view ----------
 function renderExpiring() {
@@ -642,7 +706,7 @@ async function newCustomer() {
   const email = prompt("Contact email (optional)") || null;
   const { data, error } = await sb.from("lic_customers").insert({ name: name.trim(), contact_email: email?.trim().toLowerCase() || null }).select().single();
   if (error) return toast(error.message, true);
-  S.customers.push(data); S.customers.sort((a, b) => a.name.localeCompare(b.name)); S.open.add(data.id); renderCustomers();
+  S.customers.push(data); S.customers.sort((a, b) => a.name.localeCompare(b.name)); openDetail(data.id);
   toast("Customer created. Use “Move…” on an app account to link it here.");
 }
 function pickCustomer(title, excludeId) {
@@ -661,7 +725,7 @@ async function moveAccount(key) {
   const to = await pickCustomer(`${PRODUCTS[p].label}: ${a.name}`, a.customer_id); if (!to) return;
   const { error } = await sb.from("lic_accounts").update({ customer_id: to }).eq("product", p).eq("ext_id", ext);
   if (error) return toast(error.message, true);
-  a.customer_id = to; S.open.add(to); toast("Account moved"); render();
+  a.customer_id = to; S.detail = to; toast("Account moved"); render();
 }
 async function mergeCustomer(id) {
   const c = S.customers.find((x) => x.id === id);
@@ -671,7 +735,7 @@ async function mergeCustomer(id) {
   const keep = S.customers.find((x) => x.id === to);
   if (c.notes) await sb.from("lic_customers").update({ notes: [keep.notes, c.notes].filter(Boolean).join("\n") }).eq("id", to);
   await sb.from("lic_customers").delete().eq("id", id);
-  S.open.delete(id); S.open.add(to); toast(`Merged into ${keep.name}`); await loadAll();
+  S.detail = to; toast(`Merged into ${keep.name}`); await loadAll();
 }
 async function deleteCustomer(id) {
   if (!confirm("Delete this customer record? (It has no linked app accounts.)")) return;
@@ -682,9 +746,15 @@ async function deleteCustomer(id) {
 
 // ---------- events ----------
 document.addEventListener("click", (e) => {
-  const t = e.target.closest("[data-toggle],[data-edit],[data-quick],[data-savecust],[data-move],[data-merge],[data-delcust],[data-selall]");
+  const t = e.target.closest("[data-open],[data-back],[data-addlic],[data-prod],[data-edit],[data-quick],[data-savecust],[data-move],[data-merge],[data-delcust],[data-selall]");
   if (!t) return;
-  if (t.dataset.toggle) { const id = t.dataset.toggle; S.open.has(id) ? S.open.delete(id) : S.open.add(id); renderCustomers(); }
+  if (t.dataset.open) openDetail(t.dataset.open);
+  else if (t.dataset.back) { S.detail = null; renderCustomers(); }
+  else if (t.dataset.prod !== undefined) { S.prod = t.dataset.prod; renderCustomers(); }
+  else if (t.dataset.addlic) {
+    const c = S.customers.find((x) => x.id === t.dataset.addlic); const bad = custSummary(c).bad;
+    if (bad.length === 1) openLicence(bad[0].product + "|" + bad[0].ext_id); else openDetail(c.id);
+  }
   else if (t.dataset.edit) openLicence(t.dataset.edit);
   else if (t.dataset.quick) { const u = findUnit(t.dataset.quick); t.disabled = true; applyChanges([{ product: u.product, unit: u.ext_id, type: "m12", extend: true }]); }
   else if (t.dataset.savecust) saveCustomer(t.dataset.savecust);
@@ -701,7 +771,7 @@ document.addEventListener("change", (e) => {
   const k = e.target.dataset?.sel; if (!k) return;
   e.target.checked ? S.sel.set(k, findUnit(k)) : S.sel.delete(k); renderBulk();
 });
-$("#q").oninput = renderCustomers; $("#prodFilter").onchange = renderCustomers; $("#statusFilter").onchange = renderCustomers;
+$("#q").oninput = renderCustomers;
 $("#expWindow").onchange = renderExpiring; $("#expIncl").onchange = renderExpiring; $("#expTrials").onchange = renderExpiring;
 $("#syncBtn").onclick = () => doSync(); $("#newCustBtn").onclick = newCustomer;
 $$("header.top nav button").forEach((b) => b.onclick = () => {
