@@ -9,7 +9,7 @@ const ANON = Deno.env.get("SUPABASE_ANON_KEY")!;
 function cors(_req: Request) {
   return {
     "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-cron-secret",
     "Access-Control-Allow-Methods": "POST, OPTIONS",
   };
 }
@@ -35,6 +35,94 @@ async function callApp(app: App, action: string, args: Record<string, unknown> =
   return body;
 }
 
+const PAY_PLANS = ["m1", "m3", "m6", "m12", "m24", "m36", "lifetime"];
+const REF_CODES: Record<string, string> = { pvs: "signage", pvb: "bookings", pve: "employee" };
+
+async function loadApps(db: any): Promise<Record<string, App>> {
+  const { data, error } = await db.rpc("lic_app_config");
+  if (error) throw error;
+  return Object.fromEntries((data as App[]).map((a) => [a.product, a]));
+}
+
+// send each product's active plans to its app, where customers see "Buy / renew online"
+async function pushPlans(db: any, apps: Record<string, App>) {
+  const { data: plans } = await db.from("lic_plans").select("*").eq("active", true);
+  const out: Record<string, unknown> = {};
+  for (const app of Object.values(apps)) {
+    const mine = Object.fromEntries((plans ?? []).filter((p: any) => p.product === app.product)
+      .map((p: any) => [p.plan, { label: p.label, amount: p.amount, currency: p.currency, link: p.link, ref: Object.keys(REF_CODES).find((k) => REF_CODES[k] === app.product) }]));
+    try {
+      const r = await fetch(`${app.url}/rest/v1/rpc/hub_plans`, {
+        method: "POST", headers: { apikey: app.apikey, "Content-Type": "application/json" },
+        body: JSON.stringify({ p_token: app.token, p_plans: mine }),
+      });
+      out[app.product] = r.ok ? { ok: true, plans: Object.keys(mine).length } : { ok: false, error: `HTTP ${r.status}` };
+    } catch (e) { out[app.product] = { ok: false, error: String((e as Error).message ?? e) }; }
+  }
+  return out;
+}
+
+const fmtDay = (d = new Date()) => d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "Europe/London" });
+
+// read paid Stripe Checkout Sessions and apply licences for references made by the apps:
+//   pvs__<screen uuid>__<plan>   pvb__<site id>__<plan>   pve__<org id>__<member id>__<plan>
+async function checkPayments(db: any, apps: Record<string, App>) {
+  const { data: cfg } = await db.rpc("lic_stripe_config");
+  const c = (cfg as any[])?.[0];
+  if (!c?.enabled || !c?.secret_key) return { ok: true, skipped: "Online payments are off or no Stripe key is saved" };
+  const since = Math.max(Number(c.last_created || 0) - 3600, Math.floor(Date.now() / 1000) - 30 * 86400);
+  let applied = 0, seen = 0, maxCreated = Number(c.last_created || 0), after: string | null = null, err: string | null = null;
+  const { data: planRows } = await db.from("lic_plans").select("*");
+  const planOf = (prod: string, plan: string) => (planRows ?? []).find((p: any) => p.product === prod && p.plan === plan);
+  try {
+    for (let page = 0; page < 10; page++) {
+      const u = new URL("https://api.stripe.com/v1/checkout/sessions");
+      u.searchParams.set("limit", "100"); u.searchParams.set("created[gte]", String(since));
+      if (after) u.searchParams.set("starting_after", after);
+      const r = await fetch(u, { headers: { Authorization: `Bearer ${c.secret_key}` } });
+      const j = await r.json();
+      if (!r.ok) throw new Error(`Stripe said ${r.status}: ${j?.error?.message ?? ""}`.slice(0, 200));
+      for (const x of j.data ?? []) {
+        seen++; maxCreated = Math.max(maxCreated, Number(x.created || 0));
+        if (x.payment_status !== "paid") continue;
+        const ref: string = x.client_reference_id || "";
+        const parts = ref.split("__");
+        const product = REF_CODES[parts[0]];
+        if (!product || parts.length < 3) continue;
+        const plan = parts[parts.length - 1];
+        const unit = parts.slice(1, -1).join("/");
+        const { data: ins } = await db.from("lic_payments").insert({
+          session_id: x.id, product, unit_ext_id: unit, plan, amount: x.amount_total, currency: x.currency,
+          email: x.customer_details?.email ?? null, paid_at: new Date(Number(x.created) * 1000).toISOString(),
+        }).select("session_id");
+        if (!ins?.length) continue; // already handled
+        const p = planOf(product, plan);
+        const note = (n: string) => db.from("lic_payments").update({ note: n }).eq("session_id", x.id);
+        if (!p) { await note("Unknown plan; not applied"); continue; }
+        if (Number(x.amount_total) < p.amount || String(x.currency).toLowerCase() !== p.currency) { await note("Amount does not match the plan; not applied"); continue; }
+        try {
+          const res = await callApp(apps[product], "set", { unit, type: plan, extend: true, notes: `Paid online ${fmtDay()}` });
+          const { data: before } = await db.from("lic_units").select("name,account_ext_id,license_type,expires_at").eq("product", product).eq("ext_id", unit).maybeSingle();
+          const { data: acc } = before?.account_ext_id
+            ? await db.from("lic_accounts").select("name").eq("product", product).eq("ext_id", before.account_ext_id).maybeSingle() : { data: null };
+          await db.from("lic_units").update({ license_type: res.license_type, starts_at: res.starts_at, expires_at: res.expires_at, notes: res.notes, synced_at: new Date().toISOString() })
+            .eq("product", product).eq("ext_id", unit);
+          await db.from("lic_payments").update({ applied: true, applied_at: new Date().toISOString(), note: null }).eq("session_id", x.id);
+          await db.from("lic_audit").insert({ admin_email: "Online payment (Stripe)", product, unit_ext_id: unit, unit_name: before?.name ?? null,
+            account_name: acc?.name ?? null, action: `paid online ${plan}`,
+            before: before ? { license_type: before.license_type, expires_at: before.expires_at } : null,
+            after: { ...res, amount: x.amount_total, currency: x.currency, email: x.customer_details?.email ?? null } });
+          applied++;
+        } catch (e) { await note("Could not apply: " + String((e as Error).message ?? e).slice(0, 150)); }
+      }
+      if (!j.has_more || !j.data?.length) break;
+      after = j.data[j.data.length - 1].id;
+    }
+  } catch (e) { err = String((e as Error).message ?? e).slice(0, 250); }
+  await db.rpc("lic_stripe_update", { p_last_created: maxCreated, p_error: err });
+  return { ok: !err, applied, seen, error: err };
+}
+
 Deno.serve(async (req) => {
   const h = cors(req);
   if (req.method === "OPTIONS") return new Response("ok", { headers: h });
@@ -42,6 +130,19 @@ Deno.serve(async (req) => {
     new Response(JSON.stringify(b), { status, headers: { ...h, "Content-Type": "application/json" } });
 
   try {
+    const db = createClient(SB_URL, SERVICE, { auth: { persistSession: false } });
+    const body = await req.json().catch(() => ({}));
+    const action = body.action;
+
+    // scheduled payment check (pg_cron in this project) — authenticated by a secret only the database knows
+    const cronSecret = req.headers.get("x-cron-secret");
+    if (cronSecret && action === "check_payments") {
+      const { data: cfg } = await db.rpc("lic_stripe_config");
+      const c = (cfg as any[])?.[0];
+      if (!c || cronSecret !== c.cron_secret) return json({ error: "Not authorised" }, 403);
+      return json(await checkPayments(db, await loadApps(db)));
+    }
+
     // who is calling?
     const auth = req.headers.get("Authorization") ?? "";
     const userDb = createClient(SB_URL, ANON, { global: { headers: { Authorization: auth } } });
@@ -50,13 +151,7 @@ Deno.serve(async (req) => {
     const { data: u } = await userDb.auth.getUser(auth.replace(/^Bearer\s+/i, ""));
     const adminEmail = u?.user?.email ?? null;
 
-    const db = createClient(SB_URL, SERVICE, { auth: { persistSession: false } });
-    const { data: appsRows, error: cerr } = await db.rpc("lic_app_config");
-    if (cerr) throw cerr;
-    const apps: Record<string, App> = Object.fromEntries((appsRows as App[]).map((a) => [a.product, a]));
-
-    const body = await req.json().catch(() => ({}));
-    const action = body.action;
+    const apps = await loadApps(db);
 
     if (action === "sync") {
       const result: Record<string, unknown> = {};
@@ -152,6 +247,29 @@ Deno.serve(async (req) => {
       }
       return json({ ok: out.every((o: any) => o.ok), results: out });
     }
+
+    if (action === "save_plans") {
+      // plans: [{product, plan, label, amount, currency, link, active}]
+      const plans = Array.isArray(body.plans) ? body.plans : [];
+      for (const p of plans) {
+        if (!TYPES[p.product] || !PAY_PLANS.includes(p.plan)) throw new Error(`Unknown plan ${p.product}/${p.plan}`);
+        if (p.active && !/^https:\/\/(buy|checkout)\.stripe\.com\//.test(p.link || "")) throw new Error(`${p.label}: paste a Stripe Payment Link (https://buy.stripe.com/…)`);
+        if (p.active && !(Number(p.amount) > 0)) throw new Error(`${p.label}: enter the price`);
+      }
+      const touched = [...new Set(plans.map((p: any) => p.product))];
+      for (const prod of touched) await db.from("lic_plans").delete().eq("product", prod);
+      const rows = plans.filter((p: any) => p.active).map((p: any) => ({
+        product: p.product, plan: p.plan, label: p.label, amount: Math.round(Number(p.amount)), currency: (p.currency || "gbp").toLowerCase(),
+        link: p.link.trim(), active: true, updated_at: new Date().toISOString() }));
+      if (rows.length) { const { error } = await db.from("lic_plans").insert(rows); if (error) throw error; }
+      const pushed = await pushPlans(db, apps);
+      await db.from("lic_audit").insert({ admin_email: adminEmail, action: "updated online prices", after: { products: touched, plans: rows.length } });
+      return json({ ok: true, pushed });
+    }
+
+    if (action === "push_plans") return json({ ok: true, pushed: await pushPlans(db, apps) });
+
+    if (action === "check_payments") return json(await checkPayments(db, apps));
 
     if (action === "apps") {
       return json({ apps: Object.values(apps).map((a) => ({ product: a.product, label: a.label, app_url: a.app_url })), types: TYPES });
