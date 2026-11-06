@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Proview Licences</title>
+<meta name="robots" content="noindex, nofollow">
+<style>
+  :root {
+    --bg: #f5f6f8; --card: #ffffff; --ink: #18202b; --muted: #667085; --line: #e3e6eb;
+    --brand: #0b5cad; --brand-ink: #ffffff; --brand-soft: #e8f1fb;
+    --ok: #127a46; --ok-soft: #e6f5ec; --warn: #9a5b00; --warn-soft: #fff3dc;
+    --bad: #b42318; --bad-soft: #fdecea; --none: #475467; --none-soft: #eef0f3;
+    --radius: 10px;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--ink);
+    font: 14px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+  button, input, select, textarea { font: inherit; color: inherit; }
+  a { color: var(--brand); }
+  .hidden { display: none !important; }
+
+  header.top { background: #0f1b2d; color: #fff; padding: 0 20px; height: 56px; display: flex; align-items: center; gap: 16px; position: sticky; top: 0; z-index: 5; }
+  header.top .logo { font-weight: 700; letter-spacing: .2px; font-size: 16px; }
+  header.top .logo span { color: #7fb6ee; font-weight: 600; }
+  header.top nav { display: flex; gap: 4px; margin-left: 12px; }
+  header.top nav button { background: none; border: 0; color: #c9d4e3; padding: 8px 12px; border-radius: 8px; cursor: pointer; }
+  header.top nav button.on { background: rgba(255,255,255,.12); color: #fff; }
+  header.top .sp { flex: 1; }
+  header.top .who { color: #c9d4e3; font-size: 13px; }
+  header.top .lnk { background: none; border: 1px solid rgba(255,255,255,.25); color: #fff; padding: 6px 10px; border-radius: 8px; cursor: pointer; }
+
+  main { max-width: 1180px; margin: 0 auto; padding: 20px; }
+  .bar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 14px; }
+  .bar input[type=search] { flex: 1; min-width: 220px; padding: 9px 12px; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
+  .btn { border: 1px solid var(--line); background: #fff; padding: 8px 12px; border-radius: 8px; cursor: pointer; white-space: nowrap; }
+  .btn:hover { border-color: #c5cbd3; }
+  .btn.primary { background: var(--brand); border-color: var(--brand); color: var(--brand-ink); }
+  .btn.danger { color: var(--bad); }
+  .btn.sm { padding: 4px 9px; font-size: 13px; }
+  .btn:disabled { opacity: .55; cursor: default; }
+  select, input[type=date], input[type=text], input[type=email], input[type=password], textarea {
+    border: 1px solid var(--line); border-radius: 8px; padding: 7px 9px; background: #fff; }
+
+  .sync { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+  .chip { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; padding: 4px 10px; border-radius: 99px; background: #fff; border: 1px solid var(--line); color: var(--muted); }
+  .chip .dot { width: 8px; height: 8px; border-radius: 50%; background: #c5cbd3; }
+  .chip.ok .dot { background: var(--ok); } .chip.bad .dot { background: var(--bad); }
+
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; margin-bottom: 16px; }
+  .stat { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 12px 14px; cursor: pointer; }
+  .stat .n { font-size: 24px; font-weight: 700; }
+  .stat .l { color: var(--muted); font-size: 13px; }
+  .stat.warn .n { color: var(--warn); } .stat.bad .n { color: var(--bad); }
+
+  .cust { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); margin-bottom: 10px; }
+  .cust > .head { display: flex; align-items: center; gap: 12px; padding: 12px 14px; cursor: pointer; }
+  .cust > .head .name { font-weight: 600; font-size: 15px; }
+  .cust > .head .meta { color: var(--muted); font-size: 13px; }
+  .cust > .head .sp { flex: 1; }
+  .prodtags { display: flex; gap: 6px; flex-wrap: wrap; }
+  .ptag { font-size: 12px; padding: 2px 8px; border-radius: 6px; background: var(--brand-soft); color: var(--brand); }
+  .cust .body { border-top: 1px solid var(--line); padding: 12px 14px 14px; }
+  .caret { transition: transform .15s; color: var(--muted); }
+  .cust.open .caret { transform: rotate(90deg); }
+
+  .acct { border: 1px solid var(--line); border-radius: 8px; margin-top: 10px; overflow: hidden; }
+  .acct .ah { display: flex; gap: 10px; align-items: center; padding: 8px 12px; background: #fafbfc; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+  .acct .ah .pn { font-weight: 600; }
+  .acct .ah .sp { flex: 1; }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { text-align: left; padding: 8px 12px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+  th { font-size: 12px; color: var(--muted); font-weight: 600; background: #fff; }
+  tr:last-child td { border-bottom: 0; }
+  td.small, .small { font-size: 12px; color: var(--muted); }
+  td.cb, th.cb { width: 34px; }
+
+  .pill { display: inline-block; font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 99px; white-space: nowrap; }
+  .pill.ok { background: var(--ok-soft); color: var(--ok); }
+  .pill.warn { background: var(--warn-soft); color: var(--warn); }
+  .pill.bad { background: var(--bad-soft); color: var(--bad); }
+  .pill.none { background: var(--none-soft); color: var(--none); }
+
+  .details { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; }
+  .details label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 3px; }
+  .details input, .details textarea { width: 100%; }
+  .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .mt { margin-top: 12px; }
+  .empty { color: var(--muted); padding: 30px; text-align: center; background: #fff; border: 1px dashed var(--line); border-radius: var(--radius); }
+
+  .bulk { position: sticky; bottom: 0; background: #0f1b2d; color: #fff; border-radius: 10px; padding: 10px 14px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: 14px; box-shadow: 0 6px 24px rgba(0,0,0,.18); }
+  .bulk select, .bulk input { color: var(--ink); }
+
+  /* login */
+  .login { max-width: 380px; margin: 9vh auto; background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 26px; }
+  .login h1 { margin: 0 0 4px; font-size: 20px; }
+  .login p { color: var(--muted); margin: 0 0 18px; }
+  .login label { display: block; font-size: 13px; margin: 10px 0 4px; }
+  .login input { width: 100%; padding: 10px 11px; }
+  .login .btn { width: 100%; margin-top: 16px; padding: 10px; }
+  .login .alt { display: flex; justify-content: space-between; margin-top: 12px; font-size: 13px; }
+  .login .alt a { cursor: pointer; }
+  .msg { margin-top: 12px; font-size: 13px; padding: 9px 11px; border-radius: 8px; }
+  .msg.err { background: var(--bad-soft); color: var(--bad); }
+  .msg.info { background: var(--brand-soft); color: var(--brand); }
+
+  dialog { border: 1px solid var(--line); border-radius: 12px; padding: 0; width: min(460px, 94vw); }
+  dialog::backdrop { background: rgba(15,27,45,.45); }
+  dialog .dh { padding: 14px 16px; border-bottom: 1px solid var(--line); font-weight: 600; }
+  dialog .db { padding: 14px 16px; }
+  dialog .db label { display: block; font-size: 12px; color: var(--muted); margin: 10px 0 4px; }
+  dialog .db select, dialog .db input, dialog .db textarea { width: 100%; }
+  dialog .df { padding: 12px 16px; border-top: 1px solid var(--line); display: flex; gap: 8px; justify-content: flex-end; }
+
+  #toast { position: fixed; right: 18px; bottom: 18px; z-index: 50; display: flex; flex-direction: column; gap: 8px; }
+  #toast div { background: #0f1b2d; color: #fff; padding: 10px 14px; border-radius: 8px; font-size: 13px; max-width: 380px; box-shadow: 0 6px 20px rgba(0,0,0,.2); }
+  #toast div.err { background: var(--bad); }
+
+  @media (max-width: 720px) {
+    header.top nav button { padding: 8px 8px; }
+    header.top .who { display: none; }
+    th.hide-sm, td.hide-sm { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<section id="loginView" class="login hidden">
+  <h1>Proview Licences</h1>
+  <p>Signage, Bookings and Employee, all in one place.</p>
+  <form id="loginForm">
+    <label for="email">Email</label>
+    <input id="email" type="email" autocomplete="username" required>
+    <div id="pwWrap">
+      <label for="password">Password</label>
+      <input id="password" type="password" autocomplete="current-password" minlength="8">
+    </div>
+    <button class="btn primary" id="loginBtn" type="submit">Sign in</button>
+  </form>
+  <div class="alt">
+    <a id="toggleMode">First time? Create your password</a>
+    <a id="forgot">Forgot password</a>
+  </div>
+  <div id="loginMsg"></div>
+</section>
+
+<!-- RESET PASSWORD -->
+<section id="resetView" class="login hidden">
+  <h1>Choose a new password</h1>
+  <p>At least 8 characters.</p>
+  <form id="resetForm">
+    <label for="newpw">New password</label>
+    <input id="newpw" type="password" autocomplete="new-password" minlength="8" required>
+    <button class="btn primary" type="submit">Save password</button>
+  </form>
+  <div id="resetMsg"></div>
+</section>
+
+<!-- APP -->
+<div id="appView" class="hidden">
+  <header class="top">
+    <div class="logo">Proview <span>Licences</span></div>
+    <nav>
+      <button data-tab="customers" class="on">Customers</button>
+      <button data-tab="expiring">Expiring</button>
+      <button data-tab="activity">Activity</button>
+    </nav>
+    <div class="sp"></div>
+    <div class="who" id="who"></div>
+    <button class="lnk" id="signOut">Sign out</button>
+  </header>
+
+  <main>
+    <div class="sync" id="syncChips"></div>
+
+    <!-- CUSTOMERS -->
+    <section data-view="customers">
+      <div class="stats" id="stats"></div>
+      <div class="bar">
+        <input type="search" id="q" placeholder="Search customers, emails, screens, sites, staff…">
+        <select id="prodFilter" title="Product">
+          <option value="">All products</option>
+          <option value="signage">Signage</option>
+          <option value="bookings">Bookings</option>
+          <option value="employee">Employee</option>
+        </select>
+        <select id="statusFilter" title="Status">
+          <option value="">Any status</option>
+          <option value="expiring">Expiring in 30 days</option>
+          <option value="grace">In grace period</option>
+          <option value="expired">Expired / no licence</option>
+          <option value="trial">On trial</option>
+        </select>
+        <button class="btn" id="syncBtn">↻ Sync now</button>
+        <button class="btn primary" id="newCustBtn">+ New customer</button>
+      </div>
+      <div id="custList"></div>
+      <div class="bulk hidden" id="bulkBar">
+        <strong id="bulkCount">0 selected</strong>
+        <select id="bulkPlan"></select>
+        <input type="date" id="bulkDate" class="hidden">
+        <label class="row" style="gap:6px"><input type="checkbox" id="bulkExtend" checked> add to current expiry</label>
+        <button class="btn primary sm" id="bulkApply">Apply</button>
+        <button class="btn sm" id="bulkClear">Clear</button>
+      </div>
+    </section>
+
+    <!-- EXPIRING -->
+    <section data-view="expiring" class="hidden">
+      <div class="bar">
+        <select id="expWindow">
+          <option value="7">Next 7 days</option>
+          <option value="30" selected>Next 30 days</option>
+          <option value="60">Next 60 days</option>
+          <option value="90">Next 90 days</option>
+        </select>
+        <label class="row" style="gap:6px"><input type="checkbox" id="expIncl" checked> include already expired (last 30 days)</label>
+        <label class="row" style="gap:6px"><input type="checkbox" id="expTrials"> include trials</label>
+      </div>
+      <div id="expList"></div>
+    </section>
+
+    <!-- ACTIVITY -->
+    <section data-view="activity" class="hidden">
+      <div id="actList"></div>
+    </section>
+  </main>
+</div>
+
+<!-- LICENCE DIALOG -->
+<dialog id="licDlg">
+  <form method="dialog" id="licForm">
+    <div class="dh" id="licTitle">Licence</div>
+    <div class="db">
+      <div class="small" id="licCurrent"></div>
+      <label for="licPlan">Licence</label>
+      <select id="licPlan"></select>
+      <div id="licDateWrap" class="hidden">
+        <label for="licDate">Expiry date</label>
+        <input type="date" id="licDate">
+      </div>
+      <label class="row" style="gap:6px;color:var(--ink);font-size:13px"><input type="checkbox" id="licExtend" checked style="width:auto"> Add to current expiry (if still active)</label>
+      <label for="licNotes">Notes (optional)</label>
+      <input type="text" id="licNotes" placeholder="e.g. Paid by invoice 1043">
+    </div>
+    <div class="df">
+      <button class="btn danger" value="remove" id="licRemove" type="button">Remove licence</button>
+      <span style="flex:1"></span>
+      <button class="btn" value="cancel" formnovalidate>Cancel</button>
+      <button class="btn primary" value="save" id="licSave">Save</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- MOVE ACCOUNT DIALOG -->
+<dialog id="moveDlg">
+  <form method="dialog">
+    <div class="dh">Move account to another customer</div>
+    <div class="db">
+      <div class="small" id="moveWhat"></div>
+      <label for="moveTo">Customer</label>
+      <select id="moveTo"></select>
+    </div>
+    <div class="df">
+      <button class="btn" value="cancel">Cancel</button>
+      <button class="btn primary" value="ok">Move</button>
+    </div>
+  </form>
+</dialog>
+
+<div id="toast"></div>
+
+<script type="module">
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
+
+const HUB_URL = "https://bpssjfrinjlrnkzhytfr.supabase.co";
+const HUB_KEY = "sb_publishable_t-flikzLh-wDUz7ZR5iPBA_ZmPNnkB6";
+const sb = createClient(HUB_URL, HUB_KEY, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true } });
+
+const PRODUCTS = {
+  signage:  { label: "Signage",  unit: "Screen", units: "screens", app: "https://app.proviewsignage.co.uk",  trial: "trial7" },
+  bookings: { label: "Bookings", unit: "Site",   units: "sites",   app: "https://bookings.proviewcrm.co.uk", trial: "trial"  },
+  employee: { label: "Employee", unit: "Staff member", units: "staff", app: "https://employee.proviewcrm.co.uk", trial: "trial3" },
+};
+const PLAN_LABEL = { trial: "Trial (3 days)", trial3: "Trial (3 days)", trial7: "Trial (3 days)",
+  m1: "1 month", m3: "3 months", m6: "6 months", m12: "12 months", m24: "24 months", m36: "36 months",
+  lifetime: "Lifetime", custom: "Custom end date" };
+const PAID_PLANS = ["m1", "m3", "m6", "m12", "m24", "m36", "lifetime", "custom"];
+const GRACE_DAYS = 7;
+
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const fmtDate = (d) => d ? new Date(d).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : "";
+const fmtDT = (d) => d ? new Date(d).toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) : "";
+const isTrial = (t) => t === "trial" || t === "trial3" || t === "trial7";
+
+function toast(msg, err = false) {
+  const d = document.createElement("div"); d.textContent = msg; if (err) d.className = "err";
+  $("#toast").appendChild(d); setTimeout(() => d.remove(), err ? 7000 : 3500);
+}
+
+// ---------- licence status ----------
+function status(u) {
+  if (!u.license_type) return { k: "none", label: "No licence", cls: "none", days: null };
+  if (u.license_type === "lifetime") return { k: "ok", label: "Lifetime", cls: "ok", days: null };
+  if (!u.expires_at) return { k: "ok", label: PLAN_LABEL[u.license_type] || u.license_type, cls: "ok", days: null };
+  const days = Math.ceil((new Date(u.expires_at) - Date.now()) / 86400000);
+  const trial = isTrial(u.license_type);
+  if (days < 0) {
+    if (!trial && days >= -GRACE_DAYS) return { k: "grace", label: `Grace · ends ${fmtDate(new Date(new Date(u.expires_at).getTime() + GRACE_DAYS * 86400000))}`, cls: "warn", days };
+    return { k: "expired", label: `Expired ${fmtDate(u.expires_at)}`, cls: "bad", days };
+  }
+  const base = trial ? "Trial" : "Active";
+  if (days <= 30) return { k: "expiring", label: `${base} · ${days === 0 ? "ends today" : days + "d left"}`, cls: "warn", days };
+  return { k: "ok", label: `${base} · to ${fmtDate(u.expires_at)}`, cls: "ok", days };
+}
+
+// ---------- data ----------
+let S = { customers: [], accounts: [], units: [], audit: [], email: "" , open: new Set(), sel: new Map(), lastSync: null };
+
+async function hub(action, extra = {}) {
+  const { data, error } = await sb.functions.invoke("licence-hub", { body: { action, ...extra } });
+  if (error) {
+    let msg = error.message;
+    try { const j = await error.context.json(); msg = j.error || msg; } catch {}
+    throw new Error(msg);
+  }
+  return data;
+}
+
+async function loadAll() {
+  const [c, a, u] = await Promise.all([
+    sb.from("lic_customers").select("*").order("name"),
+    sb.from("lic_accounts").select("*"),
+    sb.from("lic_units").select("*"),
+  ]);
+  for (const r of [c, a, u]) if (r.error) throw r.error;
+  S.customers = c.data; S.accounts = a.data; S.units = u.data;
+  render();
+}
+
+async function loadAudit() {
+  const { data, error } = await sb.from("lic_audit").select("*").order("at", { ascending: false }).limit(300);
+  if (error) return toast(error.message, true);
+  S.audit = data; renderActivity();
+}
+
+async function doSync(quiet = false) {
+  const btn = $("#syncBtn"); btn.disabled = true; btn.textContent = "↻ Syncing…";
+  try {
+    const r = await hub("sync");
+    S.lastSync = { at: new Date(), apps: r.apps };
+    renderSyncChips();
+    const bad = Object.entries(r.apps).filter(([, v]) => !v.ok);
+    if (bad.length) toast("Could not reach: " + bad.map(([k, v]) => `${PRODUCTS[k].label} (${v.error})`).join(", "), true);
+    else if (!quiet) toast("Synced with all three apps");
+    if (r.customers_created) toast(`${r.customers_created} new customer record(s) created from the apps`);
+    await loadAll();
+  } catch (e) { toast("Sync failed: " + e.message, true); }
+  finally { btn.disabled = false; btn.textContent = "↻ Sync now"; }
+}
+
+function renderSyncChips() {
+  const s = S.lastSync; if (!s) return;
+  $("#syncChips").innerHTML = Object.entries(PRODUCTS).map(([k, p]) => {
+    const r = s.apps[k];
+    return `<span class="chip ${r?.ok ? "ok" : "bad"}" title="${esc(r?.error || "")}"><span class="dot"></span>${p.label}${r?.ok ? ` · ${r.units} ${p.units}` : " · offline"}</span>`;
+  }).join("") + `<span class="chip">Last synced ${fmtDT(s.at)}</span>`;
+}
+
+// ---------- customers view ----------
+function unitsForAccount(a) { return S.units.filter((u) => u.product === a.product && u.account_ext_id === a.ext_id && !u.gone); }
+function accountsForCustomer(c) { return S.accounts.filter((a) => a.customer_id === c.id && !a.gone); }
+
+function matches(c, q, prod, st) {
+  const accts = accountsForCustomer(c).filter((a) => !prod || a.product === prod);
+  if (prod && !accts.length) return false;
+  const units = accts.flatMap(unitsForAccount);
+  if (st) {
+    const ok = units.some((u) => {
+      const s = status(u);
+      if (st === "trial") return isTrial(u.license_type) && s.k !== "expired";
+      if (st === "expired") return s.k === "expired" || s.k === "none";
+      return s.k === st;
+    });
+    if (!ok) return false;
+  }
+  if (!q) return true;
+  const hay = [c.name, c.contact_email, c.phone, c.notes, ...accts.flatMap((a) => [a.name, a.contact_email]), ...units.flatMap((u) => [u.name, u.detail])]
+    .filter(Boolean).join(" ").toLowerCase();
+  return q.split(/\s+/).every((w) => hay.includes(w));
+}
+
+function renderStats() {
+  const live = S.units.filter((u) => !u.gone);
+  const by = (k) => live.filter((u) => status(u).k === k).length;
+  const active = live.filter((u) => ["ok", "expiring"].includes(status(u).k) && !isTrial(u.license_type)).length;
+  const trials = live.filter((u) => isTrial(u.license_type) && status(u).k !== "expired").length;
+  $("#stats").innerHTML = `
+    <div class="stat" data-f=""><div class="n">${S.customers.length}</div><div class="l">Customers</div></div>
+    <div class="stat" data-f=""><div class="n">${active}</div><div class="l">Paid licences active</div></div>
+    <div class="stat" data-f="trial"><div class="n">${trials}</div><div class="l">On trial</div></div>
+    <div class="stat warn" data-f="expiring"><div class="n">${by("expiring")}</div><div class="l">Expiring in 30 days</div></div>
+    <div class="stat warn" data-f="grace"><div class="n">${by("grace")}</div><div class="l">In grace period</div></div>
+    <div class="stat bad" data-f="expired"><div class="n">${by("expired") + by("none")}</div><div class="l">Expired / no licence</div></div>`;
+  $$("#stats .stat").forEach((el) => el.onclick = () => { $("#statusFilter").value = el.dataset.f; renderCustomers(); });
+}
+
+function unitRow(u) {
+  const s = status(u), p = PRODUCTS[u.product];
+  const key = u.product + "|" + u.ext_id;
+  const extra = u.product === "signage" && u.extra?.last_seen ? `<div class="small">Last seen ${fmtDT(u.extra.last_seen)}</div>` : "";
+  const arch = u.extra?.archived ? ` <span class="pill none">archived</span>` : "";
+  return `<tr>
+    <td class="cb"><input type="checkbox" data-sel="${esc(key)}" ${S.sel.has(key) ? "checked" : ""}></td>
+    <td><div>${esc(u.name || "(unnamed)")}${arch}</div><div class="small">${esc(u.detail || "")}</div>${extra}</td>
+    <td class="hide-sm small">${esc(PLAN_LABEL[u.license_type] || u.license_type || "—")}${u.notes ? `<div title="${esc(u.notes)}">📝 ${esc(u.notes.slice(0, 40))}${u.notes.length > 40 ? "…" : ""}</div>` : ""}</td>
+    <td><span class="pill ${s.cls}">${esc(s.label)}</span></td>
+    <td style="text-align:right;white-space:nowrap">
+      ${u.license_type === "lifetime" ? "" : `<button class="btn sm" data-quick="${esc(key)}" title="Add 12 months">+12m</button>`}
+      <button class="btn sm" data-edit="${esc(key)}">Change…</button>
+    </td></tr>`;
+}
+
+function accountBlock(a) {
+  const p = PRODUCTS[a.product];
+  const units = unitsForAccount(a);
+  return `<div class="acct">
+    <div class="ah">
+      <span class="ptag">${p.label}</span>
+      <span class="pn">${esc(a.name || "(unnamed)")}</span>
+      <span class="small">${esc(a.contact_email || "")}${a.extra?.self_signup ? " · signed up online" : ""}${a.extra?.suspended ? " · <b style='color:var(--bad)'>suspended</b>" : ""}</span>
+      <span class="sp"></span>
+      <button class="btn sm" data-selall="${esc(a.product + "|" + a.ext_id)}">Select all</button>
+      <button class="btn sm" data-move="${esc(a.product + "|" + a.ext_id)}">Move…</button>
+      <a class="btn sm" href="${p.app}" target="_blank" rel="noopener">Open app ↗</a>
+    </div>
+    ${units.length ? `<table><thead><tr><th class="cb"></th><th>${p.unit}</th><th class="hide-sm">Plan</th><th>Status</th><th></th></tr></thead><tbody>${units.map(unitRow).join("")}</tbody></table>`
+      : `<div class="small" style="padding:10px 12px">No ${p.units} yet.</div>`}
+  </div>`;
+}
+
+function custCard(c) {
+  const accts = accountsForCustomer(c);
+  const units = accts.flatMap(unitsForAccount);
+  const worst = units.map(status).sort((a, b) => rank(a) - rank(b))[0];
+  const prods = [...new Set(accts.map((a) => a.product))];
+  const open = S.open.has(c.id);
+  return `<div class="cust ${open ? "open" : ""}" data-cust="${c.id}">
+    <div class="head" data-toggle="${c.id}">
+      <span class="caret">▶</span>
+      <div><div class="name">${esc(c.name)}</div><div class="meta">${esc(c.contact_email || "no email")}${c.phone ? " · " + esc(c.phone) : ""}</div></div>
+      <div class="sp"></div>
+      <div class="prodtags">${prods.map((k) => `<span class="ptag">${PRODUCTS[k].label}</span>`).join("") || `<span class="small">no products linked</span>`}</div>
+      <span class="small">${units.length} licence${units.length === 1 ? "" : "s"}</span>
+      ${worst ? `<span class="pill ${worst.cls}">${esc(worst.k === "ok" ? "All OK" : worst.label)}</span>` : ""}
+    </div>
+    ${open ? `<div class="body">
+      <div class="details">
+        <div><label>Customer name</label><input type="text" data-f="name" value="${esc(c.name)}"></div>
+        <div><label>Contact email</label><input type="email" data-f="contact_email" value="${esc(c.contact_email || "")}"></div>
+        <div><label>Phone</label><input type="text" data-f="phone" value="${esc(c.phone || "")}"></div>
+        <div style="grid-column:1/-1"><label>Notes</label><textarea data-f="notes" rows="2">${esc(c.notes || "")}</textarea></div>
+      </div>
+      <div class="row mt">
+        <button class="btn primary sm" data-savecust="${c.id}">Save details</button>
+        <button class="btn sm" data-merge="${c.id}">Merge into another customer…</button>
+        ${accts.length ? "" : `<button class="btn sm danger" data-delcust="${c.id}">Delete customer</button>`}
+      </div>
+      ${accts.map(accountBlock).join("") || `<div class="empty mt">No app accounts linked. Use “Move…” on an account under another customer to link it here.</div>`}
+    </div>` : ""}
+  </div>`;
+}
+function rank(s) { return { expired: 0, none: 1, grace: 2, expiring: 3, ok: 4 }[s.k]; }
+
+function renderCustomers() {
+  const q = $("#q").value.trim().toLowerCase(), prod = $("#prodFilter").value, st = $("#statusFilter").value;
+  const list = S.customers.filter((c) => matches(c, q, prod, st));
+  // customers needing attention first, then alphabetical
+  list.sort((a, b) => {
+    const wa = Math.min(...accountsForCustomer(a).flatMap(unitsForAccount).map((u) => rank(status(u))), 9);
+    const wb = Math.min(...accountsForCustomer(b).flatMap(unitsForAccount).map((u) => rank(status(u))), 9);
+    return (st ? wa - wb : 0) || a.name.localeCompare(b.name);
+  });
+  $("#custList").innerHTML = list.length ? list.map(custCard).join("")
+    : `<div class="empty">${S.customers.length ? "No customers match." : "No customers yet. Press “Sync now” to pull them in from the apps."}</div>`;
+  renderBulk();
+}
+
+function render() { renderStats(); renderCustomers(); renderExpiring(); }
+
+// ---------- expiring view ----------
+function renderExpiring() {
+  const win = +$("#expWindow").value, incl = $("#expIncl").checked, trials = $("#expTrials").checked;
+  const rows = S.units.filter((u) => !u.gone && u.expires_at && u.license_type !== "lifetime" && (trials || !isTrial(u.license_type)))
+    .map((u) => ({ u, s: status(u) }))
+    .filter(({ s }) => s.days !== null && s.days <= win && (incl ? s.days >= -30 : s.days >= 0))
+    .sort((a, b) => a.s.days - b.s.days);
+  const acc = (u) => S.accounts.find((a) => a.product === u.product && a.ext_id === u.account_ext_id);
+  const cust = (a) => a && S.customers.find((c) => c.id === a.customer_id);
+  $("#expList").innerHTML = rows.length ? `<div class="acct" style="margin:0"><table><thead><tr><th>Customer</th><th>Product</th><th>What</th><th>Status</th><th></th></tr></thead><tbody>${
+    rows.map(({ u, s }) => { const a = acc(u), c = cust(a), key = u.product + "|" + u.ext_id;
+      return `<tr><td><div>${esc(c?.name || a?.name || "?")}</div><div class="small">${esc(c?.contact_email || "")}</div></td>
+        <td><span class="ptag">${PRODUCTS[u.product].label}</span></td>
+        <td>${esc(u.name || "")}<div class="small">${esc(PLAN_LABEL[u.license_type] || u.license_type)}</div></td>
+        <td><span class="pill ${s.cls}">${esc(s.label)}</span></td>
+        <td style="text-align:right;white-space:nowrap"><button class="btn sm" data-quick="${esc(key)}">+12m</button> <button class="btn sm" data-edit="${esc(key)}">Change…</button></td></tr>`; }).join("")
+  }</tbody></table></div>` : `<div class="empty">Nothing expiring in this window.</div>`;
+}
+
+// ---------- activity view ----------
+function renderActivity() {
+  $("#actList").innerHTML = S.audit.length ? `<div class="acct" style="margin:0"><table><thead><tr><th>When</th><th>Who</th><th>Product</th><th>What</th><th>Change</th></tr></thead><tbody>${
+    S.audit.map((r) => `<tr><td class="small">${fmtDT(r.at)}</td><td class="small">${esc(r.admin_email || "")}</td>
+      <td>${r.product ? `<span class="ptag">${PRODUCTS[r.product]?.label || r.product}</span>` : ""}</td>
+      <td>${esc(r.unit_name || r.unit_ext_id || "")}<div class="small">${esc(r.account_name || "")}</div></td>
+      <td>${r.action === "failed" ? `<span class="pill bad">Failed</span> <span class="small">${esc(r.error || "")}</span>`
+        : `${esc(r.action)} <div class="small">${esc(fmtDate(r.before?.expires_at) || r.before?.license_type || "none")} → ${esc(r.after?.license_type === "lifetime" ? "lifetime" : fmtDate(r.after?.expires_at) || r.after?.license_type || "none")}</div>`}</td></tr>`).join("")
+  }</tbody></table></div>` : `<div class="empty">No licence changes yet.</div>`;
+}
+
+// ---------- licence changes ----------
+function findUnit(key) { const [p, ...rest] = key.split("|"); const id = rest.join("|"); return S.units.find((u) => u.product === p && u.ext_id === id); }
+
+function planOptions(product, includeTrial = true) {
+  const t = PRODUCTS[product]?.trial;
+  return (includeTrial && t ? [t] : []).concat(PAID_PLANS).map((k) => `<option value="${k}" ${k === "m12" ? "selected" : ""}>${PLAN_LABEL[k]}</option>`).join("");
+}
+
+async function applyChanges(items) {
+  try {
+    const r = await hub("set", { items });
+    const bad = r.results.filter((x) => !x.ok);
+    for (const x of r.results.filter((x) => x.ok)) {
+      const u = S.units.find((u) => u.product === x.product && u.ext_id === String(x.unit));
+      if (u) Object.assign(u, { license_type: x.after.license_type, starts_at: x.after.starts_at, expires_at: x.after.expires_at, notes: x.after.notes });
+    }
+    if (bad.length) toast(`${bad.length} change(s) failed: ${bad.map((b) => b.error).join("; ")}`, true);
+    else toast(items.length === 1 ? "Licence updated in the app" : `${items.length} licences updated`);
+    render();
+    if (!$('[data-view="activity"]').classList.contains("hidden")) loadAudit();
+    return !bad.length;
+  } catch (e) { toast(e.message, true); return false; }
+}
+
+function openLicence(key) {
+  const u = findUnit(key); if (!u) return;
+  const p = PRODUCTS[u.product];
+  $("#licTitle").textContent = `${p.label} · ${u.name || p.unit}`;
+  $("#licCurrent").textContent = "Now: " + status(u).label + (u.license_type ? ` (${PLAN_LABEL[u.license_type] || u.license_type})` : "");
+  $("#licPlan").innerHTML = planOptions(u.product);
+  $("#licDate").value = u.expires_at ? u.expires_at.slice(0, 10) : "";
+  $("#licNotes").value = "";
+  $("#licExtend").checked = true;
+  $("#licDateWrap").classList.add("hidden");
+  $("#licRemove").classList.toggle("hidden", !u.license_type);
+  const dlg = $("#licDlg");
+  dlg.returnValue = "";
+  dlg.dataset.key = key;
+  dlg.showModal();
+}
+$("#licPlan").onchange = () => {
+  const v = $("#licPlan").value;
+  $("#licDateWrap").classList.toggle("hidden", v !== "custom");
+  $("#licExtend").closest("label").classList.toggle("hidden", v === "custom" || v === "lifetime");
+};
+$("#licDlg").addEventListener("close", async () => {
+  const dlg = $("#licDlg"); if (dlg.returnValue !== "save") return;
+  const u = findUnit(dlg.dataset.key); const type = $("#licPlan").value;
+  if (type === "custom" && !$("#licDate").value) return toast("Choose an expiry date", true);
+  await applyChanges([{ product: u.product, unit: u.ext_id, type, extend: $("#licExtend").checked,
+    expires: type === "custom" ? new Date($("#licDate").value + "T23:59:00").toISOString() : null, notes: $("#licNotes").value || null }]);
+});
+$("#licRemove").onclick = async () => {
+  const dlg = $("#licDlg"); const u = findUnit(dlg.dataset.key);
+  if (!confirm(`Remove the licence for "${u.name}"? It will stop working in ${PRODUCTS[u.product].label}.`)) return;
+  dlg.close();
+  await applyChanges([{ product: u.product, unit: u.ext_id, type: null }]);
+};
+
+// ---------- bulk ----------
+function renderBulk() {
+  const n = S.sel.size;
+  $("#bulkBar").classList.toggle("hidden", !n);
+  $("#bulkCount").textContent = `${n} selected`;
+  if (!$("#bulkPlan").options.length) $("#bulkPlan").innerHTML = PAID_PLANS.map((k) => `<option value="${k}" ${k === "m12" ? "selected" : ""}>${PLAN_LABEL[k]}</option>`).join("");
+}
+$("#bulkPlan").onchange = () => $("#bulkDate").classList.toggle("hidden", $("#bulkPlan").value !== "custom");
+$("#bulkClear").onclick = () => { S.sel.clear(); renderCustomers(); };
+$("#bulkApply").onclick = async () => {
+  const type = $("#bulkPlan").value;
+  if (type === "custom" && !$("#bulkDate").value) return toast("Choose an expiry date", true);
+  const items = [...S.sel.values()].map((u) => ({ product: u.product, unit: u.ext_id, type, extend: $("#bulkExtend").checked,
+    expires: type === "custom" ? new Date($("#bulkDate").value + "T23:59:00").toISOString() : null }));
+  if (!confirm(`Apply "${PLAN_LABEL[type]}" to ${items.length} licence(s)?`)) return;
+  $("#bulkApply").disabled = true;
+  if (await applyChanges(items)) S.sel.clear();
+  $("#bulkApply").disabled = false; renderCustomers();
+};
+
+// ---------- customers CRUD ----------
+async function saveCustomer(id) {
+  const card = $(`[data-cust="${id}"]`); const patch = {};
+  $$("[data-f]", card).forEach((el) => patch[el.dataset.f] = el.value.trim() || null);
+  if (!patch.name) return toast("Name is required", true);
+  if (patch.contact_email) patch.contact_email = patch.contact_email.toLowerCase();
+  const { error } = await sb.from("lic_customers").update(patch).eq("id", id);
+  if (error) return toast(error.message, true);
+  Object.assign(S.customers.find((c) => c.id === id), patch); toast("Saved"); renderCustomers();
+}
+async function newCustomer() {
+  const name = prompt("Customer name"); if (!name?.trim()) return;
+  const email = prompt("Contact email (optional)") || null;
+  const { data, error } = await sb.from("lic_customers").insert({ name: name.trim(), contact_email: email?.trim().toLowerCase() || null }).select().single();
+  if (error) return toast(error.message, true);
+  S.customers.push(data); S.customers.sort((a, b) => a.name.localeCompare(b.name)); S.open.add(data.id); renderCustomers();
+  toast("Customer created. Use “Move…” on an app account to link it here.");
+}
+function pickCustomer(title, excludeId) {
+  return new Promise((res) => {
+    const dlg = $("#moveDlg");
+    $("#moveWhat").textContent = title;
+    $("#moveTo").innerHTML = S.customers.filter((c) => c.id !== excludeId).map((c) => `<option value="${c.id}">${esc(c.name)}${c.contact_email ? " · " + esc(c.contact_email) : ""}</option>`).join("");
+    dlg.returnValue = "";
+    dlg.onclose = () => res(dlg.returnValue === "ok" ? $("#moveTo").value : null);
+    dlg.showModal();
+  });
+}
+async function moveAccount(key) {
+  const [p, ...rest] = key.split("|"); const ext = rest.join("|");
+  const a = S.accounts.find((x) => x.product === p && x.ext_id === ext);
+  const to = await pickCustomer(`${PRODUCTS[p].label}: ${a.name}`, a.customer_id); if (!to) return;
+  const { error } = await sb.from("lic_accounts").update({ customer_id: to }).eq("product", p).eq("ext_id", ext);
+  if (error) return toast(error.message, true);
+  a.customer_id = to; S.open.add(to); toast("Account moved"); render();
+}
+async function mergeCustomer(id) {
+  const c = S.customers.find((x) => x.id === id);
+  const to = await pickCustomer(`Move everything from "${c.name}" into…`, id); if (!to) return;
+  const { error } = await sb.from("lic_accounts").update({ customer_id: to }).eq("customer_id", id);
+  if (error) return toast(error.message, true);
+  const keep = S.customers.find((x) => x.id === to);
+  if (c.notes) await sb.from("lic_customers").update({ notes: [keep.notes, c.notes].filter(Boolean).join("\n") }).eq("id", to);
+  await sb.from("lic_customers").delete().eq("id", id);
+  S.open.delete(id); S.open.add(to); toast(`Merged into ${keep.name}`); await loadAll();
+}
+async function deleteCustomer(id) {
+  if (!confirm("Delete this customer record? (It has no linked app accounts.)")) return;
+  const { error } = await sb.from("lic_customers").delete().eq("id", id);
+  if (error) return toast(error.message, true);
+  S.customers = S.customers.filter((c) => c.id !== id); renderCustomers();
+}
+
+// ---------- events ----------
+document.addEventListener("click", (e) => {
+  const t = e.target.closest("[data-toggle],[data-edit],[data-quick],[data-savecust],[data-move],[data-merge],[data-delcust],[data-selall]");
+  if (!t) return;
+  if (t.dataset.toggle) { const id = t.dataset.toggle; S.open.has(id) ? S.open.delete(id) : S.open.add(id); renderCustomers(); }
+  else if (t.dataset.edit) openLicence(t.dataset.edit);
+  else if (t.dataset.quick) { const u = findUnit(t.dataset.quick); t.disabled = true; applyChanges([{ product: u.product, unit: u.ext_id, type: "m12", extend: true }]); }
+  else if (t.dataset.savecust) saveCustomer(t.dataset.savecust);
+  else if (t.dataset.move) moveAccount(t.dataset.move);
+  else if (t.dataset.merge) mergeCustomer(t.dataset.merge);
+  else if (t.dataset.delcust) deleteCustomer(t.dataset.delcust);
+  else if (t.dataset.selall) {
+    const [p, ...rest] = t.dataset.selall.split("|"); const ext = rest.join("|");
+    S.units.filter((u) => u.product === p && u.account_ext_id === ext && !u.gone).forEach((u) => S.sel.set(u.product + "|" + u.ext_id, u));
+    renderCustomers();
+  }
+});
+document.addEventListener("change", (e) => {
+  const k = e.target.dataset?.sel; if (!k) return;
+  e.target.checked ? S.sel.set(k, findUnit(k)) : S.sel.delete(k); renderBulk();
+});
+$("#q").oninput = renderCustomers; $("#prodFilter").onchange = renderCustomers; $("#statusFilter").onchange = renderCustomers;
+$("#expWindow").onchange = renderExpiring; $("#expIncl").onchange = renderExpiring; $("#expTrials").onchange = renderExpiring;
+$("#syncBtn").onclick = () => doSync(); $("#newCustBtn").onclick = newCustomer;
+$$("header.top nav button").forEach((b) => b.onclick = () => {
+  $$("header.top nav button").forEach((x) => x.classList.toggle("on", x === b));
+  $$("[data-view]").forEach((v) => v.classList.toggle("hidden", v.dataset.view !== b.dataset.tab));
+  if (b.dataset.tab === "activity") loadAudit();
+});
+
+// ---------- auth ----------
+let signupMode = false;
+function showLogin(msg, kind = "info") {
+  $("#appView").classList.add("hidden"); $("#resetView").classList.add("hidden"); $("#loginView").classList.remove("hidden");
+  $("#loginMsg").innerHTML = msg ? `<div class="msg ${kind}">${esc(msg)}</div>` : "";
+}
+$("#toggleMode").onclick = () => {
+  signupMode = !signupMode;
+  $("#loginBtn").textContent = signupMode ? "Create password" : "Sign in";
+  $("#toggleMode").textContent = signupMode ? "Already set up? Sign in" : "First time? Create your password";
+  $("#password").autocomplete = signupMode ? "new-password" : "current-password";
+  $("#loginMsg").innerHTML = signupMode ? `<div class="msg info">Use your Proview admin email. We'll email you a link to confirm it.</div>` : "";
+};
+$("#forgot").onclick = async () => {
+  const email = $("#email").value.trim(); if (!email) return showLogin("Enter your email first.", "err");
+  const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: location.origin + location.pathname });
+  showLogin(error ? error.message : "If that address is an admin, a reset link is on its way.", error ? "err" : "info");
+};
+$("#loginForm").onsubmit = async (e) => {
+  e.preventDefault();
+  const email = $("#email").value.trim().toLowerCase(), password = $("#password").value;
+  if (password.length < 8) return showLogin("Password must be at least 8 characters.", "err");
+  $("#loginBtn").disabled = true;
+  try {
+    if (signupMode) {
+      const { data, error } = await sb.auth.signUp({ email, password, options: { emailRedirectTo: location.origin + location.pathname } });
+      if (error) throw error;
+      if (!data.session) return showLogin("Check your inbox and click the confirmation link, then sign in here.");
+    } else {
+      const { error } = await sb.auth.signInWithPassword({ email, password });
+      if (error) throw error;
+    }
+  } catch (err) { showLogin(err.message, "err"); }
+  finally { $("#loginBtn").disabled = false; }
+};
+$("#resetForm").onsubmit = async (e) => {
+  e.preventDefault();
+  const { error } = await sb.auth.updateUser({ password: $("#newpw").value });
+  if (error) { $("#resetMsg").innerHTML = `<div class="msg err">${esc(error.message)}</div>`; return; }
+  history.replaceState(null, "", location.pathname); recovering = false; start();
+};
+$("#signOut").onclick = async () => { await sb.auth.signOut(); showLogin("Signed out."); };
+
+let started = false, recovering = false;
+async function start() {
+  if (recovering) return;
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) return showLogin();
+  const { data: ok } = await sb.rpc("is_lic_admin");
+  if (!ok) { await sb.auth.signOut(); return showLogin("This account isn't a Proview licence administrator.", "err"); }
+  S.email = session.user.email; $("#who").textContent = S.email;
+  $("#loginView").classList.add("hidden"); $("#resetView").classList.add("hidden"); $("#appView").classList.remove("hidden");
+  if (started) return; started = true;
+  await loadAll().catch((e) => toast(e.message, true));
+  doSync(true);
+}
+sb.auth.onAuthStateChange((ev) => {
+  if (ev === "PASSWORD_RECOVERY") { recovering = true; $("#loginView").classList.add("hidden"); $("#appView").classList.add("hidden"); $("#resetView").classList.remove("hidden"); return; }
+  if (ev === "SIGNED_IN") setTimeout(start, 0);
+  if (ev === "SIGNED_OUT") started = false;
+});
+start();
+</script>
+</body>
+</html>
