@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Proview account</title>
+<meta name="robots" content="noindex">
+<link rel="icon" type="image/png" href="logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&display=swap">
+<style>
+  :root {
+    --bg: #F5F7FA; --card: #FFFFFF; --ink: #1A2330; --ink2: #3D4955; --muted: #5B6672; --line: #E2E8F0; --line-input: #8793A0;
+    --brand: #1565C0; --brand-dark: #0D47A1; --brand-soft: #E8F1FC;
+    --ok: #127a46; --ok-soft: #e6f5ec; --bad: #b42318; --bad-soft: #fdecea; --none-soft: #eef0f3;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; min-height: 100%; background: var(--bg); color: var(--ink);
+    font: 15px/1.5 "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif; }
+  button, input { font: inherit; color: inherit; }
+  main { max-width: 440px; margin: 0 auto; padding: 48px 20px 40px; }
+  .brand { display: flex; align-items: center; gap: 10px; justify-content: center; margin-bottom: 22px; }
+  .brand img { width: 40px; height: 28px; object-fit: contain; }
+  .wordmark { font-weight: 700; font-size: 19px; letter-spacing: .04em; }
+  .wordmark span { color: var(--brand); }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 28px 26px; box-shadow: 0 8px 30px rgba(16, 24, 40, .06); }
+  h1 { font-size: 24px; line-height: 32px; margin: 0 0 6px; }
+  p.sub { color: var(--muted); margin: 0 0 18px; }
+  label { display: block; font-weight: 600; font-size: 14px; margin: 14px 0 6px; }
+  input[type=email], input[type=password] { width: 100%; height: 46px; border: 1px solid var(--line-input); border-radius: 10px; padding: 0 14px; background: #fff; }
+  input:focus-visible, button:focus-visible, a:focus-visible { outline: 3px solid #90caf9; outline-offset: 2px; }
+  .go { width: 100%; height: 48px; margin-top: 20px; border: 0; border-radius: 10px; background: var(--brand); color: #fff; font-weight: 600; font-size: 16px; cursor: pointer; }
+  .go:hover { background: var(--brand-dark); }
+  .go:disabled { opacity: .6; cursor: default; }
+  .links { display: flex; justify-content: space-between; gap: 12px; margin-top: 16px; flex-wrap: wrap; }
+  .linkbtn { background: none; border: 0; padding: 4px 0; color: var(--brand); font-weight: 600; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+  .notice { border-radius: 10px; padding: 10px 14px; margin: 0 0 14px; font-size: 14px; }
+  .notice.bad { background: var(--bad-soft); color: var(--bad); }
+  .notice.ok { background: var(--ok-soft); color: var(--ok); }
+  .notice.info { background: var(--brand-soft); color: var(--brand-dark); }
+  .apps { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 10px; }
+  .app { display: flex; align-items: center; gap: 14px; border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; }
+  .app .ic { width: 40px; height: 40px; border-radius: 10px; display: grid; place-items: center; background: var(--brand-soft); color: var(--brand-dark); font-weight: 700; flex: none; }
+  .app .t { flex: 1; min-width: 0; }
+  .app .t b { display: block; }
+  .app .t small { color: var(--muted); display: block; }
+  .app button { height: 40px; padding: 0 16px; border-radius: 10px; border: 0; background: var(--brand); color: #fff; font-weight: 600; cursor: pointer; flex: none; }
+  .app.off { background: #fafbfc; }
+  .app.off .ic { background: var(--none-soft); color: var(--muted); }
+  .who { color: var(--muted); font-size: 14px; margin: 0 0 16px; word-break: break-all; }
+  .foot { text-align: center; color: var(--muted); font-size: 13px; margin-top: 18px; }
+  .spin { display: inline-block; width: 18px; height: 18px; border: 2px solid var(--brand-soft); border-top-color: var(--brand); border-radius: 50%; animation: s 1s linear infinite; vertical-align: -3px; margin-right: 8px; }
+  @keyframes s { to { transform: rotate(1turn); } }
+  @media (prefers-reduced-motion: reduce) { .spin { animation: none; } }
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+</style>
+</head>
+<body>
+<main>
+  <div class="brand"><img src="logo.png" alt=""><span class="wordmark">PROVIEW<span> ACCOUNT</span></span></div>
+  <div class="card" id="view" aria-live="polite"><p><span class="spin" aria-hidden="true"></span>Loading…</p></div>
+  <p class="foot">One login for Proview Bookings, Employee, Signage and WiFi.</p>
+</main>
+
+<script type="module">
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
+
+const HUB_URL = "https://bpssjfrinjlrnkzhytfr.supabase.co";
+const HUB_KEY = "sb_publishable_t-flikzLh-wDUz7ZR5iPBA_ZmPNnkB6";
+// Own storage key: the licence admin page on this site uses the default one.
+const sb = createClient(HUB_URL, HUB_KEY, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, storageKey: "pv-account" } });
+
+const NAMES = { bookings: "Proview Bookings", employee: "Proview Employee", signage: "Proview Signage", wifi: "Proview WiFi" };
+const qs = new URLSearchParams(location.search);
+const APP = NAMES[qs.get("app")] ? qs.get("app") : null;  // set when an app sent the person here to sign in
+const RET = qs.get("return") || "";
+const HERE = location.origin + location.pathname + (APP ? "?app=" + APP + (RET ? "&return=" + encodeURIComponent(RET) : "") : "");
+
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const view = (html) => { $("#view").innerHTML = html; };
+const note = (msg, kind = "bad") => (msg ? `<div class="notice ${kind}" role="${kind === "bad" ? "alert" : "status"}">${esc(msg)}</div>` : "");
+const friendly = (e) => {
+  const t = String(e?.message || e || "");
+  if (/invalid login credentials/i.test(t)) return "That email or password isn’t right. Try again, or use “Forgot password?”.";
+  if (/email not confirmed/i.test(t)) return "Confirm your email first: open the link we emailed you.";
+  if (/already registered/i.test(t)) return "There’s already a Proview account for this email. Sign in instead.";
+  if (/rate limit|too many/i.test(t)) return "Too many attempts. Please wait a minute and try again.";
+  return t || "Something went wrong. Please try again.";
+};
+async function call(body) {
+  const { data, error } = await sb.functions.invoke("sso-assert", { body });
+  if (error) {
+    let msg = error.message;
+    try { msg = (await error.context.json()).error || msg; } catch { /* keep */ }
+    throw new Error(msg);
+  }
+  return data;
+}
+
+let mode = "signin", recovering = false;
+
+function showForm(msg = "", kind = "bad") {
+  const up = mode === "signup", reset = mode === "reset";
+  const title = reset ? "Reset your password" : up ? "Create your Proview account" : "Sign in";
+  const sub = reset ? "We’ll email you a link to choose a new password."
+    : up ? "Use the email address you already use with Proview. You’ll get an email to confirm it."
+    : APP ? `Sign in to continue to ${NAMES[APP]}.` : "One login for all your Proview apps.";
+  const keep = $("#em")?.value || "";
+  view(`<h1>${title}</h1><p class="sub">${esc(sub)}</p>${note(msg, kind)}
+    <form id="f" novalidate>
+      <label for="em">Email</label><input id="em" type="email" autocomplete="email" required value="${esc(keep)}">
+      ${reset ? "" : `<label for="pw">Password</label><input id="pw" type="password" autocomplete="${up ? "new-password" : "current-password"}" required ${up ? 'minlength="8"' : ""}>`}
+      ${up ? `<label for="pw2">Confirm password</label><input id="pw2" type="password" autocomplete="new-password" required>` : ""}
+      <button class="go" id="go">${reset ? "Send reset link" : up ? "Create account" : "Sign in"}</button>
+    </form>
+    <div class="links">
+      ${mode === "signin" ? `<button class="linkbtn" data-m="signup">Create an account</button><button class="linkbtn" data-m="reset">Forgot password?</button>`
+        : `<button class="linkbtn" data-m="signin">Back to sign in</button>`}
+    </div>`);
+  document.querySelectorAll("[data-m]").forEach((b) => (b.onclick = () => { mode = b.dataset.m; showForm(); }));
+  $("#f").onsubmit = submit;
+  setTimeout(() => (keep && !reset ? $("#pw") : $("#em"))?.focus(), 30);
+}
+
+async function submit(ev) {
+  ev.preventDefault();
+  const email = $("#em").value.trim(), pw = $("#pw")?.value || "", go = $("#go");
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return showForm("Enter your email address.");
+  if (mode === "signup" && pw.length < 8) return showForm("Use at least 8 characters for your password.");
+  if (mode === "signup" && pw !== $("#pw2").value) return showForm("The two passwords don’t match.");
+  if (mode === "signin" && !pw) return showForm("Enter your password.");
+  go.disabled = true;
+  try {
+    if (mode === "reset") {
+      const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: HERE });
+      if (error) throw error;
+      mode = "signin"; return showForm("If there’s a Proview account for that email, a reset link is on its way.", "ok");
+    }
+    if (mode === "signup") {
+      const { data, error } = await sb.auth.signUp({ email, password: pw, options: { emailRedirectTo: HERE } });
+      if (error) throw error;
+      if (!data.session) { mode = "signin"; return showForm(`Check your inbox: we’ve sent a confirmation link to ${email}. Open it to finish setting up.`, "ok"); }
+    } else {
+      const { error } = await sb.auth.signInWithPassword({ email, password: pw });
+      if (error) throw error;
+    }
+    await signedIn();
+  } catch (e) { showForm(friendly(e)); }
+}
+
+function showNewPassword(msg = "") {
+  view(`<h1>Choose a new password</h1><p class="sub">At least 8 characters.</p>${note(msg)}
+    <form id="np" novalidate>
+      <label for="n1">New password</label><input id="n1" type="password" autocomplete="new-password" minlength="8" required>
+      <label for="n2">Confirm new password</label><input id="n2" type="password" autocomplete="new-password" required>
+      <button class="go" id="go">Save password</button>
+    </form>`);
+  setTimeout(() => $("#n1").focus(), 30);
+  $("#np").onsubmit = async (ev) => {
+    ev.preventDefault();
+    const a = $("#n1").value;
+    if (a.length < 8) return showNewPassword("Use at least 8 characters.");
+    if (a !== $("#n2").value) return showNewPassword("The two passwords don’t match.");
+    $("#go").disabled = true;
+    const { error } = await sb.auth.updateUser({ password: a });
+    if (error) return showNewPassword(friendly(error));
+    recovering = false;
+    await signedIn("Password saved.");
+  };
+}
+
+async function openApp(app) {
+  view(`<p><span class="spin" aria-hidden="true"></span>Opening ${esc(NAMES[app])}…</p>`);
+  try {
+    const { url } = await call({ action: "go", app, return: app === APP ? RET : "" });
+    location.replace(url);
+  } catch (e) {
+    await showApps(e.message, "bad");
+  }
+}
+
+async function showApps(msg = "", kind = "ok") {
+  const { data: { user } } = await sb.auth.getUser();
+  if (!user) return showForm();
+  view(`<h1>Your Proview apps</h1><p class="who">Signed in as <b>${esc(user.email)}</b></p>${note(msg, kind)}
+    <p><span class="spin" aria-hidden="true"></span>Checking your apps…</p>`);
+  let apps = [];
+  try { apps = (await call({ action: "apps" })).apps; }
+  catch (e) { msg = e.message; kind = "bad"; }
+  const row = (a) => `<li class="app ${a.ok ? "" : "off"}"><span class="ic" aria-hidden="true">${esc(a.name.split(" ")[1][0])}</span>
+      <span class="t"><b>${esc(a.name)}</b><small>${a.ok ? "Ready to open" : esc(a.reason || "No account for this email")}</small></span>
+      ${a.ok ? `<button data-app="${a.app}">Open<span class="sr"> ${esc(a.name)}</span></button>` : ""}</li>`;
+  view(`<h1>Your Proview apps</h1><p class="who">Signed in as <b>${esc(user.email)}</b></p>${note(msg, kind)}
+    <ul class="apps">${apps.map(row).join("")}</ul>
+    <div class="links"><button class="linkbtn" id="chg">Change password</button><button class="linkbtn" id="out">Sign out</button></div>`);
+  document.querySelectorAll("[data-app]").forEach((b) => (b.onclick = () => openApp(b.dataset.app)));
+  $("#chg").onclick = () => showNewPassword();
+  $("#out").onclick = async () => { await sb.auth.signOut(); mode = "signin"; showForm("You’ve been signed out of your Proview account.", "ok"); };
+}
+
+async function signedIn(msg = "") {
+  if (recovering) return showNewPassword();
+  if (APP) return openApp(APP);
+  return showApps(msg);
+}
+
+sb.auth.onAuthStateChange((ev) => { if (ev === "PASSWORD_RECOVERY") { recovering = true; showNewPassword(); } });
+
+(async () => {
+  const hp = new URLSearchParams(location.hash.slice(1));
+  const linkErr = qs.get("error_description") || hp.get("error_description");
+  await new Promise((r) => setTimeout(r, 50)); // let detectSessionInUrl finish
+  const { data: { session } } = await sb.auth.getSession();
+  if (linkErr) return showForm("That link didn’t work: " + linkErr + ". Sign in below, or use “Forgot password?”.");
+  if (hp.get("type") === "recovery" || recovering) { recovering = true; return showNewPassword(); }
+  if (!session) return showForm();
+  signedIn(hp.get("type") === "signup" ? "Email confirmed. Welcome to your Proview account." : "");
+})();
+</script>
+</body>
+</html>
