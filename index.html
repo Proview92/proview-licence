@@ -299,6 +299,24 @@
   .acct .ah { background: #fbfaf8; }
   .dback { color: var(--brand); }
   .msg.info { background: var(--brand-soft); color: #213f8a; }
+/* phones: a compact icon menu always on the left (same on all Proview apps) */
+@media (max-width:700px){
+html .app{grid-template-columns:60px minmax(0,1fr)!important}
+html .app .side,html .app.navopen .side{position:sticky!important;top:0!important;left:auto!important;transform:none!important;width:60px!important;min-width:60px!important;max-width:60px!important;height:100vh!important;height:100dvh!important;z-index:20!important;padding:10px 5px calc(10px + env(safe-area-inset-bottom))!important;overflow-y:auto!important;overflow-x:hidden!important;box-shadow:none!important;display:flex!important;flex-direction:column!important;grid-row:1/-1}
+html .menu-btn,html .nav-scrim,html #navScrim{display:none!important}
+html .side .brand{justify-content:center!important;padding:2px 0 10px!important;margin:0!important;gap:0!important;width:auto!important}
+html .side .brand .wordmark,html .side .brand>span:not(.brand-mark):not(.pv-mark){display:none!important}
+html .side .brand svg,html .side .brand img,html .side .brand .brand-mark,html .side .brand .pvlogo{width:32px!important;height:23px!important;margin:0 auto!important}
+html .side .pv-viewing,html .side .side-pick .viewing,html .side .side-pick noscript,html .side .sp-title,html .side .nav-sec,html .side .nav-sep,html .side .nav .nav-group-h,html .side .side-me,html .side .side-foot{display:none!important}
+html .side #sitePick,html .side #orgPick,html .side .client-pick,html .side .side-pick{display:block!important;margin:0 0 8px!important;padding:0!important;position:relative}
+html .side #sitePick select,html .side #orgPick select,html .side .client-pick select,html .side .side-pick select{width:50px!important;height:40px!important;min-width:0!important;padding:0!important;margin:0 auto!important;display:block;color:transparent!important;text-indent:-999px;font-size:16px!important;border-radius:10px!important;background-position:center!important;background-size:18px 18px!important;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%23d9d9e0' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 21h18M5 21V7l7-4 7 4v14M9 9h1M14 9h1M9 13h1M14 13h1M10 21v-4h4v4'/%3E%3C/svg%3E")!important}
+html .side .nav{gap:0!important;row-gap:0!important;flex:1 1 auto;overflow:visible!important}
+html .side .nav>button:not(.nav-more),html .side .nav>a{height:52px!important;min-height:0!important;width:100%!important;flex-direction:column!important;justify-content:center!important;align-items:center!important;gap:4px!important;padding:0 1px!important;margin:0!important;border-radius:9px!important}
+html .side .nav>button svg,html .side .nav>a svg{width:18px!important;height:18px!important;margin:0!important;flex:none}
+html .side .nav .lbl,html .side .nav .cnt,html .side .nav .badge-n{display:none!important}
+html .side .nav .slbl,html .side .nav>a>span:not(.bell-dot):not(.cnt){display:block!important;font-size:10px!important;line-height:12px!important;font-weight:500!important;letter-spacing:-.1px!important;text-transform:none!important;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:54px;margin:0!important}
+html .side .nav .nav-group .rail-ic{display:block!important}html .side .nav .nav-group svg:not(.rail-ic){display:none!important}
+}
 </style>
 </head>
 <body>
