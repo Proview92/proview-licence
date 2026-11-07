@@ -329,6 +329,21 @@
   </form>
 </dialog>
 
+<!-- CONFIRM / ASK DIALOG (replaces browser confirm()/prompt(), which some browsers block) -->
+<dialog id="askDlg">
+  <form method="dialog">
+    <div class="dh" id="askTitle"></div>
+    <div class="db">
+      <div class="small" id="askMsg"></div>
+      <div id="askFields"></div>
+    </div>
+    <div class="df">
+      <button class="btn" value="cancel" formnovalidate>Cancel</button>
+      <button class="btn primary" value="ok" id="askOk">OK</button>
+    </div>
+  </form>
+</dialog>
+
 <div id="toast"></div>
 
 <script type="module">
@@ -337,6 +352,24 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
 const HUB_URL = "https://bpssjfrinjlrnkzhytfr.supabase.co";
 const HUB_KEY = "sb_publishable_t-flikzLh-wDUz7ZR5iPBA_ZmPNnkB6";
 const sb = createClient(HUB_URL, HUB_KEY, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true } });
+
+// In-page replacement for confirm()/prompt(). Resolves to null if cancelled, otherwise to the
+// entered field values (an empty array when there are no fields).
+function ask({ title, message = "", ok = "OK", danger = false, fields = [] }) {
+  return new Promise((resolve) => {
+    const d = document.getElementById("askDlg");
+    document.getElementById("askTitle").textContent = title;
+    document.getElementById("askMsg").textContent = message;
+    document.getElementById("askFields").innerHTML = fields.map((f, i) =>
+      `<label for="askF${i}">${esc(f.label)}</label><input id="askF${i}" type="${f.type || "text"}" ${f.required ? "required" : ""} placeholder="${esc(f.placeholder || "")}">`).join("");
+    const b = document.getElementById("askOk");
+    b.textContent = ok; b.className = "btn " + (danger ? "danger" : "primary");
+    d.returnValue = "";
+    d.addEventListener("close", () => resolve(d.returnValue === "ok" ? fields.map((_, i) => document.getElementById("askF" + i).value.trim()) : null), { once: true });
+    d.showModal();
+    (fields.length ? document.getElementById("askF0") : b).focus();
+  });
+}
 
 const PRODUCTS = {
   signage:  { label: "Signage",  unit: "Screen", units: "screens", app: "https://app.proviewsignage.co.uk",  trial: "trial7" },
@@ -668,7 +701,7 @@ $("#licDlg").addEventListener("close", async () => {
 });
 $("#licRemove").onclick = async () => {
   const dlg = $("#licDlg"); const u = findUnit(dlg.dataset.key);
-  if (!confirm(`Remove the licence for "${u.name}"? It will stop working in ${PRODUCTS[u.product].label}.`)) return;
+  if (!(await ask({ title: "Remove licence", message: `Remove the licence for "${u.name}"? It will stop working in ${PRODUCTS[u.product].label}.`, ok: "Remove licence", danger: true }))) return;
   dlg.close();
   await applyChanges([{ product: u.product, unit: u.ext_id, type: null }]);
 };
@@ -687,7 +720,7 @@ $("#bulkApply").onclick = async () => {
   if (type === "custom" && !$("#bulkDate").value) return toast("Choose an expiry date", true);
   const items = [...S.sel.values()].map((u) => ({ product: u.product, unit: u.ext_id, type, extend: $("#bulkExtend").checked,
     expires: type === "custom" ? new Date($("#bulkDate").value + "T23:59:00").toISOString() : null }));
-  if (!confirm(`Apply "${PLAN_LABEL[type]}" to ${items.length} licence(s)?`)) return;
+  if (!(await ask({ title: "Apply licences", message: `Apply "${PLAN_LABEL[type]}" to ${items.length} licence(s)?`, ok: "Apply" }))) return;
   $("#bulkApply").disabled = true;
   if (await applyChanges(items)) S.sel.clear();
   $("#bulkApply").disabled = false; renderCustomers();
@@ -704,8 +737,11 @@ async function saveCustomer(id) {
   Object.assign(S.customers.find((c) => c.id === id), patch); toast("Saved"); renderCustomers();
 }
 async function newCustomer() {
-  const name = prompt("Customer name"); if (!name?.trim()) return;
-  const email = prompt("Contact email (optional)") || null;
+  const r = await ask({ title: "New customer", ok: "Create", fields: [
+    { label: "Customer name", required: true },
+    { label: "Contact email (optional)", type: "email" } ] });
+  const name = r?.[0]; if (!name) return;
+  const email = r[1] || null;
   const { data, error } = await sb.from("lic_customers").insert({ name: name.trim(), contact_email: email?.trim().toLowerCase() || null }).select().single();
   if (error) return toast(error.message, true);
   S.customers.push(data); S.customers.sort((a, b) => a.name.localeCompare(b.name)); openDetail(data.id);
@@ -740,7 +776,7 @@ async function mergeCustomer(id) {
   S.detail = to; toast(`Merged into ${keep.name}`); await loadAll();
 }
 async function deleteCustomer(id) {
-  if (!confirm("Delete this customer record? (It has no linked app accounts.)")) return;
+  if (!(await ask({ title: "Delete customer", message: "Delete this customer record? (It has no linked app accounts.)", ok: "Delete", danger: true }))) return;
   const { error } = await sb.from("lic_customers").delete().eq("id", id);
   if (error) return toast(error.message, true);
   S.customers = S.customers.filter((c) => c.id !== id); renderCustomers();
