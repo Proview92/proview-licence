@@ -123,7 +123,7 @@
   .ckey span { display: flex; align-items: center; gap: 6px; }
   .sdot { width: 9px; height: 9px; border-radius: 50%; flex: none; display: inline-block; }
   .sdot.g { background: var(--g); } .sdot.a { background: var(--a); } .sdot.r { background: var(--r); } .sdot.n { background: #A0AAB4; }
-  .cgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 20px; }
+  .cgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(340px, 100%), 1fr)); gap: 20px; }
   .ccard { background: var(--card); border: 1px solid var(--line); border-radius: 14px; display: flex; flex-direction: column; box-shadow: 0 1px 2px rgba(16,24,40,.06), 0 4px 16px rgba(16,24,40,.06); }
   .ccard.bad { border-color: #F3C4BE; box-shadow: 0 0 0 1px #F3C4BE, 0 4px 16px rgba(16,24,40,.06); }
   .ccard .ch { display: flex; align-items: flex-start; gap: 10px; padding: 16px 18px 12px; }
@@ -360,6 +360,37 @@ html .wordmark span,html .wordmark span.x.x{background:linear-gradient(90deg,#FB
 .nt-row .ni { width: 22px; flex: none; text-align: center; }
 .nt-row .nb { flex: 1; min-width: 0; } .nt-row .nb b { font-weight: 600; display: block; } .nt-row .nb span { font-size: 13px; color: var(--ink2); }
 .nt-row .nw { font-size: 12px; color: var(--muted); white-space: nowrap; }
+
+/* ===== Proview shell v4: exact Proview Signage values (SHELL_MATCH_SPEC.md, measured in headless Chrome) ===== */
+.side{gap:0}
+.side .nav{gap:0}
+.side .nav>*{flex-shrink:0}
+.side .nav a{line-height:22px}
+/* Customers page head: heading, buttons and spacing as Proview Signage's page head */
+.ctop{margin-bottom:22px}
+.ctop h1{line-height:1.45}
+.ctop .ghost{display:inline-flex;align-items:center;justify-content:center;gap:7px}
+.ctop .btn.primary{display:inline-flex;align-items:center;gap:7px;height:38px;padding:0 14px;font:600 14px var(--font);border-radius:10px;box-sizing:border-box}
+/* collapsed menu (desktop): same geometry as Proview Signage's collapsed menu */
+@media (min-width:901px){
+html .app.collapsed :is(.side,#pv-x){padding:18px 10px!important}
+html .app.collapsed .side :is(.brand,#pv-x){justify-content:center!important;padding:4px 0 18px!important;gap:10px!important;margin:0!important}
+html .app.collapsed .side :is(.nav,#pv-x){padding:6px 10px!important}
+html .app.collapsed .side :is(.nav,#pv-x)>a,html .app.collapsed .side :is(.nav,#pv-x)>button:not(.nav-group):not(.nav-more){width:32px!important;min-width:0!important;margin:0 auto!important;padding:0 12px!important;gap:10px!important;justify-content:center!important}
+html .app.collapsed .side :is(.side-foot,#pv-x){flex-direction:column!important;align-items:center!important;justify-content:normal!important;gap:4px!important;padding:0 10px 14px!important}
+html .app.collapsed .side :is(.side-foot,#pv-x)>*{width:30px!important;height:26px!important;padding:6px 8px!important;margin:0!important;justify-content:center!important;box-sizing:border-box!important}
+}
+@media (min-width:701px) and (max-width:900px){
+ .app .side .nav a{font-size:15px}
+ .app .side .nav a>span{letter-spacing:-.1px}
+}
+/* Proview menu on phones: one spec for all Proview apps (60px rail; every button 50 x 52 with an 18px icon and a 10px label) */
+@media (max-width:700px){
+ html .side .nav{padding:0!important;display:flex!important;flex-direction:column!important;align-items:center!important}
+ html .side .nav>button:not(.nav-more),html .side .nav>a{width:50px!important;min-width:0!important;max-width:50px!important;height:52px!important;margin:0 auto!important;padding:0 1px!important;border-radius:9px!important;gap:4px!important;flex-direction:column!important;justify-content:center!important;align-items:center!important;box-sizing:border-box!important}
+ html .side .nav>button svg,html .side .nav>a svg{width:18px!important;height:18px!important;margin:0!important;flex:none}
+ html .side .nav .slbl,html .side .nav>a>span:not(.bell-dot):not(.cnt){display:block!important;font-size:10px!important;line-height:12px!important;font-weight:500!important;letter-spacing:-.1px!important;max-width:58px!important;overflow:visible!important;text-overflow:clip!important;white-space:nowrap;text-align:center}
+}
 </style>
 </head>
 <body>
