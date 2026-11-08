@@ -61,7 +61,7 @@
   .top-out svg { width: 18px; height: 18px; }
   .menu-btn { display: none !important; }
   .top-me { display: flex; align-items: center; gap: 4px; margin-left: 8px; flex: none; }
-  .top-av { width: 34px; height: 34px; border-radius: 50%; border: 0; padding: 0; display: grid; place-items: center; background: var(--grad); color: #fff; font-family: inherit; font-weight: 700; font-size: 12.5px; line-height: 1; cursor: default; }
+  .top-av { width: 34px; height: 34px; border-radius: 50%; border: 0; padding: 0; flex: none; display: grid; place-items: center; background: var(--grad); color: #fff; font-family: inherit; font-weight: 700; font-size: 12.5px; line-height: 1; cursor: pointer; }
   .nav-scrim { display: none; }
   /* iPad: icon rail with short labels */
   @media (min-width: 701px) and (max-width: 900px) {
@@ -324,6 +324,42 @@ html .pvlogo.pvlogo.pvlogo.pvlogo{background:url(icon-app.svg) center/contain no
 html .side .brand .pvlogo.pvlogo.pvlogo.pvlogo,html .brand .pvlogo.pvlogo.pvlogo.pvlogo{width:30px!important;height:30px!important}
 html .auth-brand .pvlogo.pvlogo.pvlogo.pvlogo{width:60px!important;height:60px!important}
 html .wordmark span,html .wordmark span.x.x{background:linear-gradient(90deg,#FBBF24 0%,#D97706 100%)!important;-webkit-background-clip:text!important;background-clip:text!important;color:transparent!important}
+
+/* ===== header bar: copied from Proview Signage (HEADER_REFERENCE.md); the tray/panels/account menu CSS comes from hub.js ===== */
+.top { box-sizing: border-box; }
+.top-av:hover { filter: brightness(1.08); }
+.top-av:focus-visible, .top-me .top-out:focus-visible { outline: 2px solid #5a8dee; outline-offset: 2px; }
+.top-me .top-out svg { width: 18px; height: 18px; }
+.top .bell { position: relative; color: var(--ink); }
+.bell .bell-dot { position: absolute; top: 1px; right: -2px; }
+.bell-dot { min-width: 18px; height: 18px; border-radius: 9px; background: linear-gradient(135deg, #2f84d4 0%, #5a5fbb 100%); color: #fff; font: 700 11px/18px var(--font); padding: 0 5px; text-align: center; }
+.bell-dot.hidden { display: none; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.top .hdr-pick { margin: 0 0 0 6px; flex: 0 1 auto; min-width: 0; }
+.top .hdr-pick select { display: block; width: auto; height: 38px; max-width: 320px; min-width: 170px; border-radius: 10px; border: 1px solid var(--line); background-color: #fff; color: var(--ink); font: 600 14px var(--font); padding: 0 30px 0 12px; cursor: pointer; text-overflow: ellipsis; white-space: nowrap; overflow: hidden; }
+.top .hdr-pick select:focus { outline: none; border-color: var(--line); }
+.top .hdr-pick select:focus-visible { outline: 2px solid #5a8dee; outline-offset: 2px; }
+@media (min-width: 701px) { .top h2 { flex-shrink: 0; } .top .hdr-pick select { max-width: min(320px, 100%); } }
+@media (max-width: 700px) {
+  .top { padding: 8px 10px; gap: 2px; min-height: 62px; flex-wrap: wrap; row-gap: 6px; }
+  .top h2 { font-size: 18px; flex: 1; }
+  .icon-btn { width: 36px; height: 36px; }
+  .top-me { margin-left: 4px; gap: 2px; }
+  .top-av { width: 32px; height: 32px; font-size: 12px; }
+  .top .hdr-pick { order: 1; flex: 1 0 100%; margin: 0; }
+  .top .hdr-pick select { width: 100%; min-width: 0; max-width: none; height: 36px; font-size: 13px; }
+  #toast { bottom: calc(14px + env(safe-area-inset-bottom)); }
+}
+/* bell: notifications dialog */
+#bellDlg { width: min(520px, 94vw); }
+#bellDlg .db { max-height: min(60vh, 520px); overflow: auto; padding: 6px 0; }
+.nt-row { display: flex; gap: 12px; padding: 10px 16px; align-items: flex-start; border-bottom: 1px solid #f0efea; cursor: pointer; }
+.nt-row:last-child { border-bottom: 0; }
+.nt-row:hover { background: #faf9f6; }
+.nt-row.new { background: #f6f8fe; }
+.nt-row .ni { width: 22px; flex: none; text-align: center; }
+.nt-row .nb { flex: 1; min-width: 0; } .nt-row .nb b { font-weight: 600; display: block; } .nt-row .nb span { font-size: 13px; color: var(--ink2); }
+.nt-row .nw { font-size: 12px; color: var(--muted); white-space: nowrap; }
 </style>
 </head>
 <body>
@@ -351,9 +387,11 @@ html .wordmark span,html .wordmark span.x.x{background:linear-gradient(90deg,#FB
     <header class="top">
       <button class="icon-btn menu-btn" id="menuBtn" aria-label="Open menu" title="Menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
       <h2 id="pageTitle">Customers</h2>
+      <div class="hdr-pick"><label class="sr" for="hdr-biz">Business</label><select id="hdr-biz" aria-label="Choose business"><option value="">All businesses</option></select></div>
       <div class="sp"></div>
+      <span id="hdrTray"></span>
       <div class="top-me">
-        <button class="top-av" id="who" aria-label="Signed in">?</button>
+        <button class="top-av" id="who" aria-label="My account" aria-haspopup="menu" aria-expanded="false">?</button>
         <button class="icon-btn top-out" id="signOut" title="Sign out" aria-label="Sign out"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg></button>
       </div>
     </header>
@@ -472,8 +510,18 @@ html .wordmark span,html .wordmark span.x.x{background:linear-gradient(90deg,#FB
   </form>
 </dialog>
 
+<!-- NOTIFICATIONS (header bell) -->
+<dialog id="bellDlg">
+  <form method="dialog">
+    <div class="dh">Notifications</div>
+    <div class="db" id="bellList"></div>
+    <div class="df"><button class="btn" value="close">Close</button></div>
+  </form>
+</dialog>
+
 <div id="toast"></div>
 
+<script src="hub.js"></script>
 <script type="module">
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
 
@@ -501,9 +549,9 @@ function ask({ title, message = "", ok = "OK", danger = false, fields = [] }) {
 
 const PRODUCTS = {
   signage:  { label: "Signage",  unit: "Screen", units: "screens", app: "https://app.proviewsignage.co.uk",  trial: "trial7" },
-  bookings: { label: "Bookings", unit: "Site",   units: "sites",   app: "https://bookings.proviewcrm.co.uk", trial: "trial"  },
+  bookings: { label: "Bookings", unit: "Location", units: "locations",   app: "https://bookings.proviewcrm.co.uk", trial: "trial"  },
   employee: { label: "Employee", unit: "Staff member", units: "staff", app: "https://employee.proviewcrm.co.uk", trial: "trial3" },
-  wifi:     { label: "WiFi",     unit: "Site",   units: "sites",   app: "https://wifi.proviewcrm.co.uk/admin", trial: "trial" },
+  wifi:     { label: "WiFi",     unit: "Location", units: "locations",   app: "https://wifi.proviewcrm.co.uk/admin", trial: "trial" },
 };
 const PLAN_LABEL = { trial: "Trial (3 days)", trial3: "Trial (3 days)", trial7: "Trial (3 days)",
   m1: "1 month", m3: "3 months", m6: "6 months", m12: "12 months", m24: "24 months", m36: "36 months",
@@ -571,6 +619,7 @@ async function loadAudit() {
 
 async function doSync(quiet = false) {
   const btn = $("#syncBtn"); btn.disabled = true; btn.textContent = "↻ Syncing…";
+  S.syncing = true; S.syncErr = ""; paintDot();
   try {
     const r = await hub("sync");
     S.lastSync = { at: new Date(), apps: r.apps };
@@ -580,15 +629,15 @@ async function doSync(quiet = false) {
     else if (!quiet) toast("Synced with all three apps");
     if (r.customers_created) toast(`${r.customers_created} new customer record(s) created from the apps`);
     await loadAll();
-  } catch (e) { toast("Sync failed: " + e.message, true); }
-  finally { btn.disabled = false; btn.textContent = "↻ Sync"; }
+  } catch (e) { S.syncErr = e.message; toast("Sync failed: " + e.message, true); }
+  finally { btn.disabled = false; btn.textContent = "↻ Sync"; S.syncing = false; paintDot(); paintHeader(); }
 }
 
 function renderSyncChips() {
   const s = S.lastSync; if (!s) return;
   $("#syncChips").innerHTML = Object.entries(PRODUCTS).map(([k, p]) => {
     const r = s.apps[k];
-    return `<span class="chip ${r?.ok ? "ok" : "bad"}" title="${esc(r?.error || "")}"><span class="dot"></span>${p.label}${r?.ok ? ` · ${r.units} ${p.units}` : " · offline"}</span>`;
+    return `<span class="chip ${r?.ok ? "ok" : "bad"}" title="${esc(r?.error || "")}"><span class="dot"></span>${p.label}${r?.ok ? ` · ${r.units} ${UNIT_WORD[k][r.units === 1 ? 0 : 1]}` : " · offline"}</span>`;
   }).join("") + `<span class="chip">Last synced ${fmtDT(s.at)}</span>`;
 }
 
@@ -621,7 +670,7 @@ const ICONS = {
   wifi: '<path d="M2 8.8a15 15 0 0 1 20 0"></path><path d="M5 12.5a10 10 0 0 1 14 0"></path><path d="M8.5 16a5 5 0 0 1 7 0"></path><path d="M12 20h.01"></path>',
 };
 const icon = (k) => `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[k]}</svg>`;
-const UNIT_WORD = { signage: ["screen", "screens"], bookings: ["site", "sites"], employee: ["staff", "staff"], wifi: ["site", "sites"] };
+const UNIT_WORD = { signage: ["screen", "screens"], bookings: ["location", "locations"], employee: ["staff", "staff"], wifi: ["location", "locations"] };
 const shortDate = (d) => { const x = new Date(d); return x.toLocaleDateString("en-GB", { day: "numeric", month: "short", ...(x.getFullYear() !== new Date().getFullYear() ? { year: "numeric" } : {}) }); };
 const renewAt = (units) => Math.min(...units.filter((u) => u.license_type !== "lifetime" && u.expires_at && tone(u) !== "r").map((u) => +new Date(u.expires_at)), Infinity);
 
@@ -741,9 +790,9 @@ function renderCustomers() {
     : `<div class="empty">${S.customers.length ? "No customers match." : "No customers yet. Press “Sync” to pull them in from the apps."}</div>`;
   renderBulk();
 }
-function openDetail(id) { S.detail = id; renderCustomers(); window.scrollTo({ top: 0 }); }
+function openDetail(id) { S.detail = id; renderCustomers(); syncBizPick(); window.scrollTo({ top: 0 }); }
 
-function render() { renderCustomers(); renderExpiring(); }
+function render() { renderCustomers(); renderExpiring(); fillBizPick(); paintHeader(); }
 
 // ---------- expiring view ----------
 function renderExpiring() {
@@ -915,7 +964,7 @@ document.addEventListener("click", (e) => {
   const t = e.target.closest("[data-open],[data-back],[data-addlic],[data-prod],[data-edit],[data-quick],[data-savecust],[data-move],[data-merge],[data-delcust],[data-selall]");
   if (!t) return;
   if (t.dataset.open) openDetail(t.dataset.open);
-  else if (t.dataset.back) { S.detail = null; renderCustomers(); }
+  else if (t.dataset.back) { S.detail = null; renderCustomers(); syncBizPick(); }
   else if (t.dataset.prod !== undefined) { S.prod = t.dataset.prod; renderCustomers(); }
   else if (t.dataset.addlic) {
     const c = S.customers.find((x) => x.id === t.dataset.addlic); const bad = custSummary(c).bad;
@@ -946,6 +995,7 @@ function setTab(tab) {
   $$("[data-view]").forEach((v) => v.classList.toggle("hidden", v.dataset.view !== tab));
   $("#pageTitle").textContent = TITLES[tab] || "";
   $("#appView").classList.remove("navopen");
+  syncBizPick();
   if (tab === "activity") loadAudit();
   if (tab === "payments") loadPayments();
 }
@@ -1056,6 +1106,177 @@ function renderPayments() {
   };
 }
 
+// ---------- header bar (same as Proview Signage: HEADER_REFERENCE.md) ----------
+// Dropdown: this portal has no locations, it works per business (customer), so the slot lists
+// "All businesses (N)" then each business; picking one opens that business's page.
+function fillBizPick() {
+  const s = $("#hdr-biz"); if (!s) return;
+  const list = S.customers.slice().sort((a, b) => a.name.localeCompare(b.name));
+  const dup = (c) => list.filter((x) => x.name.toLowerCase() === c.name.toLowerCase()).length > 1;
+  s.innerHTML = `<option value="">All businesses (${list.length})</option>` +
+    list.map((c) => { const t = dup(c) && c.contact_email ? `${c.name} · ${c.contact_email}` : c.name; return `<option value="${c.id}" title="${esc(t)}">${esc(t)}</option>`; }).join("");
+  syncBizPick();
+}
+function syncBizPick() {
+  const s = $("#hdr-biz"); if (!s) return;
+  const onCust = !$('[data-view="customers"]').classList.contains("hidden");
+  s.value = onCust && S.detail ? S.detail : "";
+  s.title = s.options[s.selectedIndex]?.text || "";
+}
+$("#hdr-biz").onchange = (e) => {
+  const id = e.target.value;
+  setTab("customers");
+  if (id) openDetail(id); else { S.detail = null; renderCustomers(); syncBizPick(); }
+};
+
+// Status dot: green online + last sync fine; blue pulse while syncing; amber offline or an app unreachable; red sync failed.
+const dotEl = document.createElement("span");
+dotEl.className = "hdr-dot"; dotEl.setAttribute("role", "img");
+function paintDot() {
+  const apps = S.lastSync ? Object.entries(S.lastSync.apps || {}) : [];
+  const down = apps.filter(([, v]) => !v.ok).map(([k]) => PRODUCTS[k]?.label || k);
+  let cls = "", t = "Online · licences in sync with the apps", a = "Online";
+  if (!navigator.onLine) { cls = "offline"; t = "Offline: changes can’t be sent to the apps until you’re back online"; a = "Offline"; }
+  else if (S.syncing) { cls = "saving"; t = "Syncing with the apps…"; a = "Syncing"; }
+  else if (S.syncErr) { cls = "error"; t = "Sync failed: " + S.syncErr; a = "Sync failed"; }
+  else if (down.length) { cls = "offline"; t = "Couldn’t reach " + down.join(", "); a = "Some apps unreachable"; }
+  dotEl.className = "hdr-dot" + (cls ? " " + cls : ""); dotEl.title = t; dotEl.setAttribute("aria-label", a);
+}
+addEventListener("online", paintDot); addEventListener("offline", paintDot);
+
+// Data for the tray: recent online payments and licence changes.
+const H = { payments: [], audit: [] };
+async function loadHeaderData() {
+  const [py, au] = await Promise.all([
+    sb.from("lic_payments").select("*").order("created_at", { ascending: false }).limit(50),
+    sb.from("lic_audit").select("*").order("at", { ascending: false }).limit(100),
+  ]);
+  if (!py.error) H.payments = py.data || [];
+  if (!au.error) H.audit = au.data || [];
+  paintHeader();
+}
+const custOfUnit = (u) => { const a = S.accounts.find((x) => x.product === u.product && x.ext_id === u.account_ext_id); return a && S.customers.find((c) => c.id === a.customer_id); };
+const unitByExt = (p, id) => S.units.find((u) => u.product === p && u.ext_id === String(id));
+
+// Mail = Inbox: licences that need action (expired, in grace) and online payments that weren't applied.
+function inboxItems() {
+  const out = [];
+  for (const r of H.payments.filter((x) => !x.applied)) {
+    const u = unitByExt(r.product, r.unit_ext_id), c = u && custOfUnit(u);
+    out.push({ key: "pay:" + r.id, icon: "mail", need: true, at: r.paid_at || r.created_at,
+      title: `Payment not applied: ${gbp(r.amount, r.currency || "gbp")} for ${PRODUCTS[r.product]?.label || r.product} ${u?.name || r.unit_ext_id || ""}`,
+      sub: [r.note, r.email].filter(Boolean).join(" · ") || "Apply the licence by hand",
+      open: () => { setTab("payments"); },
+      actions: u ? [{ label: "Change licence…", kind: "pri", run: async () => { window.PVHub.close(); openLicence(u.product + "|" + u.ext_id); } }] : [] });
+  }
+  const bad = S.units.filter((u) => !u.gone && !u.extra?.archived && u.license_type && ["expired", "grace"].includes(status(u).k))
+    .sort((a, b) => (status(a).k === "grace" ? 0 : 1) - (status(b).k === "grace" ? 0 : 1) || new Date(b.expires_at) - new Date(a.expires_at)).slice(0, 60);
+  for (const u of bad) {
+    const c = custOfUnit(u), key = u.product + "|" + u.ext_id;
+    out.push({ key: "lic:" + key + ":" + u.expires_at, icon: "check", at: u.expires_at,
+      title: `${c?.name || "?"} · ${PRODUCTS[u.product].label} ${u.name || ""}`, sub: status(u).label,
+      open: () => { setTab("customers"); if (c) openDetail(c.id); },
+      actions: [{ label: "+12 months", kind: "pri", run: async () => { await applyChanges([{ product: u.product, unit: u.ext_id, type: "m12", extend: true }]); } },
+                { label: "Change…", run: async () => { window.PVHub.close(); openLicence(key); } }] });
+  }
+  const seen = new Set(JSON.parse(localStorage.getItem("licence.inboxSeen") || "[]"));
+  out.forEach((i) => { i.unread = !seen.has(i.key); });
+  return out;
+}
+
+// Bell = Notifications: payments received, failed licence changes, apps that couldn't be reached, licences ending within 14 days.
+function bellItems() {
+  const out = [];
+  for (const r of H.payments.filter((x) => x.applied)) { const u = unitByExt(r.product, r.unit_ext_id);
+    out.push({ ico: "💳", at: r.paid_at || r.created_at, title: `${gbp(r.amount, r.currency || "gbp")} paid online`, sub: `${PRODUCTS[r.product]?.label || r.product} · ${PLAN_LABEL[r.plan] || r.plan || ""} · ${u?.name || r.unit_ext_id || ""}`, go: () => setTab("payments") }); }
+  for (const r of H.audit.filter((x) => x.action === "failed").slice(0, 30))
+    out.push({ ico: "⛔", at: r.at, title: `Licence change failed: ${r.unit_name || r.unit_ext_id || ""}`, sub: [PRODUCTS[r.product]?.label, r.error].filter(Boolean).join(" · "), go: () => setTab("activity") });
+  if (S.lastSync) for (const [k, v] of Object.entries(S.lastSync.apps || {})) if (!v.ok)
+    out.push({ ico: "🔴", at: S.lastSync.at.toISOString(), title: `${PRODUCTS[k]?.label || k} couldn’t be reached`, sub: v.error || "", go: () => doSync() });
+  for (const u of S.units.filter((u) => !u.gone && u.expires_at && u.license_type !== "lifetime" && !isTrial(u.license_type))) {
+    const s = status(u); if (s.days === null || s.days < 0 || s.days > 14) continue;
+    const c = custOfUnit(u);
+    out.push({ ico: s.days <= 3 ? "🟠" : "🟡", at: new Date(new Date(u.expires_at).getTime() - 14 * 86400000).toISOString(), title: `${c?.name || "?"}: ${PRODUCTS[u.product].label} ${u.name || ""} ends ${s.days === 0 ? "today" : "in " + s.days + " day" + (s.days === 1 ? "" : "s")}`, sub: fmtDate(u.expires_at), go: () => { setTab("customers"); if (c) openDetail(c.id); } });
+  }
+  return out.sort((a, b) => new Date(b.at) - new Date(a.at)).slice(0, 80);
+}
+const bellDot = document.createElement("span"); bellDot.className = "bell-dot hidden";
+function paintBell() {
+  const last = localStorage.getItem("licence.notifRead") || "";
+  const n = bellItems().filter((i) => i.at > last && new Date(i.at) <= new Date()).length;
+  bellDot.textContent = n > 9 ? "9+" : String(n); bellDot.classList.toggle("hidden", !n);
+}
+function openBell() {
+  const last = localStorage.getItem("licence.notifRead") || "";
+  const items = bellItems();
+  localStorage.setItem("licence.notifRead", new Date().toISOString()); paintBell();
+  $("#bellList").innerHTML = items.length ? items.map((n, i) => `<div class="nt-row${n.at > last ? " new" : ""}" data-n="${i}"><span class="ni">${n.ico}</span><span class="nb"><b>${esc(n.title)}</b><span>${esc(n.sub || "")}</span></span><span class="nw">${esc(fmtDT(n.at))}</span></div>`).join("")
+    : `<p class="small" style="padding:10px 16px">No notifications yet. You’ll see online payments, failed licence changes, apps that can’t be reached and licences ending soon here.</p>`;
+  $("#bellList").onclick = (e) => { const r = e.target.closest(".nt-row"); if (!r) return; $("#bellDlg").close(); items[+r.dataset.n].go(); };
+  $("#bellDlg").showModal();
+}
+
+// Chat: this portal has no team chat; its messages are the notes kept on customers and licences.
+function openNotes() {
+  window.PVHub.close();
+  const rows = [];
+  for (const c of S.customers.filter((c) => c.notes)) rows.push({ title: c.name, sub: c.notes, open: () => { setTab("customers"); openDetail(c.id); } });
+  for (const u of S.units.filter((u) => !u.gone && u.notes)) { const c = custOfUnit(u); rows.push({ title: `${c?.name || "?"} · ${PRODUCTS[u.product].label} ${u.name || ""}`, sub: u.notes, open: () => { setTab("customers"); if (c) openDetail(c.id); } }); }
+  const bg = document.createElement("div"); bg.className = "hub-bg";
+  bg.innerHTML = `<div class="hub-panel narrow" role="dialog" aria-label="Notes"><div class="hub-ph"><h3>Notes</h3><button class="hub-x" aria-label="Close">${window.PVHub.svg("x")}</button></div><div class="hub-list">${rows.length
+    ? rows.map((r, i) => `<div class="hub-item" data-i="${i}" style="cursor:pointer"><span class="ii">${window.PVHub.svg("chat", 17)}</span><div class="it"><b>${esc(r.title)}</b><div class="is" style="white-space:pre-wrap">${esc(r.sub.length > 240 ? r.sub.slice(0, 240) + "…" : r.sub)}</div></div></div>`).join("")
+    : `<div class="hub-note">No notes yet. Add notes on a customer’s page (Notes), or when you change a licence.</div>`}</div></div>`;
+  const close = () => { bg.remove(); document.removeEventListener("keydown", esc_, true); };
+  const esc_ = (e) => { if (e.key === "Escape") { e.stopPropagation(); close(); } };
+  bg.addEventListener("mousedown", (e) => { if (e.target === bg) close(); });
+  bg.querySelector(".hub-x").onclick = close;
+  bg.querySelector(".hub-list").onclick = (e) => { const r = e.target.closest(".hub-item"); if (!r) return; close(); rows[+r.dataset.i].open(); };
+  document.body.appendChild(bg); document.addEventListener("keydown", esc_, true);
+}
+
+function paintHeader() { paintBell(); window.PVHub?.paint(); }
+(function buildTray() {
+  const hub = window.PVHub; if (!hub) return;
+  const bell = document.createElement("button"); bell.type = "button"; bell.className = "bell"; bell.title = "Notifications"; bell.setAttribute("aria-label", "Notifications");
+  bell.innerHTML = "<svg></svg>"; bell.appendChild(bellDot); bell.onclick = (e) => { e.preventDefault(); openBell(); };
+  const cap = hub.tray({ dot: dotEl, bell });
+  // Chat opens the notes (see openNotes); same button, same place, honest tooltip
+  const old = cap.querySelector(".hub-chat"), chat = old.cloneNode(false);
+  chat.innerHTML = hub.svg("chat"); chat.title = "Notes"; chat.setAttribute("aria-label", "Notes"); chat.onclick = (e) => { e.preventDefault(); openNotes(); };
+  old.replaceWith(chat);
+  $("#hdrTray").replaceWith(cap);
+  const dash = hub.dashLink(true); cap.after(dash);
+  hub.init({
+    key: () => S.email || "x",
+    searchItems(q) {
+      const out = [];
+      [["customers", "Customers"], ["expiring", "Expiring"], ["payments", "Payments"], ["activity", "Activity"]]
+        .filter(([, l]) => !q || l.toLowerCase().includes(q)).forEach(([k, l]) => out.push({ group: "Pages", icon: "page", label: l, run: () => setTab(k) }));
+      if (q) {
+        S.customers.filter((c) => [c.name, c.contact_email, c.phone].filter(Boolean).join(" ").toLowerCase().includes(q)).slice(0, 10)
+          .forEach((c) => out.push({ group: "Businesses", av: true, label: c.name, hint: c.contact_email || "", run: () => { setTab("customers"); openDetail(c.id); } }));
+        S.units.filter((u) => !u.gone && [u.name, u.detail].filter(Boolean).join(" ").toLowerCase().includes(q)).slice(0, 12)
+          .forEach((u) => { const c = custOfUnit(u); out.push({ group: "Licences", icon: "page", label: u.name || "(unnamed)", hint: `${PRODUCTS[u.product].label} · ${c?.name || ""} · ${status(u).label}`, run: () => { setTab("customers"); if (c) openDetail(c.id); } }); });
+      }
+      return out;
+    },
+    inbox: {
+      empty: "Nothing needs you. Expired licences and online payments that weren’t applied show up here.",
+      items: async () => { await loadHeaderData(); return inboxItems(); },
+      count: () => inboxItems().filter((i) => i.unread).length,
+      seen: () => localStorage.setItem("licence.inboxSeen", JSON.stringify(inboxItems().map((i) => i.key))),
+    },
+  });
+  paintDot();
+  setInterval(() => { if (S.email) loadHeaderData(); }, 60000);
+})();
+$("#who").onclick = (e) => window.PVHub?.accountMenu(e.currentTarget, {
+  initials: $("#who").textContent, name: S.name || "", email: S.email, sub: "Proview licence admin", focusFirst: e.detail === 0,
+  items: [{ label: "Activity", icon: "page", run: () => setTab("activity") },
+          { label: "Change password", icon: "user", run: async () => { const { error } = await sb.auth.resetPasswordForEmail(S.email, { redirectTo: location.origin + location.pathname }); toast(error ? error.message : "Password reset email sent to " + S.email, !!error); } },
+          { label: "Sign out", icon: "logout", run: signOutNow, sep: true }],
+});
+
 // ---------- auth (same flow and wording as the other Proview apps) ----------
 const EYE = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>`;
 const ART = `<div class="auth-art"><div class="brand"><div class="pvlogo"></div><span class="wordmark">PROVIEW<span>LICENCES</span></span></div>
@@ -1165,7 +1386,8 @@ async function authReset(ev) {
   const { error } = await sb.auth.resetPasswordForEmail(e, { redirectTo: location.origin + location.pathname });
   if (error) authNote(authErr(error)); else authNote("Password reset email sent to " + e + ". Open the link in it to choose a new password.", "ok");
 }
-$("#signOut").onclick = async () => { await sb.auth.signOut(); AUTHMODE = "signin"; showLogin("You’ve been signed out.", "ok"); };
+async function signOutNow() { window.PVHub?.closeAccount(); window.PVHub?.close(); await sb.auth.signOut(); S.detail = null; AUTHMODE = "signin"; showLogin("You’ve been signed out.", "ok"); }
+$("#signOut").onclick = signOutNow;
 
 let started = false, recovering = false;
 async function start() {
@@ -1177,10 +1399,12 @@ async function start() {
   S.email = session.user.email;
   const nm = S.email.split("@")[0].split(/[._-]+/).filter(Boolean).map((w) => w[0].toUpperCase() + w.slice(1)).join(" ");
   $("#who").textContent = (nm.split(" ").map((w) => w[0]).slice(0, 2).join("") || "?").toUpperCase();
-  $("#who").title = `${nm} · Proview licence admin · ${S.email}`;
+  $("#who").title = `${nm} · Proview licence admin`;
+  S.name = nm;
   gate(false); $("#auth").innerHTML = ""; $("#appView").classList.remove("hidden");
   if (started) return; started = true;
   await loadAll().catch((e) => toast(e.message, true));
+  loadHeaderData();
   doSync(true);
 }
 sb.auth.onAuthStateChange((ev) => {
