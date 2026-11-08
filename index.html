@@ -668,7 +668,7 @@ function renderSyncChips() {
   const s = S.lastSync; if (!s) return;
   $("#syncChips").innerHTML = Object.entries(PRODUCTS).map(([k, p]) => {
     const r = s.apps[k];
-    return `<span class="chip ${r?.ok ? "ok" : "bad"}" title="${esc(r?.error || "")}"><span class="dot"></span>${p.label}${r?.ok ? ` · ${r.units} ${UNIT_WORD[k][r.units === 1 ? 0 : 1]}` : " · offline"}</span>`;
+    return `<span class="chip ${r?.ok ? "ok" : "bad"}" title="${esc(r?.error || "")}"><span class="dot"></span>${p.label}${r?.ok ? (Number.isFinite(r.units) ? ` · ${r.units} ${UNIT_WORD[k][r.units === 1 ? 0 : 1]}` : "") : " · offline"}</span>`;
   }).join("") + `<span class="chip">Last synced ${fmtDT(s.at)}</span>`;
 }
 
