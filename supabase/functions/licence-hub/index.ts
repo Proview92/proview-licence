@@ -66,63 +66,172 @@ async function pushPlans(db: any, apps: Record<string, App>) {
 
 const fmtDay = (d = new Date()) => d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "Europe/London" });
 
-// read paid Stripe Checkout Sessions and apply licences for references made by the apps:
+// ---------- online payments (Stripe) ----------
+// The apps open a Stripe Payment Link with client_reference_id set to:
 //   pvs__<screen uuid>__<plan>   pvb__<site id>__<plan>   pve__<org id>__<member id>__<plan>   pvw__<wifi site id>__<plan>   pvq__<qrmenu location id>__<plan>
+// Every 5 minutes (and on "Check now") we read Stripe and:
+//   • apply paid checkouts (one-off plans, and the first month of a monthly subscription)
+//   • remember which subscription belongs to which licence, then apply each monthly renewal invoice
+//   • record declined / abandoned checkouts and failed renewals, with Stripe's reason, for "Failed payments"
+// The restricted key needs read access to Checkout Sessions, Invoices and PaymentIntents.
+const STRIPE_VERSION = "2024-06-20"; // pinned so invoice.subscription / invoice.payment_intent keep their shape
+
+const DECLINES: Record<string, string> = {
+  insufficient_funds: "Insufficient funds", card_declined: "Card declined", generic_decline: "Card declined by the bank",
+  do_not_honor: "Card declined by the bank", expired_card: "Card has expired", incorrect_cvc: "Wrong security code (CVC)",
+  incorrect_number: "Wrong card number", invalid_cvc: "Wrong security code (CVC)", invalid_expiry_year: "Wrong expiry date",
+  invalid_expiry_month: "Wrong expiry date", lost_card: "Card reported lost", stolen_card: "Card reported stolen",
+  fraudulent: "Blocked as suspected fraud", processing_error: "Card processing error, try again",
+  authentication_required: "Card needs 3D Secure authentication", card_not_supported: "Card not supported",
+  currency_not_supported: "Card doesn't support this currency", pickup_card: "Card can't be used (bank asked to keep it)",
+  restricted_card: "Card is restricted", transaction_not_allowed: "Card doesn't allow this payment",
+  withdrawal_count_limit_exceeded: "Card limit reached", card_velocity_exceeded: "Card limit reached",
+  payment_intent_authentication_failure: "3D Secure authentication failed",
+};
+function declineReason(e: any): string | null {
+  if (!e) return null;
+  const code = e.decline_code || e.code;
+  const nice = (code && DECLINES[code]) || e.message || code || "Payment failed";
+  return code && !DECLINES[code] ? `${nice} (${code})` : nice;
+}
+
+async function stripeList(key: string, path: string, params: Record<string, string>, onItem: (x: any) => Promise<void>) {
+  let after: string | null = null;
+  for (let page = 0; page < 10; page++) {
+    const u = new URL(`https://api.stripe.com/v1/${path}`);
+    u.searchParams.set("limit", "100");
+    for (const [k, v] of Object.entries(params)) u.searchParams.append(k, v);
+    if (after) u.searchParams.set("starting_after", after);
+    const r = await fetch(u, { headers: { Authorization: `Bearer ${key}`, "Stripe-Version": STRIPE_VERSION } });
+    const j = await r.json();
+    if (!r.ok) {
+      const m = j?.error?.message ?? "";
+      if (r.status === 403 || /permission/i.test(m)) throw new Error(`The Stripe key can't read ${path.replace("checkout/", "checkout ")}. In Stripe, edit the restricted key and give it Read access to Checkout Sessions, Invoices and PaymentIntents.`);
+      throw new Error(`Stripe said ${r.status}: ${m}`.slice(0, 200));
+    }
+    for (const x of j.data ?? []) await onItem(x);
+    if (!j.has_more || !j.data?.length) break;
+    after = j.data[j.data.length - 1].id;
+  }
+}
+
 async function checkPayments(db: any, apps: Record<string, App>) {
   const { data: cfg } = await db.rpc("lic_stripe_config");
   const c = (cfg as any[])?.[0];
   if (!c?.enabled || !c?.secret_key) return { ok: true, skipped: "Online payments are off or no Stripe key is saved" };
-  const since = Math.max(Number(c.last_created || 0) - 3600, Math.floor(Date.now() / 1000) - 30 * 86400);
-  let applied = 0, seen = 0, maxCreated = Number(c.last_created || 0), after: string | null = null, err: string | null = null;
+  // checkouts stay open for up to 24 hours, so always look back at least 25 hours
+  const since = Math.max(Number(c.last_created || 0) - 25 * 3600, Math.floor(Date.now() / 1000) - 30 * 86400);
+  let applied = 0, seen = 0, failed = 0, maxCreated = Number(c.last_created || 0), err: string | null = null;
   const { data: planRows } = await db.from("lic_plans").select("*");
   const planOf = (prod: string, plan: string) => (planRows ?? []).find((p: any) => p.product === prod && p.plan === plan);
+  const parseRef = (ref: string) => {
+    const parts = (ref || "").split("__"); const product = REF_CODES[parts[0]];
+    if (!product || parts.length < 3) return null;
+    return { product, plan: parts[parts.length - 1], unit: parts.slice(1, -1).join("/") };
+  };
+  const iso = (t: number) => new Date(Number(t) * 1000).toISOString();
+
+  // add the paid time to the licence; returns an error message or null
+  async function applyPaid(id: string, product: string, unit: string, plan: string, amount: number, currency: string, email: string | null, what: string) {
+    const note = (n: string) => db.from("lic_payments").update({ note: n }).eq("session_id", id);
+    const p = planOf(product, plan);
+    if (!p) { await note("Unknown plan; not applied"); return; }
+    if (Number(amount) < p.amount || String(currency).toLowerCase() !== p.currency) { await note("Amount does not match the plan; not applied"); return; }
+    try {
+      const res = await callApp(apps[product], "set", { unit, type: plan, extend: true, notes: `${what} ${fmtDay()}` });
+      const { data: before } = await db.from("lic_units").select("name,account_ext_id,license_type,expires_at").eq("product", product).eq("ext_id", unit).maybeSingle();
+      const { data: acc } = before?.account_ext_id
+        ? await db.from("lic_accounts").select("name").eq("product", product).eq("ext_id", before.account_ext_id).maybeSingle() : { data: null };
+      await db.from("lic_units").update({ license_type: res.license_type, starts_at: res.starts_at, expires_at: res.expires_at, notes: res.notes, synced_at: new Date().toISOString() })
+        .eq("product", product).eq("ext_id", unit);
+      await db.from("lic_payments").update({ applied: true, applied_at: new Date().toISOString(), note: null }).eq("session_id", id);
+      await db.from("lic_audit").insert({ admin_email: "Online payment (Stripe)", product, unit_ext_id: unit, unit_name: before?.name ?? null,
+        account_name: acc?.name ?? null, action: `${what.toLowerCase()} ${plan}`,
+        before: before ? { license_type: before.license_type, expires_at: before.expires_at } : null,
+        after: { ...res, amount, currency, email } });
+      applied++;
+    } catch (e) { await note("Could not apply: " + String((e as Error).message ?? e).slice(0, 150)); }
+  }
+  // a failure row per checkout / invoice; updated while Stripe retries, closed once it's paid
+  async function recordFailure(id: string, row: Record<string, unknown>) {
+    const { data: ex } = await db.from("lic_payments").select("session_id,resolved").eq("session_id", id).maybeSingle();
+    if (ex?.resolved) return;
+    if (ex) await db.from("lic_payments").update({ status: row.status, reason: row.reason, note: row.note }).eq("session_id", id);
+    else { await db.from("lic_payments").insert({ session_id: id, applied: false, ...row }); failed++; }
+  }
+  const resolveFailures = (base: string) => db.from("lic_payments").update({ resolved: true }).like("session_id", `${base}:%`);
+
   try {
-    for (let page = 0; page < 10; page++) {
-      const u = new URL("https://api.stripe.com/v1/checkout/sessions");
-      u.searchParams.set("limit", "100"); u.searchParams.set("created[gte]", String(since));
-      if (after) u.searchParams.set("starting_after", after);
-      const r = await fetch(u, { headers: { Authorization: `Bearer ${c.secret_key}` } });
-      const j = await r.json();
-      if (!r.ok) throw new Error(`Stripe said ${r.status}: ${j?.error?.message ?? ""}`.slice(0, 200));
-      for (const x of j.data ?? []) {
-        seen++; maxCreated = Math.max(maxCreated, Number(x.created || 0));
-        if (x.payment_status !== "paid") continue;
-        const ref: string = x.client_reference_id || "";
-        const parts = ref.split("__");
-        const product = REF_CODES[parts[0]];
-        if (!product || parts.length < 3) continue;
-        const plan = parts[parts.length - 1];
-        const unit = parts.slice(1, -1).join("/");
+    // 1) checkouts
+    await stripeList(c.secret_key, "checkout/sessions", { "created[gte]": String(since), "expand[]": "data.payment_intent" }, async (x) => {
+      seen++; maxCreated = Math.max(maxCreated, Number(x.created || 0));
+      const r = parseRef(x.client_reference_id);
+      if (!r) return;
+      const email = x.customer_details?.email ?? null;
+      const sub = typeof x.subscription === "string" ? x.subscription : x.subscription?.id;
+      if (x.payment_status === "paid") {
+        if (sub) await db.from("lic_subscriptions").upsert({ subscription_id: sub, product: r.product, unit_ext_id: r.unit, plan: r.plan, email }, { onConflict: "subscription_id" });
         const { data: ins } = await db.from("lic_payments").insert({
-          session_id: x.id, product, unit_ext_id: unit, plan, amount: x.amount_total, currency: x.currency,
-          email: x.customer_details?.email ?? null, paid_at: new Date(Number(x.created) * 1000).toISOString(),
+          session_id: x.id, product: r.product, unit_ext_id: r.unit, plan: r.plan, amount: x.amount_total, currency: x.currency,
+          email, paid_at: iso(x.created), status: "paid", kind: "checkout", subscription_id: sub ?? null,
         }).select("session_id");
-        if (!ins?.length) continue; // already handled
-        const p = planOf(product, plan);
-        const note = (n: string) => db.from("lic_payments").update({ note: n }).eq("session_id", x.id);
-        if (!p) { await note("Unknown plan; not applied"); continue; }
-        if (Number(x.amount_total) < p.amount || String(x.currency).toLowerCase() !== p.currency) { await note("Amount does not match the plan; not applied"); continue; }
-        try {
-          const res = await callApp(apps[product], "set", { unit, type: plan, extend: true, notes: `Paid online ${fmtDay()}` });
-          const { data: before } = await db.from("lic_units").select("name,account_ext_id,license_type,expires_at").eq("product", product).eq("ext_id", unit).maybeSingle();
-          const { data: acc } = before?.account_ext_id
-            ? await db.from("lic_accounts").select("name").eq("product", product).eq("ext_id", before.account_ext_id).maybeSingle() : { data: null };
-          await db.from("lic_units").update({ license_type: res.license_type, starts_at: res.starts_at, expires_at: res.expires_at, notes: res.notes, synced_at: new Date().toISOString() })
-            .eq("product", product).eq("ext_id", unit);
-          await db.from("lic_payments").update({ applied: true, applied_at: new Date().toISOString(), note: null }).eq("session_id", x.id);
-          await db.from("lic_audit").insert({ admin_email: "Online payment (Stripe)", product, unit_ext_id: unit, unit_name: before?.name ?? null,
-            account_name: acc?.name ?? null, action: `paid online ${plan}`,
-            before: before ? { license_type: before.license_type, expires_at: before.expires_at } : null,
-            after: { ...res, amount: x.amount_total, currency: x.currency, email: x.customer_details?.email ?? null } });
-          applied++;
-        } catch (e) { await note("Could not apply: " + String((e as Error).message ?? e).slice(0, 150)); }
+        await resolveFailures(x.id);
+        // an earlier declined / abandoned try for the same licence is now settled
+        await db.from("lic_payments").update({ resolved: true }).eq("product", r.product).eq("unit_ext_id", r.unit)
+          .eq("kind", "checkout").in("status", ["failed", "abandoned"]).lte("paid_at", iso(x.created));
+        if (!ins?.length) return; // already handled
+        await applyPaid(x.id, r.product, r.unit, r.plan, x.amount_total, x.currency, email, sub ? "Subscribed online" : "Paid online");
+        return;
       }
-      if (!j.has_more || !j.data?.length) break;
-      after = j.data[j.data.length - 1].id;
+      // not paid: a declined card shows on the payment intent; an expired checkout with no attempt means the customer left
+      const pi = typeof x.payment_intent === "object" ? x.payment_intent : null;
+      const declined = declineReason(pi?.last_payment_error);
+      if (!declined && x.status !== "expired") return; // still open, nothing tried yet
+      await recordFailure(`${x.id}:failed`, {
+        product: r.product, unit_ext_id: r.unit, plan: r.plan, amount: x.amount_total, currency: x.currency, email,
+        paid_at: iso(x.created), kind: "checkout", subscription_id: sub ?? null,
+        status: declined ? "failed" : "abandoned",
+        reason: declined ?? "Customer left the checkout without paying",
+        note: declined ? (x.status === "expired" ? "Checkout expired after the card was declined" : "The customer can still retry on the same checkout") : "Checkout expired",
+      });
+    });
+
+    // 2) monthly renewals (and failed renewals)
+    const { data: subs } = await db.from("lic_subscriptions").select("*");
+    if (subs?.length) {
+      const subOf = (id: string) => subs.find((s: any) => s.subscription_id === id);
+      await stripeList(c.secret_key, "invoices", { "created[gte]": String(since), "expand[]": "data.payment_intent" }, async (inv) => {
+        if (inv.billing_reason !== "subscription_cycle") return; // the first month comes through the checkout
+        const subId = typeof inv.subscription === "string" ? inv.subscription : inv.subscription?.id ?? inv.parent?.subscription_details?.subscription;
+        const s = subId && subOf(subId);
+        if (!s) return;
+        const email = inv.customer_email ?? s.email ?? null;
+        const base = { product: s.product, unit_ext_id: s.unit_ext_id, plan: s.plan, amount: inv.amount_due, currency: inv.currency, email, kind: "renewal", subscription_id: subId };
+        if (inv.status === "paid") {
+          const { data: ins } = await db.from("lic_payments").insert({
+            session_id: inv.id, ...base, amount: inv.amount_paid, status: "paid",
+            paid_at: iso(inv.status_transitions?.paid_at || inv.created),
+          }).select("session_id");
+          await resolveFailures(inv.id);
+          await db.from("lic_payments").update({ resolved: true }).eq("subscription_id", subId).eq("status", "failed").lte("paid_at", iso(inv.created));
+          if (!ins?.length) return;
+          await applyPaid(inv.id, s.product, s.unit_ext_id, s.plan, inv.amount_paid, inv.currency, email, "Renewed online");
+          return;
+        }
+        if (!(inv.status === "open" && inv.attempt_count > 0) && inv.status !== "uncollectible") return;
+        const pi = typeof inv.payment_intent === "object" ? inv.payment_intent : null;
+        const reason = declineReason(pi?.last_payment_error) ?? inv.last_finalization_error?.message ?? "Renewal payment failed";
+        const next = inv.next_payment_attempt ? new Date(inv.next_payment_attempt * 1000).toLocaleDateString("en-GB", { day: "numeric", month: "short", timeZone: "Europe/London" }) : null;
+        await recordFailure(`${inv.id}:failed`, {
+          ...base, paid_at: iso(inv.created), status: "failed", reason,
+          note: inv.status === "uncollectible" ? "Stripe has stopped retrying; the licence won't be renewed"
+            : `Attempt ${inv.attempt_count}${next ? `; Stripe will retry on ${next}` : ""}`,
+        });
+      });
     }
   } catch (e) { err = String((e as Error).message ?? e).slice(0, 250); }
   await db.rpc("lic_stripe_update", { p_last_created: maxCreated, p_error: err });
-  return { ok: !err, applied, seen, error: err };
+  return { ok: !err, applied, seen, failed, error: err };
 }
 
 Deno.serve(async (req) => {

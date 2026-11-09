@@ -1057,7 +1057,7 @@ async function loadPayments() {
   const [st, pl, py] = await Promise.all([
     sb.rpc("lic_payment_settings"),
     sb.from("lic_plans").select("*"),
-    sb.from("lic_payments").select("*").order("created_at", { ascending: false }).limit(100),
+    sb.from("lic_payments").select("*").order("created_at", { ascending: false }).limit(200),
   ]);
   for (const r of [st, pl, py]) if (r.error) { $("#payView").innerHTML = `<div class="empty">${esc(r.error.message)}</div>`; return; }
   P.settings = st.data; P.plans = pl.data; P.payments = py.data;
@@ -1066,34 +1066,44 @@ async function loadPayments() {
   if (!P.editing) renderPayments();
 }
 
-// Recent payments and Failed payments pages (same table, filtered)
-function payTable(rows, empty) {
+// Recent payments and Failed payments pages
+const isPaid = (r) => !r.status || r.status === "paid";
+const isFailed = (r) => isPaid(r) ? !r.applied : !r.resolved;
+function payTable(rows, empty, failedView) {
   const unitName = (r) => S.units.find((u) => u.product === r.product && u.ext_id === r.unit_ext_id)?.name || r.unit_ext_id;
   const accName = (r) => { const u = S.units.find((x) => x.product === r.product && x.ext_id === r.unit_ext_id); return u ? (S.accounts || []).find((a) => a.product === u.product && a.ext_id === u.account_ext_id)?.name || "" : ""; };
   if (!rows.length) return `<div class="empty">${empty}</div>`;
-  return `<table><thead><tr><th>Paid</th><th>Product</th><th>For</th><th>Plan</th><th>Amount</th><th class="hide-sm">Email</th><th>Status</th></tr></thead><tbody>${
+  const kind = (r) => r.kind === "renewal" ? `<div class="small">Monthly renewal</div>` : r.subscription_id ? `<div class="small">New subscription</div>` : "";
+  const status = (r) => {
+    if (r.status === "failed") return `<span class="pill bad">${r.kind === "renewal" ? "Renewal failed" : "Declined"}</span>`;
+    if (r.status === "abandoned") return `<span class="pill none">Not completed</span>`;
+    return r.applied ? `<span class="pill ok">Applied</span>` : `<span class="pill bad">Not applied</span>`;
+  };
+  const why = (r) => esc(r.reason || (isPaid(r) && !r.applied ? r.note || "Waiting to be applied" : "")) + (r.note && !(isPaid(r) && !r.applied) ? `<div class="small">${esc(r.note)}</div>` : "");
+  return `<table><thead><tr><th>${failedView ? "When" : "Paid"}</th><th>Product</th><th>For</th><th>Plan</th><th>Amount</th><th class="hide-sm">Email</th><th>Status</th>${failedView ? "<th>Reason</th>" : ""}</tr></thead><tbody>${
     rows.map((r) => `<tr><td class="small">${esc(fmtDT(r.paid_at || r.created_at))}</td>
       <td><span class="ptag">${esc(PRODUCTS[r.product]?.label || r.product || "")}</span></td>
-      <td>${esc(unitName(r))}${accName(r) ? `<div class="small">${esc(accName(r))}</div>` : ""}</td><td class="small">${esc(PLAN_LABEL[r.plan] || r.plan || "")}</td>
+      <td>${esc(unitName(r))}${accName(r) ? `<div class="small">${esc(accName(r))}</div>` : ""}</td><td class="small">${esc(PLAN_LABEL[r.plan] || r.plan || "")}${kind(r)}</td>
       <td>${esc(gbp(r.amount, r.currency || "gbp"))}</td><td class="small hide-sm">${esc(r.email || "")}</td>
-      <td>${r.applied ? `<span class="pill ok">Applied</span>` : `<span class="pill bad">Not applied</span><div class="small">${esc(r.note || "Waiting to be applied")}</div>`}</td></tr>`).join("")
+      <td>${status(r)}${!failedView && isPaid(r) && !r.applied ? `<div class="small">${esc(r.note || "Waiting to be applied")}</div>` : ""}</td>
+      ${failedView ? `<td class="small" style="min-width:180px">${why(r)}</td>` : ""}</tr>`).join("")
   }</tbody></table>`;
 }
 function renderPayLists() {
-  const st = P.settings || {}, all = P.payments || [], failed = all.filter((r) => !r.applied);
+  const st = P.settings || {}, all = P.payments || [], paid = all.filter(isPaid), failed = all.filter(isFailed);
   const fc = $("#failCnt"); if (fc) { fc.textContent = failed.length; fc.hidden = !failed.length; }
   const head = (title, sub) => `<div class="ah"><span class="pn">${title}</span><span class="sp"></span>
     <span class="small">${st.checked_at ? "Stripe last checked " + esc(fmtDT(st.checked_at)) : "Not checked yet"} · checks every 5 minutes</span>
-    <button class="btn sm" data-paycheck ${st.enabled && st.has_key ? "" : "disabled"}>Check now</button></div>${sub ? `<div class="small" style="padding:10px 14px 0">${sub}</div>` : ""}`;
-  const total = all.filter((r) => r.applied).reduce((t, r) => t + (r.amount || 0), 0);
-  if ($("#payLogView")) $("#payLogView").innerHTML = `<div class="acct" style="margin:0">${head("Recent online payments", all.length ? `${all.length} payment(s) · ${esc(gbp(total))} applied` : "")}
-    ${st.last_error ? `<div class="msg err" style="margin:10px 14px 0">Last check: ${esc(st.last_error)}</div>` : ""}
-    ${payTable(all, st.enabled && st.has_key ? "No online payments yet." : "Online payments are off. Turn them on in Payment settings.")}</div>`;
-  if ($("#payFailView")) $("#payFailView").innerHTML = `<div class="acct" style="margin:0">${head("Failed payments", "Customers paid in Stripe but the licence couldn’t be applied. The reason is shown on each one; fix it, then add the time by hand on the customer’s licence.")}
-    ${payTable(failed, "No failed payments.")}</div>`;
+    <button class="btn sm" data-paycheck ${st.enabled && st.has_key ? "" : "disabled"}>Check now</button></div>${sub ? `<div class="small" style="padding:10px 14px 0">${sub}</div>` : ""}
+    ${st.last_error ? `<div class="msg err" style="margin:10px 14px 0">Last check: ${esc(st.last_error)}</div>` : ""}`;
+  const total = paid.filter((r) => r.applied).reduce((t, r) => t + (r.amount || 0), 0);
+  if ($("#payLogView")) $("#payLogView").innerHTML = `<div class="acct" style="margin:0">${head("Recent online payments", paid.length ? `${paid.length} payment(s) · ${esc(gbp(total))} applied · monthly renewals are added automatically` : "")}
+    ${payTable(paid, st.enabled && st.has_key ? "No online payments yet." : "Online payments are off. Turn them on in Payment settings.")}</div>`;
+  if ($("#payFailView")) $("#payFailView").innerHTML = `<div class="acct" style="margin:0">${head("Failed payments", "Declined cards, checkouts the customer didn’t finish, failed monthly renewals, and payments that couldn’t be added to a licence, with Stripe’s reason. Once the customer pays successfully, the failure clears by itself.")}
+    ${payTable(failed, "No failed payments.", true)}</div>`;
   $$("[data-paycheck]").forEach((b) => b.onclick = async () => {
     b.disabled = true;
-    try { const r = await hub("check_payments"); toast(r.error ? "Stripe: " + r.error : r.skipped ? r.skipped : `Checked ${r.seen} Stripe payment(s); ${r.applied} licence(s) applied`, !!r.error); if (r.applied) loadAll(); }
+    try { const r = await hub("check_payments"); toast(r.error ? "Stripe: " + r.error : r.skipped ? r.skipped : `Checked ${r.seen} Stripe checkout(s); ${r.applied} licence(s) applied${r.failed ? `, ${r.failed} new failed payment(s)` : ""}`, !!r.error); if (r.applied) loadAll(); }
     catch (e) { toast(e.message, true); }
     loadPayments();
   });
@@ -1124,7 +1134,7 @@ function renderPayments() {
         <button class="btn primary" id="paySaveKey">Save</button>
       </div>
       <ol class="pay-steps mt">
-        <li>In Stripe → Developers → API keys → <b>Create restricted key</b>, give it <b>Checkout Sessions: Read</b> only, and paste it above.</li>
+        <li>In Stripe → Developers → API keys → <b>Create restricted key</b>, give it <b>Read</b> access to <b>Checkout Sessions</b>, <b>Invoices</b> and <b>PaymentIntents</b> only, and paste it above.</li>
         <li>In Stripe → <b>Payment Links</b>, create one link per product and plan (e.g. “Proview Bookings – 12 months”). Paste each link and its price below.</li>
         <li>Customers see “Buy / renew online” in their app. Every 5 minutes this portal checks Stripe and applies paid licences automatically; they appear in Activity.</li>
       </ol>
