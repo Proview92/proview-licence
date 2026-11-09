@@ -21,6 +21,7 @@ const TYPES: Record<string, string[]> = {
   bookings: ["trial", "m1", "m3", "m6", "m12", "m24", "m36", "lifetime", "custom"],
   employee: ["trial3", "m1", "m3", "m6", "m12", "m24", "m36", "lifetime", "custom"],
   wifi: ["trial", "m1", "m3", "m6", "m12", "m24", "m36", "lifetime", "custom"],
+  qrmenu: ["trial3", "m1", "m3", "m6", "m12", "m24", "m36", "lifetime", "custom"],
 };
 
 async function callApp(app: App, action: string, args: Record<string, unknown> = {}) {
@@ -37,7 +38,7 @@ async function callApp(app: App, action: string, args: Record<string, unknown> =
 }
 
 const PAY_PLANS = ["m1", "m3", "m6", "m12", "m24", "m36", "lifetime"];
-const REF_CODES: Record<string, string> = { pvs: "signage", pvb: "bookings", pve: "employee", pvw: "wifi" };
+const REF_CODES: Record<string, string> = { pvs: "signage", pvb: "bookings", pve: "employee", pvw: "wifi", pvq: "qrmenu" };
 
 async function loadApps(db: any): Promise<Record<string, App>> {
   const { data, error } = await db.rpc("lic_app_config");
@@ -66,7 +67,7 @@ async function pushPlans(db: any, apps: Record<string, App>) {
 const fmtDay = (d = new Date()) => d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "Europe/London" });
 
 // read paid Stripe Checkout Sessions and apply licences for references made by the apps:
-//   pvs__<screen uuid>__<plan>   pvb__<site id>__<plan>   pve__<org id>__<member id>__<plan>   pvw__<wifi site id>__<plan>
+//   pvs__<screen uuid>__<plan>   pvb__<site id>__<plan>   pve__<org id>__<member id>__<plan>   pvw__<wifi site id>__<plan>   pvq__<qrmenu location id>__<plan>
 async function checkPayments(db: any, apps: Record<string, App>) {
   const { data: cfg } = await db.rpc("lic_stripe_config");
   const c = (cfg as any[])?.[0];

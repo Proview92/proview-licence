@@ -32,6 +32,11 @@ const APPS: Record<string, { name: string; home: string; origins: string[]; land
     origins: ["https://label.proviewcrm.co.uk", "https://proview92.github.io"], land: "",
     check: "https://fiqoirnlmhjzicvktdwa.supabase.co/functions/v1/sso-login",
   },
+  qrmenu: {
+    name: "Proview QR Menu", home: "https://qrmenu.proviewcrm.co.uk/",
+    origins: ["https://qrmenu.proviewcrm.co.uk", "https://proview92.github.io"], land: "",
+    check: "https://yblafwttmqaqvfvedaoc.supabase.co/functions/v1/sso-login",
+  },
   wifi: {
     name: "Proview WiFi", home: "https://wifi.proviewcrm.co.uk/customer",
     origins: ["https://wifi.proviewcrm.co.uk"], land: "https://wifi.proviewcrm.co.uk/customer/sso",

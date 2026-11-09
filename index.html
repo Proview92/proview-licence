@@ -583,6 +583,7 @@ const PRODUCTS = {
   bookings: { label: "Bookings", unit: "Location", units: "locations",   app: "https://bookings.proviewcrm.co.uk", trial: "trial"  },
   employee: { label: "Employee", unit: "Staff member", units: "staff", app: "https://employee.proviewcrm.co.uk", trial: "trial3" },
   wifi:     { label: "WiFi",     unit: "Location", units: "locations",   app: "https://wifi.proviewcrm.co.uk/admin", trial: "trial" },
+  qrmenu:   { label: "QR Menu",  unit: "Location", units: "locations",   app: "https://qrmenu.proviewcrm.co.uk", trial: "trial3" },
 };
 const PLAN_LABEL = { trial: "Trial (3 days)", trial3: "Trial (3 days)", trial7: "Trial (3 days)",
   m1: "1 month", m3: "3 months", m6: "6 months", m12: "12 months", m24: "24 months", m36: "36 months",
@@ -699,9 +700,10 @@ const ICONS = {
   bookings: '<rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M16 3v4M8 3v4M3 10h18"></path>',
   employee: '<circle cx="9" cy="8" r="3.5"></circle><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"></path>',
   wifi: '<path d="M2 8.8a15 15 0 0 1 20 0"></path><path d="M5 12.5a10 10 0 0 1 14 0"></path><path d="M8.5 16a5 5 0 0 1 7 0"></path><path d="M12 20h.01"></path>',
+  qrmenu: '<rect x="3" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="3" width="7" height="7" rx="1"></rect><rect x="3" y="14" width="7" height="7" rx="1"></rect><path d="M14 14h3v3h-3zM20 14v.01M14 20h.01M17 20h4v-3"></path>',
 };
 const icon = (k) => `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[k]}</svg>`;
-const UNIT_WORD = { signage: ["screen", "screens"], bookings: ["location", "locations"], employee: ["staff", "staff"], wifi: ["location", "locations"] };
+const UNIT_WORD = { signage: ["screen", "screens"], bookings: ["location", "locations"], employee: ["staff", "staff"], wifi: ["location", "locations"], qrmenu: ["location", "locations"] };
 const shortDate = (d) => { const x = new Date(d); return x.toLocaleDateString("en-GB", { day: "numeric", month: "short", ...(x.getFullYear() !== new Date().getFullYear() ? { year: "numeric" } : {}) }); };
 const renewAt = (units) => Math.min(...units.filter((u) => u.license_type !== "lifetime" && u.expires_at && tone(u) !== "r").map((u) => +new Date(u.expires_at)), Infinity);
 
@@ -720,7 +722,7 @@ function renderChips() {
 function unitRow(u) {
   const s = status(u), p = PRODUCTS[u.product];
   const key = u.product + "|" + u.ext_id;
-  const extra = (u.product === "signage" || u.product === "wifi") && u.extra?.last_seen ? `<div class="small">${u.product === "wifi" ? "Last guest" : "Last seen"} ${fmtDT(u.extra.last_seen)}</div>` : "";
+  const extra = (u.product === "signage" || u.product === "wifi" || u.product === "qrmenu") && u.extra?.last_seen ? `<div class="small">${u.product === "wifi" ? "Last guest" : u.product === "qrmenu" ? "Last saved" : "Last seen"} ${fmtDT(u.extra.last_seen)}</div>` : "";
   const arch = u.extra?.archived ? ` <span class="pill none">archived</span>` : "";
   return `<tr>
     <td class="cb"><input type="checkbox" data-sel="${esc(key)}" ${S.sel.has(key) ? "checked" : ""}></td>
