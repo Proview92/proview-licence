@@ -7,9 +7,15 @@
 <meta name="robots" content="noindex, nofollow">
 <link rel="icon" type="image/png" href="icon-32.png?v=2">
 <link rel="apple-touch-icon" href="icon-180.png?v=2">
+<meta name="theme-color" content="#171c29">
+<script>/* Proview theme + menu position: set before first paint (shared keys pv.theme, pv.menu) */
+(function(){var d=document.documentElement,t="dark",m="side";try{t=localStorage.getItem("pv.theme")==="light"?"light":"dark";m=localStorage.getItem("pv.menu")==="bottom"?"bottom":"side";}catch(e){}
+d.setAttribute("data-theme",t);if(m==="bottom")d.classList.add("menu-bottom");var c=document.querySelector('meta[name="theme-color"]');if(c)c.content=t==="light"?"#f2f4f9":"#171c29";})();</script>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root {
-    /* Proview Signage theme (same as app.proviewsignage.co.uk, Bookings and Employee) */
+    /* legacy values; every one is re-pointed to the Navy tokens by <style id="pv-navy"> below */
     --bg: #f4f3ef; --card: #ffffff; --ink: #17171c; --ink2: #55555f; --muted: #8b8b95; --line: #e4e2dc; --line-input: #e4e2dc;
     --brand: #4a6cd0; --brand-dark: #3a58b4; --brand-ink: #ffffff; --brand-soft: #edf2fd; --brand-subtle: #f7f9fe;
     --grad: linear-gradient(135deg, #2f84d4 0%, #5a5fbb 100%); --grad-light: linear-gradient(90deg, #62b0ec 0%, #8b88dc 100%);
@@ -28,68 +34,6 @@
   a { color: var(--brand); } a:hover { color: var(--brand-dark); }
   .hidden { display: none !important; }
 
-  /* ===== app shell: identical to Proview Signage (sidebar, header bar, profile) ===== */
-  .app { display: grid; grid-template-columns: 236px 1fr; min-height: 100vh; transition: grid-template-columns .15s ease; }
-  .side { background: var(--side); color: var(--side-ink); display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; overflow: hidden; z-index: 30; }
-  .side .brand { display: flex; align-items: center; gap: 10px; padding: 18px 10px 14px 14px; color: #fff; }
-  .side .brand .pvlogo { width: 36px; height: 26px; }
-  .side .wordmark { font-size: 15px; letter-spacing: .04em; font-weight: 500; line-height: 20px; color: #fff; white-space: nowrap; }
-  .side .nav { flex: 1; min-height: 0; overflow: auto; padding: 6px 10px; display: flex; flex-direction: column; }
-  .side .nav-sep { padding: 10px 10px 3px; font-size: 11px; line-height: 13px; letter-spacing: .08em; text-transform: uppercase; color: #6e6e78; }
-  .side .nav a { display: flex; align-items: center; gap: 10px; height: 30px; padding: 0 12px; border-radius: 9px; text-decoration: none; color: var(--side-ink); font-size: 14px; font-weight: 550; cursor: pointer; white-space: nowrap; }
-  .side .nav a:hover { background: #1f1f25; color: #fff; }
-  .side .nav a.active { background: #26262e; color: #fff; }
-  .side .nav a.active svg { color: var(--brand); }
-  .side .nav svg { width: 16px; height: 16px; flex: none; }
-  .side-foot { display: flex; align-items: center; padding: 0 10px 14px; }
-  .sf-link { display: flex; align-items: center; gap: 6px; background: none; border: 0; color: #8b8b95; letter-spacing: .06em; font-size: 12px; font-weight: 600; line-height: 17px; padding: 6px 8px; border-radius: 9px; cursor: pointer; font-family: inherit; }
-  .sf-link:hover { color: #fff; }
-  .sf-link svg { width: 14px; height: 14px; }
-  .app.collapsed { grid-template-columns: 72px 1fr; }
-  .app.collapsed .wordmark, .app.collapsed .nav a > span, .app.collapsed .nav-sep, .app.collapsed .sf-link .lbl { display: none; }
-  .app.collapsed .side .brand { justify-content: center; padding: 18px 0 14px; }
-  .app.collapsed .nav a { justify-content: center; padding: 0; }
-  .app.collapsed .side-foot { justify-content: center; }
-  .app.collapsed .side-foot .sf-link svg { transform: rotate(180deg); }
-  .main-col { min-width: 0; display: flex; flex-direction: column; min-height: 100vh; }
-  .top { display: flex; align-items: center; gap: 12px; padding: 12px 22px; background: var(--card); border-bottom: 1px solid var(--line); min-height: 62px; position: sticky; top: 0; z-index: 20; }
-  .top h2 { font-size: 18px; font-weight: 700; letter-spacing: -.015em; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .top .sp { flex: 1; }
-  .icon-btn { position: relative; background: none; border: 1px solid transparent; border-radius: 10px; width: 38px; height: 38px; padding: 0; display: grid; place-items: center; cursor: pointer; color: var(--ink); }
-  .icon-btn:hover { background: var(--bg); border-color: var(--line); }
-  .icon-btn svg { width: 20px; height: 20px; }
-  .top-out svg { width: 18px; height: 18px; }
-  .menu-btn { display: none !important; }
-  .top-me { display: flex; align-items: center; gap: 4px; margin-left: 8px; flex: none; }
-  .top-av { width: 34px; height: 34px; border-radius: 50%; border: 0; padding: 0; flex: none; display: grid; place-items: center; background: var(--grad); color: #fff; font-family: inherit; font-weight: 700; font-size: 12.5px; line-height: 1; cursor: pointer; }
-  .nav-scrim { display: none; }
-  /* iPad: icon rail with short labels */
-  @media (min-width: 701px) and (max-width: 900px) {
-    .app, .app.collapsed { grid-template-columns: 72px 1fr !important; }
-    .app .wordmark, .app .nav-sep, .app .side-foot { display: none !important; }
-    .app .side .brand { justify-content: center; padding: 18px 0 14px; }
-    .app .side .nav a { height: 56px; flex-direction: column; justify-content: center; gap: 5px; padding: 0 2px; }
-    .app .side .nav a > span { display: block !important; font-size: 10.5px; line-height: 12px; font-weight: 500; text-align: center; max-width: 64px; overflow: hidden; text-overflow: ellipsis; }
-    .app .side .nav svg { width: 18px; height: 18px; }
-  }
-  /* phones: slide-in side menu */
-  @media (max-width: 700px) {
-    .app, .app.collapsed { grid-template-columns: 1fr !important; }
-    .side { position: fixed; top: 0; bottom: 0; left: 0; width: 280px; max-width: 86vw; height: 100dvh; z-index: 76; transform: translateX(-105%); transition: transform .25s ease; box-shadow: 10px 0 40px rgba(0,0,0,.35); }
-    .app.navopen .side { transform: none; }
-    .app.navopen .nav-scrim { display: block; position: fixed; inset: 0; background: rgba(20,20,24,.45); z-index: 75; }
-    .app.collapsed .wordmark, .app.collapsed .nav-sep { display: revert; }
-    .app.collapsed .nav a > span { display: inline !important; }
-    .app.collapsed .nav a { justify-content: flex-start; padding: 0 12px; }
-    .app.collapsed .side .brand { justify-content: flex-start; padding: 18px 10px 14px 14px; }
-    .side .nav a { height: 40px; font-size: 15px; }
-    .side-foot { display: none; }
-    .menu-btn { display: grid !important; margin-left: -4px; flex: none; }
-    .top { padding: 8px 10px; gap: 2px; }
-    .top h2 { font-size: 16px; flex: 1; }
-    .top .sp { display: none; }
-    .top-av { width: 32px; height: 32px; font-size: 12px; }
-  }
 
   .main { min-width: 0; padding: 20px 22px 40px; max-width: 1280px; width: 100%; }
   @media (max-width: 700px) { .main { padding: 14px 12px 40px; } }
@@ -300,30 +244,6 @@
   .acct .ah { background: #fbfaf8; }
   .dback { color: var(--brand); }
   .msg.info { background: var(--brand-soft); color: #213f8a; }
-/* phones: a compact icon menu always on the left (same on all Proview apps) */
-@media (max-width:700px){
-html .app{grid-template-columns:60px minmax(0,1fr)!important}
-html .app .side,html .app.navopen .side{position:sticky!important;top:0!important;left:auto!important;transform:none!important;width:60px!important;min-width:60px!important;max-width:60px!important;height:100vh!important;height:100dvh!important;z-index:20!important;padding:10px 5px calc(10px + env(safe-area-inset-bottom))!important;overflow-y:auto!important;overflow-x:hidden!important;box-shadow:none!important;display:flex!important;flex-direction:column!important;grid-row:1/-1}
-html .menu-btn,html .nav-scrim,html #navScrim{display:none!important}
-html .side .brand{justify-content:center!important;padding:2px 0 10px!important;margin:0!important;gap:0!important;width:auto!important}
-html .side .brand .wordmark,html .side .brand>span:not(.brand-mark):not(.pv-mark){display:none!important}
-html .side .brand svg,html .side .brand img,html .side .brand .brand-mark,html .side .brand .pvlogo{width:32px!important;height:23px!important;margin:0 auto!important}
-html .side .pv-viewing,html .side .side-pick .viewing,html .side .side-pick noscript,html .side .sp-title,html .side .nav-sec,html .side .nav-sep,html .side .nav .nav-group-h,html .side .side-me,html .side .side-foot{display:none!important}
-html .side #sitePick,html .side #orgPick,html .side .client-pick,html .side .side-pick{display:block!important;margin:0 0 8px!important;padding:0!important;position:relative}
-html .side #sitePick select,html .side #orgPick select,html .side .client-pick select,html .side .side-pick select{width:50px!important;height:40px!important;min-width:0!important;padding:0!important;margin:0 auto!important;display:block;color:transparent!important;text-indent:-999px;font-size:16px!important;border-radius:10px!important;background-position:center!important;background-size:18px 18px!important;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%23d9d9e0' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 21h18M5 21V7l7-4 7 4v14M9 9h1M14 9h1M9 13h1M14 13h1M10 21v-4h4v4'/%3E%3C/svg%3E")!important}
-html .side .nav{gap:0!important;row-gap:0!important;flex:1 1 auto;overflow:visible!important}
-html .side .nav>button:not(.nav-more),html .side .nav>a{height:52px!important;min-height:0!important;width:100%!important;flex-direction:column!important;justify-content:center!important;align-items:center!important;gap:4px!important;padding:0 1px!important;margin:0!important;border-radius:9px!important}
-html .side .nav>button svg,html .side .nav>a svg{width:18px!important;height:18px!important;margin:0!important;flex:none}
-html .side .nav .lbl,html .side .nav .cnt,html .side .nav .badge-n{display:none!important}
-html .side .nav .slbl,html .side .nav>a>span:not(.bell-dot):not(.cnt){display:block!important;font-size:10px!important;line-height:12px!important;font-weight:500!important;letter-spacing:-.1px!important;text-transform:none!important;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:54px;margin:0!important}
-html .side .nav .nav-group .rail-ic{display:block!important}html .side .nav .nav-group svg:not(.rail-ic){display:none!important}
-}
-
-/* App icon replaces the PV mark; app name in the icon colour */
-html .pvlogo.pvlogo.pvlogo.pvlogo{background:url(icon-app.svg) center/contain no-repeat!important;border-radius:22%}
-html .side .brand .pvlogo.pvlogo.pvlogo.pvlogo,html .brand .pvlogo.pvlogo.pvlogo.pvlogo{width:30px!important;height:30px!important}
-html .auth-brand .pvlogo.pvlogo.pvlogo.pvlogo{width:60px!important;height:60px!important}
-html .wordmark span,html .wordmark span.x.x{background:linear-gradient(90deg,#FBBF24 0%,#D97706 100%)!important;-webkit-background-clip:text!important;background-clip:text!important;color:transparent!important}
 
 /* ===== header bar: copied from Proview Signage (HEADER_REFERENCE.md); the tray/panels/account menu CSS comes from hub.js ===== */
 .top { box-sizing: border-box; }
@@ -361,35 +281,353 @@ html .wordmark span,html .wordmark span.x.x{background:linear-gradient(90deg,#FB
 .nt-row .nb { flex: 1; min-width: 0; } .nt-row .nb b { font-weight: 600; display: block; } .nt-row .nb span { font-size: 13px; color: var(--ink2); }
 .nt-row .nw { font-size: 12px; color: var(--muted); white-space: nowrap; }
 
-/* ===== Proview shell v4: exact Proview Signage values (SHELL_MATCH_SPEC.md, measured in headless Chrome) ===== */
-.side{gap:0}
-.side .nav{gap:0}
-.side .nav>*{flex-shrink:0}
-.side .nav a{line-height:22px}
-/* Customers page head: heading, buttons and spacing as Proview Signage's page head */
-.ctop{margin-bottom:22px}
-.ctop h1{line-height:1.45}
-.ctop .ghost{display:inline-flex;align-items:center;justify-content:center;gap:7px}
-.ctop .btn.primary{display:inline-flex;align-items:center;gap:7px;height:38px;padding:0 14px;font:600 14px var(--font);border-radius:10px;box-sizing:border-box}
-/* collapsed menu (desktop): same geometry as Proview Signage's collapsed menu */
+</style>
+<style id="pv-navy">
+/* =====================================================================================
+   PROVIEW NAVY THEME (shared look of every Proview app; loaded LAST, after hub.js's CSS)
+   Source: the "Proview Bookings" design (design.css). Dark by default; html[data-theme="light"]
+   for Light mode; html.menu-bottom moves the menu to a bar at the bottom.
+   localStorage: "pv.theme" = dark|light, "pv.menu" = side|bottom (shared by all Proview apps).
+   ===================================================================================== */
+:root{
+  --main:#3f5fd0;
+  /* light */
+  --bg:#f2f4f9; --card:#fff; --ink:#14161f; --mut:#5b6072; --line:#dde1ea;
+  --pri:var(--main); --pril:color-mix(in srgb,var(--main) 14%,#fff); --onpri:#fff;
+  --ok:#12874a; --okl:#e2f4ea; --warn:#9a5b00; --warnl:#fbefd6; --bad:#c62a1f; --badl:#fce8e6;
+  --nav:color-mix(in srgb,var(--main) 35%,#111);
+  --card2:color-mix(in srgb,var(--ink) 5%,var(--card));
+  color-scheme:light;
+}
+:root:not([data-theme="light"]){
+  /* dark (default) */
+  --bg:#171c29; --card:#212839; --ink:#f2f4fa; --mut:#aab2c8; --line:#3a4560;
+  --pri:color-mix(in srgb,var(--main) 60%,#fff); --pril:color-mix(in srgb,var(--main) 24%,#212839); --onpri:#0d0f15;
+  --ok:#5ad69f; --okl:#1b3a30; --warn:#f2c066; --warnl:color-mix(in srgb,#f2c066 12%,#212839); --bad:#f68c82; --badl:#41262d;
+  --nav:color-mix(in srgb,var(--main) 26%,#0d121f);
+  --card2:color-mix(in srgb,var(--ink) 5%,var(--card));
+  color-scheme:dark;
+}
+:root{
+  /* shared --pv-* names */
+  --pv-bg:var(--bg); --pv-surface:var(--card); --pv-surface-2:var(--card2); --pv-line:var(--line); --pv-line-2:var(--line);
+  --pv-text:var(--ink); --pv-text-2:var(--mut); --pv-muted:var(--mut);
+  --pv-accent:var(--pri); --pv-on-accent:var(--onpri); --pv-accent-soft:var(--pril); --pv-accent-text:var(--pri);
+  --pv-ok:var(--ok); --pv-ok-soft:var(--okl); --pv-bad:var(--bad); --pv-bad-soft:var(--badl);
+  --pv-warn-bg:var(--warnl); --pv-warn-line:color-mix(in srgb,var(--warn) 35%,var(--card)); --pv-amber:var(--warn);
+  --pv-side:var(--nav);
+  --pv-font:"Plus Jakarta Sans","Segoe UI",system-ui,-apple-system,Roboto,Helvetica,Arial,sans-serif;
+  /* the app's own variables, re-pointed */
+  --ink2:var(--mut); --muted:var(--mut); --line-input:var(--line);
+  --brand:var(--pri); --brand-dark:var(--pri); --brand-ink:var(--onpri); --brand-soft:var(--pril); --brand-subtle:var(--card2);
+  --grad:var(--pri); --grad-light:var(--pri);
+  --side:var(--nav); --side-ink:#c5c9d8; --shadow:none; --font:var(--pv-font);
+  --g:var(--ok); --a:var(--warn); --r:var(--bad);
+  --ok-soft:var(--okl); --warn-soft:var(--warnl); --bad-soft:var(--badl); --none:var(--mut); --none-soft:var(--card2);
+}
+html,body{background:var(--bg);color:var(--ink);font:14px/1.45 var(--pv-font);-webkit-font-smoothing:antialiased}
+body.gate{background:var(--bg)}
+a{color:var(--pri)} a:hover{color:var(--pri);filter:brightness(1.1)}
+:focus-visible{outline:2px solid var(--pri);outline-offset:2px}
+h1,h2,h3{letter-spacing:-.02em}
+
+/* ---------- shell: sidebar ---------- */
+.app{display:grid;grid-template-columns:188px minmax(0,1fr);min-height:100vh}
+.side{background:var(--nav);color:#c5c9d8;display:flex;flex-direction:column;position:sticky;top:0;height:100vh;height:100dvh;overflow:hidden auto;z-index:30;padding:16px 10px}
+.side .brand{display:flex;align-items:center;gap:8px;padding:6px 10px 16px;color:#fff;min-width:0}
+.side .brand .pvlogo{display:none;width:30px;height:30px;flex:none;background:url(icon-app.svg) center/contain no-repeat;border-radius:22%}
+.pv-brand{font-weight:700;font-size:16px;line-height:22px;letter-spacing:-.01em;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;min-width:0}
+.pv-brand i{font-style:normal;color:color-mix(in srgb,var(--main) 40%,#fff)}
+.side .brand{position:relative}
+.side-col{position:absolute;right:-6px;top:4px;width:24px;height:24px;margin:0;border:0;border-radius:7px;background:none;color:#8087a2;display:grid;place-items:center;cursor:pointer;padding:0}
+.side-col:hover{background:rgba(255,255,255,.08);color:#fff}
+.side-col svg{width:15px;height:15px}
+.side .nav{flex:none;display:flex;flex-direction:column;gap:2px;padding:0;overflow:visible}
+.side .nav-sep{font-size:10px;line-height:13px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#8087a2;padding:12px 12px 4px}
+.side .nav-sep:first-child{padding-top:2px}
+.side .nav a{display:flex;align-items:center;gap:10px;height:auto;padding:9px 12px;border-radius:9px;color:#c5c9d8;text-decoration:none;font-size:14px;line-height:20px;font-weight:500;white-space:nowrap;cursor:pointer;background:none}
+.side .nav a:hover{background:rgba(255,255,255,.07);color:#fff}
+.side .nav a.active{background:rgba(255,255,255,.2);color:#fff}
+.side .nav a.active svg{color:#fff}
+.side .nav svg{width:20px;height:20px;flex:none;color:#bbc3d6}
+.side-foot{display:flex;flex-direction:column;margin-top:auto;padding:12px 0 0;gap:0}
+.vbox{display:flex;flex-direction:column;gap:2px;padding:10px 12px;border-radius:10px;background:rgba(255,255,255,.07);border:0;color:inherit;text-align:left;cursor:pointer;min-width:0;font:inherit}
+.vbox:hover{background:rgba(255,255,255,.12)}
+.vbox b{color:#fff;font-size:13px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.vbox small{font-size:12px;color:#aab0c6;display:flex;align-items:center;gap:6px;min-width:0;white-space:nowrap}
+.vbox small span:last-child{overflow:hidden;text-overflow:ellipsis}
+.vbox .dot{width:8px;height:8px;border-radius:50%;background:#3ecf7e;flex:none}
+.sf-btn{display:flex;align-items:center;gap:8px;margin-top:6px;background:rgba(255,255,255,.08);border:0;color:#fff;border-radius:9px;padding:10px 12px;cursor:pointer;font:inherit;font-weight:600;text-align:left;white-space:nowrap;min-width:0}
+.vbox+.sf-btn{margin-top:8px}
+.sf-btn:hover{background:rgba(255,255,255,.16)}
+.sf-btn svg{width:18px;height:18px;flex:none}
+/* label + icon follow the current mode (pure CSS) */
+.sf-btn .i-side,.sf-btn .l-side,.sf-btn .i-moon,.sf-btn .l-dark{display:none}
+html.menu-bottom .sf-btn .i-side,html.menu-bottom .sf-btn .l-side{display:inline}
+html.menu-bottom .sf-btn .i-bottom,html.menu-bottom .sf-btn .l-bottom{display:none}
+html[data-theme="light"] .sf-btn .i-moon,html[data-theme="light"] .sf-btn .l-dark{display:inline}
+html[data-theme="light"] .sf-btn .i-sun,html[data-theme="light"] .sf-btn .l-light{display:none}
+.nav-scrim,.menu-btn{display:none!important}
+
+/* collapsed menu (desktop only) */
 @media (min-width:901px){
-html .app.collapsed :is(.side,#pv-x){padding:18px 10px!important}
-html .app.collapsed .side :is(.brand,#pv-x){justify-content:center!important;padding:4px 0 18px!important;gap:10px!important;margin:0!important}
-html .app.collapsed .side :is(.nav,#pv-x){padding:6px 10px!important}
-html .app.collapsed .side :is(.nav,#pv-x)>a,html .app.collapsed .side :is(.nav,#pv-x)>button:not(.nav-group):not(.nav-more){width:32px!important;min-width:0!important;margin:0 auto!important;padding:0 12px!important;gap:10px!important;justify-content:center!important}
-html .app.collapsed .side :is(.side-foot,#pv-x){flex-direction:column!important;align-items:center!important;justify-content:normal!important;gap:4px!important;padding:0 10px 14px!important}
-html .app.collapsed .side :is(.side-foot,#pv-x)>*{width:30px!important;height:26px!important;padding:6px 8px!important;margin:0!important;justify-content:center!important;box-sizing:border-box!important}
+  html:not(.menu-bottom) .app.collapsed{grid-template-columns:72px minmax(0,1fr)}
+  .app.collapsed .side{padding:16px 8px}
+  .app.collapsed .side .pv-brand,.app.collapsed .nav-sep,.app.collapsed .nav a>span,.app.collapsed .sf-btn .lbl,.app.collapsed .vbox{display:none!important}
+  .app.collapsed .side .brand{justify-content:center;padding:6px 0 16px}
+  .app.collapsed .side-col{position:static;margin:0;width:40px;height:32px}
+  .app.collapsed .side-col svg{transform:rotate(180deg)}
+  .app.collapsed .side .nav a{justify-content:center;padding:9px 0}
+  .app.collapsed .sf-btn{justify-content:center;padding:11px 0}
+  .app.collapsed .nav{gap:4px}
 }
+
+/* ---------- shell: header bar ---------- */
+.main-col{min-width:0;display:flex;flex-direction:column;min-height:100vh;background:var(--bg)}
+.top{display:flex;align-items:center;gap:10px;padding:12px 20px;min-height:64px;background:var(--card);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:20;box-sizing:border-box}
+.top .ttl{display:flex;flex-direction:column;min-width:0;flex:none}
+.top h2{margin:0;font-size:20px;line-height:28px;font-weight:700;letter-spacing:-.02em;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vsub{display:none;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;line-height:1.2;color:var(--pri);margin:0 0 2px}
+.vsub:before{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:currentColor;margin-right:6px;vertical-align:1px}
+html.menu-bottom .vsub{display:block}
+.top .sp{flex:1}
+.icon-btn{position:relative;background:none;border:1px solid transparent;border-radius:10px;width:38px;height:38px;padding:0;display:grid;place-items:center;cursor:pointer;color:var(--mut)}
+.icon-btn svg{width:20px;height:20px}
+.top-out svg{width:18px;height:18px}
+.top-me{display:flex;align-items:center;gap:4px;margin-left:4px;flex:none}
+.top-av{width:34px;height:34px;border-radius:50%;border:0;padding:0;flex:none;display:grid;place-items:center;cursor:pointer}
+.icon-btn:hover{background:var(--card2);border-color:var(--line);color:var(--ink)}
+.top .hdr-pick select{height:38px;border-radius:10px;border:1px solid var(--line);background-color:var(--card);color:var(--ink);font:600 14px var(--pv-font)}
+.top .hdr-pick select:focus-visible{outline:2px solid var(--pri);outline-offset:2px}
+.top-av{background:var(--pri);color:var(--onpri);font:700 12.5px/1 var(--pv-font)}
+.top-av:focus-visible,.top-me .top-out:focus-visible{outline:2px solid var(--pri)}
+.top .bell{color:var(--ink)}
+.bell-dot{background:var(--bad);color:#fff;font-family:var(--pv-font)}
+:root:not([data-theme="light"]) .bell-dot{color:#1b0d0c}
+/* hub.js tray, dashboard link, account menu */
+.hdr-cap{background:var(--card2);border:1px solid var(--line);border-radius:12px}
+.hdr-cap>button,.hdr-cap>a{color:var(--mut)!important}
+.hdr-cap>button:hover,.hdr-cap>a:hover{background:var(--card)!important;color:var(--ink)!important}
+.hdr-dot{background:var(--ok)}.hdr-dot.saving{background:var(--pri)}.hdr-dot.offline{background:var(--warn)}.hdr-dot.error{background:var(--bad)}
+.hub-badge{background:var(--bad);color:#fff}
+.pv-dash{height:38px;border:1px solid var(--line);background:var(--card);color:var(--ink)!important;border-radius:10px;font:600 14px var(--pv-font)}
+.pv-dash:hover{background:var(--card);border-color:var(--pri)}
+.hdr-cap>button:focus-visible,.hdr-cap>a:focus-visible,.pv-dash:focus-visible{outline:2px solid var(--pri)}
+.pv-acct{background:var(--card);border:1px solid var(--line);color:var(--ink);box-shadow:0 12px 32px rgba(0,0,0,.28);font-family:var(--pv-font)}
+.pv-acct-h,.pv-acct-sep{border-color:var(--line)}.pv-acct-sep{background:var(--line)}
+.pv-acct-h small{color:var(--mut)}
+.pv-acct-i{color:var(--ink)!important}.pv-acct-i:hover,.pv-acct-i:focus-visible{background:var(--card2)}
+.pv-acct-i svg{color:var(--mut)}
+.hub-bg{background:rgba(10,12,20,.55)}
+.hub-pal,.hub-panel{background:var(--card);color:var(--ink);font-family:var(--pv-font)}
+.hub-pal .hp-in,.hub-pal .hp-foot,.hub-ph,.hub-convs,.hub-th,.hub-comp,.hub-tabs,.hub-item{border-color:var(--line)}
+.hub-pal input{color:var(--ink)}
+.hub-pal .hp-in,.hub-pal .hp-g,.hub-pal .hp-row small,.hub-pal .hp-empty,.hub-pal .hp-foot,.hub-note,.hub-item .is,.hub-item .tm,.hub-conv small,.hub-msg .meta,.hub-day{color:var(--mut)}
+.hub-pal .hp-row.on,.hub-conv:hover,.hub-x:hover{background:var(--card2)}
+.hub-pal .hp-row .hp-ic,.hub-item .ii{background:var(--card2);color:var(--mut)}
+.hub-x{color:var(--ink)}
+.hub-conv.on,.hub-item.unread{background:var(--pril)}
+.hub-av{background:var(--pri);color:var(--onpri)}.hub-av.all{background:var(--nav);color:#fff}
+.hub-msgs{background:var(--bg)}
+.hub-msg .bub{background:var(--card);border-color:var(--line)}
+.hub-msg.me .bub,.hub-send{background:var(--pri);color:var(--onpri)}
+.hub-comp textarea{background:var(--card);border-color:var(--line);color:var(--ink)}.hub-comp textarea:focus{border-color:var(--pri)}
+.hub-item .ia button{background:var(--card);border:1px solid var(--line);color:var(--ink);border-radius:8px}
+.hub-item .ia button.pri{background:var(--pri);border-color:var(--pri);color:var(--onpri)}
+.hub-item .ia button.bad{color:var(--bad)}
+.hub-tabs button{color:var(--mut)}.hub-tabs button.on{background:var(--pril);color:var(--pri)}
+
+/* ---------- page ---------- */
+.main{padding:18px 20px 36px;max-width:1280px}
+.sync{gap:6px}
+.chip{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;padding:2px 9px;border-radius:20px;background:var(--line);border:0;color:var(--mut)}
+.chip .dot{width:7px;height:7px;background:var(--mut)}
+.chip.ok .dot{background:var(--ok)}.chip.bad .dot{background:var(--bad)}
+.chip.bad{background:var(--badl);color:var(--bad)}
+
+/* buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;height:auto;min-height:36px;padding:8px 14px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--ink);font:600 14px/1.45 var(--pv-font);box-shadow:none;cursor:pointer;text-decoration:none;white-space:nowrap}
+.btn:hover{border-color:var(--pri);background:var(--card)}
+.btn.primary,.btn.primary:hover{background:var(--pri);border-color:var(--pri);color:var(--onpri);filter:none}
+.btn.primary:hover{filter:brightness(1.06)}
+.btn.danger{color:var(--bad);background:var(--card)}
+.btn.danger:hover{background:var(--badl);border-color:var(--bad)}
+.btn.sm{min-height:0;height:auto;padding:4px 10px;font-size:12.5px;border-radius:8px}
+.btn.primary.sm{padding:4px 10px}
+.btn:disabled{opacity:.55;cursor:default}
+.ghost{display:inline-flex;align-items:center;justify-content:center;gap:7px;height:auto;padding:8px 14px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--ink);font:600 14px/1.45 var(--pv-font);cursor:pointer}
+.ghost:hover{border-color:var(--pri);background:var(--card)}
+
+/* inputs */
+input[type=text],input[type=search],input[type=email],input[type=password],input[type=number],input[type=date],select,textarea{font:14px/1.45 var(--pv-font);color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:9px;padding:8px 10px}
+input::placeholder,textarea::placeholder{color:var(--mut);opacity:.8}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--pri);box-shadow:0 0 0 3px color-mix(in srgb,var(--pri) 25%,transparent)}
+input[type=checkbox]{accent-color:var(--pri)}
+@media (pointer:coarse){input:not([type=checkbox]):not([type=radio]),select,textarea{font-size:16px!important}}
+
+/* customers page head */
+.ctop{gap:10px;margin-bottom:14px}
+.ctop h1{font-size:20px;line-height:28px;font-weight:700;letter-spacing:-.02em;color:var(--ink)}
+.ctop .btn.primary{height:auto;padding:8px 14px;font:600 14px/1.45 var(--pv-font)}
+.csearch{height:auto;min-width:220px;padding:8px 10px;border-radius:9px;border:1px solid var(--line);background:var(--card);font-size:14px}
+/* product filter = segmented control */
+.pchips{display:inline-flex;gap:0;border:1px solid var(--line);border-radius:10px;padding:2px;background:var(--card);flex-wrap:wrap}
+.pchip,.pchip:hover{height:auto;border:0;background:none;padding:5px 11px;border-radius:8px;font:600 14px/1.45 var(--pv-font);color:var(--mut)}
+.pchip:hover{color:var(--ink)}
+.pchip.on,.pchip.on:hover{background:var(--pril);color:var(--pri);border:0}
+.ckey{color:var(--mut);font-size:13px;gap:16px;margin-bottom:14px}
+.sdot.g{background:var(--ok)}.sdot.a{background:var(--warn)}.sdot.r{background:var(--bad)}.sdot.n{background:var(--mut)}
+
+/* cards */
+.cgrid{gap:14px}
+.ccard,.cust,.acct{background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:none}
+.ccard.bad{border-color:color-mix(in srgb,var(--bad) 45%,var(--card));box-shadow:none}
+.ccard .ch{padding:14px 16px 10px}
+.ccard .ch h3{font-size:16px;line-height:22px;font-weight:700;letter-spacing:-.01em;color:var(--ink)}
+.ccard .ch .cm,.ccard .pl .pr,.ccard .cf,.ccard .cempty{color:var(--mut)}
+.ccard .pl,.ccard .cempty,.ccard .cf{border-top:1px solid var(--line);padding-left:16px;padding-right:16px}
+.ccard .pl{font-size:14px}
+.ccard .pi{background:var(--pril);color:var(--pri)}
+.ccard .pl .pr.r{color:var(--bad)}.ccard .pl .pr.a{color:var(--warn)}
+.ccard .cf a{color:var(--pri)}
+.ccard .cf .addlic,.ccard .cf .addlic:hover{height:auto;padding:4px 10px;border-radius:8px;background:var(--pri);color:var(--onpri);font:600 12.5px/1.45 var(--pv-font);filter:none}
+.ccard .cf .addlic:hover{filter:brightness(1.06)}
+.spill,.pill{display:inline-block;font-size:12px;font-weight:600;padding:2px 9px;border-radius:20px;white-space:nowrap}
+.spill.g,.pill.ok{background:var(--okl);color:var(--ok)}
+.spill.a,.pill.warn{background:var(--warnl);color:var(--warn)}
+.spill.r,.pill.bad{background:var(--badl);color:var(--bad)}
+.spill.n,.pill.none{background:var(--line);color:var(--mut)}
+.ptag{font-size:12px;font-weight:600;padding:2px 9px;border-radius:20px;background:var(--pril);color:var(--pri)}
+.dback{color:var(--pri)}
+.cust>.head .meta,.acct .ah .small{color:var(--mut)}
+.cust .body{border-top:1px solid var(--line)}
+.acct .ah{background:var(--card2);border-bottom:1px solid var(--line)}
+.details label{font-size:12.5px;font-weight:600;color:var(--mut);margin-bottom:4px}
+.empty{background:var(--card);border:1px dashed var(--line);border-radius:12px;color:var(--mut);padding:36px 16px}
+.msg{padding:10px 12px;border-radius:10px;font-size:13px}
+.msg.err{background:var(--badl);color:var(--bad)}
+.msg.info{background:var(--pril);color:var(--pri)}
+
+/* tables */
+th,td{border-bottom:1px solid var(--line)}
+th{background:var(--card);font-size:12px;font-weight:600;color:var(--mut);padding-top:7px;padding-bottom:7px}
+td{background:var(--card)}
+td.small,.small{color:var(--mut)}
+.pay-grid .hd,.pay-steps{color:var(--mut)}
+
+/* bulk bar */
+.bulk{background:var(--nav);color:#fff;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.25)}
+.bulk select,.bulk input[type=date]{color:var(--ink)}
+
+/* dialogs */
+dialog{background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:14px;padding:0;box-shadow:0 24px 60px rgba(0,0,0,.35)}
+dialog::backdrop{background:rgba(10,12,20,.55)}
+dialog .dh{padding:20px 20px 4px;border-bottom:0;font-size:17px;font-weight:700;letter-spacing:-.02em}
+dialog .db{padding:6px 20px 4px}
+dialog .db label{font-size:12.5px;font-weight:600;color:var(--mut);margin:10px 0 4px}
+dialog .df{padding:16px 20px 20px;border-top:0}
+#bellDlg .db{padding:6px 0}
+.nt-row{border-bottom:1px solid var(--line)}
+.nt-row:hover{background:var(--card2)}
+.nt-row.new{background:var(--pril)}
+.nt-row .nb span,.nt-row .nw{color:var(--mut)}
+
+/* toasts */
+#toast div{background:var(--ink);color:var(--bg);border-radius:10px;padding:9px 16px;font-size:13.5px;box-shadow:0 8px 24px rgba(0,0,0,.25)}
+#toast div.err{background:var(--bad);color:var(--card)}
+
+/* ---------- sign-in ---------- */
+.auth{background:var(--bg);color:var(--ink);font-family:var(--pv-font);font-size:14px}
+.auth-art{background:var(--nav)}
+.auth-art .brand{gap:10px}
+.auth-art h2{font-size:36px;font-weight:700;letter-spacing:-.03em;color:#fff}
+.auth-art .sub{color:#aab0c6}
+.auth .pvlogo{background:url(icon-app.svg) center/contain no-repeat;border-radius:22%}
+.auth-art .pvlogo{width:30px;height:30px}
+.auth-brand .pvlogo{width:52px;height:52px}
+.auth .pv-brand{font-size:16px;flex:none}
+.auth-brand .pv-brand{font-size:20px;line-height:26px;color:var(--ink)}
+.auth-brand .pv-brand i{color:var(--pri)}
+.auth-form form{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:30px 28px;box-shadow:0 18px 50px -18px rgba(0,0,0,.35)}
+.auth h1{font-size:22px;font-weight:700;letter-spacing:-.02em}
+.auth .muted{color:var(--mut);font-size:14px}
+.auth label.af{font-size:12.5px;font-weight:600;color:var(--mut)}
+.auth label.af input{border:1px solid var(--line);border-radius:9px;padding:10px 12px;background:var(--card);color:var(--ink);font-size:15px}
+.auth label.af input:focus{outline:none;border-color:var(--pri);box-shadow:0 0 0 3px color-mix(in srgb,var(--pri) 25%,transparent)}
+.auth .pw-eye{color:var(--mut)}
+.auth .pw-eye:hover{color:var(--ink);background:var(--card2)}
+.auth .pw-eye.on{color:var(--pri)}
+.auth .pw-match.ok{color:var(--ok)}.auth .pw-match.bad{color:var(--bad)}
+.auth .go{height:44px;border-radius:10px;background:var(--pri);color:var(--onpri);font:700 15px var(--pv-font)}
+.auth .go:hover{filter:brightness(1.06)}
+.auth .alinks button{color:var(--mut);font-weight:600}
+.auth .alinks button:hover{background:var(--card2);color:var(--ink)}
+.auth .notice{background:var(--pril);border:1px solid color-mix(in srgb,var(--pri) 35%,var(--card));color:var(--ink)}
+.auth .notice.ok{background:var(--okl);border-color:color-mix(in srgb,var(--ok) 35%,var(--card));color:var(--ok)}
+.auth .notice.bad{background:var(--badl);border-color:color-mix(in srgb,var(--bad) 35%,var(--card));color:var(--bad)}
+.pva-lic{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);box-shadow:0 30px 70px rgba(0,0,0,.35)}
+.pva-lic .hd span{color:#aab0c6}
+.pva-lic .li{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.1)}
+.pva-lic .li .tg{background:rgba(139,163,247,.2);color:#c4d0fb}
+.pva-lic .st.ok{background:#1b3a30;color:#5ad69f}
+.pva-lic .st.wn{background:#3b3524;color:#f2c066}
+.pva-lic .st.gr{background:#8ba3f7;color:#0d0f15}
+
+/* ---------- iPad: 72px labelled rail ---------- */
 @media (min-width:701px) and (max-width:900px){
- .app .side .nav a{font-size:15px}
- .app .side .nav a>span{letter-spacing:-.1px}
+  html:not(.menu-bottom) .app{grid-template-columns:72px minmax(0,1fr)}
+  html:not(.menu-bottom) .side{padding:12px 6px}
+  html:not(.menu-bottom) .side .pv-brand,html:not(.menu-bottom) .side-col,html:not(.menu-bottom) .nav-sep,html:not(.menu-bottom) .vbox,html:not(.menu-bottom) .sf-btn .lbl{display:none!important}
+  html:not(.menu-bottom) .side .brand{justify-content:center;padding:4px 0 12px}
+  html:not(.menu-bottom) .side .brand .pvlogo{display:block}
+  html:not(.menu-bottom) .side .nav{gap:4px}
+  html:not(.menu-bottom) .side .nav a{flex-direction:column;justify-content:center;gap:3px;padding:9px 2px;font-size:10.5px;line-height:1.1;text-align:center}
+  html:not(.menu-bottom) .side .nav a>span{display:block;max-width:62px;line-height:13px;overflow:hidden;text-overflow:ellipsis}
+  html:not(.menu-bottom) .sf-btn{justify-content:center;margin:6px 4px 0;padding:11px 0}
+  html:not(.menu-bottom) .sf-btn svg{width:18px;height:18px}
 }
-/* Proview menu on phones: one spec for all Proview apps (60px rail; every button 50 x 52 with an 18px icon and a 10px label) */
+/* ---------- phones: 60px icon rail on the left (unless Menu at bottom is on) ---------- */
 @media (max-width:700px){
- html .side .nav{padding:0!important;display:flex!important;flex-direction:column!important;align-items:center!important}
- html .side .nav>button:not(.nav-more),html .side .nav>a{width:50px!important;min-width:0!important;max-width:50px!important;height:52px!important;margin:0 auto!important;padding:0 1px!important;border-radius:9px!important;gap:4px!important;flex-direction:column!important;justify-content:center!important;align-items:center!important;box-sizing:border-box!important}
- html .side .nav>button svg,html .side .nav>a svg{width:18px!important;height:18px!important;margin:0!important;flex:none}
- html .side .nav .slbl,html .side .nav>a>span:not(.bell-dot):not(.cnt){display:block!important;font-size:10px!important;line-height:12px!important;font-weight:500!important;letter-spacing:-.1px!important;max-width:58px!important;overflow:visible!important;text-overflow:clip!important;white-space:nowrap;text-align:center}
+  html:not(.menu-bottom) .app{grid-template-columns:60px minmax(0,1fr)}
+  html:not(.menu-bottom) .side{padding:10px 5px calc(10px + env(safe-area-inset-bottom))}
+  html:not(.menu-bottom) .side .pv-brand,html:not(.menu-bottom) .side-col,html:not(.menu-bottom) .nav-sep,html:not(.menu-bottom) .vbox,html:not(.menu-bottom) .sf-btn .lbl{display:none!important}
+  html:not(.menu-bottom) .side .brand{justify-content:center;padding:2px 0 10px}
+  html:not(.menu-bottom) .side .brand .pvlogo{display:block;width:28px;height:28px}
+  html:not(.menu-bottom) .side .nav{gap:2px}
+  html:not(.menu-bottom) .side .nav a{flex-direction:column;justify-content:center;gap:4px;padding:8px 1px;font-size:10px;line-height:12px;text-align:center}
+  html:not(.menu-bottom) .side .nav a>span{display:block;max-width:54px;letter-spacing:-.1px;overflow:visible;text-overflow:clip}
+  html:not(.menu-bottom) .sf-btn{justify-content:center;margin:6px 2px 0;padding:11px 0}
+  html:not(.menu-bottom) .sf-btn svg{width:18px;height:18px}
+  .main{padding:14px 12px 36px}
+  .top{padding:8px 12px;gap:6px;min-height:56px;flex-wrap:wrap;row-gap:6px}
+  .top .sp{display:none}
+  .top .ttl{order:0;flex:1 0 calc(100% - 96px)}
+  .top-me{order:1;margin-left:0}
+  .top .hdr-cap,.top .pv-dash{order:2}
+  .top h2{font-size:18px}
+  .vsub{display:block}
+  .top-av{width:32px;height:32px;font-size:12px}
+  .icon-btn{width:36px;height:36px}
+  .top .hdr-pick{order:3;flex:1 1 0;min-width:110px;margin:0}
+  .top .hdr-pick select{width:100%;min-width:0;max-width:none;height:36px;font-size:13px}
+  .csearch{min-width:0;flex:1}
+}
+
+/* ---------- Menu at bottom ---------- */
+html.menu-bottom .app,html.menu-bottom .app.collapsed{grid-template-columns:minmax(0,1fr)}
+html.menu-bottom .side{position:fixed;left:0;right:0;bottom:0;top:auto;height:auto;min-height:60px;width:auto;flex-direction:row;align-items:center;gap:2px;padding:4px 6px calc(4px + env(safe-area-inset-bottom));overflow:hidden;z-index:40;box-shadow:0 -6px 20px rgba(0,0,0,.18)}
+html.menu-bottom .side .brand,html.menu-bottom .nav-sep,html.menu-bottom .vbox,html.menu-bottom .sf-btn .lbl{display:none!important}
+html.menu-bottom .side .nav{flex-direction:row;flex:1;min-width:0;overflow-x:auto;gap:2px;scrollbar-width:none}
+html.menu-bottom .side .nav a{flex:1 0 auto;min-width:58px;flex-direction:column;justify-content:center;gap:2px;padding:7px 4px;font-size:11px;line-height:1.2;text-align:center}
+html.menu-bottom .side-foot{flex-direction:row;margin:0;padding:0;gap:2px;flex:none}
+html.menu-bottom .sf-btn{margin:0 0 0 2px;padding:10px 12px;justify-content:center}
+html.menu-bottom .sf-btn svg{width:18px;height:18px}
+html.menu-bottom .main{padding-bottom:calc(84px + env(safe-area-inset-bottom))}
+html.menu-bottom #toast{bottom:calc(76px + env(safe-area-inset-bottom))}
+html.menu-bottom .bulk{bottom:72px}
+@media (max-width:560px){
+  html.menu-bottom .side .nav a{min-width:0;padding:7px 2px}
+  html.menu-bottom .sf-btn{padding:9px 9px}
 }
 </style>
 </head>
@@ -400,8 +638,8 @@ html .app.collapsed .side :is(.side-foot,#pv-x)>*{width:30px!important;height:26
 
 <!-- APP: same shell as Proview Signage -->
 <div id="appView" class="app hidden">
-  <aside class="side">
-    <div class="brand"><div class="pvlogo" role="img" aria-label="PROVIEW"></div><span class="wordmark">PROVIEW<span>LICENCES</span></span></div>
+  <aside class="side" aria-label="Main menu">
+    <div class="brand"><div class="pvlogo" role="img" aria-label="Proview Licences"></div><span class="pv-brand">Proview <i>Licences</i></span><button type="button" class="side-col" id="collapseBtn" title="Collapse menu" aria-label="Collapse menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg></button></div>
     <nav class="nav">
       <div class="nav-sep">Licences</div>
       <a data-tab="customers" class="active" href="#customers"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21h18M5 21V7l7-4 7 4v14M9 9h1M9 13h1M9 17h1M14 9h1M14 13h1M14 17h1"/></svg><span>Customers</span></a>
@@ -411,13 +649,15 @@ html .app.collapsed .side :is(.side-foot,#pv-x)>*{width:30px!important;height:26
       <a data-tab="activity" href="#activity"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg><span>Activity</span></a>
     </nav>
     <div class="side-foot">
-      <button class="sf-link" id="collapseBtn" title="Collapse menu" aria-label="Collapse menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg><span class="lbl">COLLAPSE</span></button>
+      <button type="button" class="vbox" id="sideMe" title="My account" aria-haspopup="menu" aria-expanded="false"><b id="sideName">Proview</b><small><span class="dot"></span><span id="sideRole">Online · Licence admin</span></small></button>
+      <button type="button" class="sf-btn" id="navBtn" data-pv-menu title="Menu at bottom" aria-label="Menu at bottom"><svg class="i-bottom" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 15h18"/></svg><svg class="i-side" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/></svg><span class="lbl l-bottom">Menu at bottom</span><span class="lbl l-side">Menu at side</span></button>
+      <button type="button" class="sf-btn" id="themeBtn" data-pv-theme title="Light mode" aria-label="Light mode"><svg class="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg><svg class="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg><span class="lbl l-light">Light mode</span><span class="lbl l-dark">Dark mode</span></button>
     </div>
   </aside>
   <div class="main-col">
     <header class="top">
       <button class="icon-btn menu-btn" id="menuBtn" aria-label="Open menu" title="Menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
-      <h2 id="pageTitle">Customers</h2>
+      <div class="ttl"><div class="vsub">Proview</div><h2 id="pageTitle">Customers</h2></div>
       <div class="hdr-pick"><label class="sr" for="hdr-biz">Business</label><select id="hdr-biz" aria-label="Choose business"><option value="">All businesses</option></select></div>
       <div class="sp"></div>
       <span id="hdrTray"></span>
@@ -553,6 +793,32 @@ html .app.collapsed .side :is(.side-foot,#pv-x)>*{width:30px!important;height:26
 <div id="toast"></div>
 
 <script src="hub.js"></script>
+<script>/* Proview Navy: keep the theme CSS last (after hub.js's), and the Light mode / Menu at bottom switches */
+(function(){
+  var d=document.documentElement, st=document.getElementById("pv-navy"); if(st) document.head.appendChild(st);
+  function label(){
+    var light=d.getAttribute("data-theme")==="light", bottom=d.classList.contains("menu-bottom");
+    var t=document.getElementById("themeBtn"), n=document.getElementById("navBtn");
+    if(t){var a=light?"Dark mode":"Light mode";t.title=a;t.setAttribute("aria-label",a);}
+    if(n){var b=bottom?"Menu at side":"Menu at bottom";n.title=b;n.setAttribute("aria-label",b);}
+    var c=document.querySelector('meta[name="theme-color"]'); if(c) c.content=light?"#f2f4f9":"#171c29";
+  }
+  function set(theme,menu){
+    if(theme){d.setAttribute("data-theme",theme);try{localStorage.setItem("pv.theme",theme);}catch(e){}}
+    if(menu){d.classList.toggle("menu-bottom",menu==="bottom");try{localStorage.setItem("pv.menu",menu);}catch(e){}}
+    label();
+  }
+  document.addEventListener("click",function(e){
+    if(e.target.closest("[data-pv-theme]")) set(d.getAttribute("data-theme")==="light"?"dark":"light");
+    else if(e.target.closest("[data-pv-menu]")) set(null,d.classList.contains("menu-bottom")?"side":"bottom");
+  });
+  addEventListener("storage",function(e){
+    if(e.key==="pv.theme") d.setAttribute("data-theme",e.newValue==="light"?"light":"dark");
+    if(e.key==="pv.menu") d.classList.toggle("menu-bottom",e.newValue==="bottom");
+    label();
+  });
+  label();
+})();</script>
 <script type="module">
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
 
@@ -1303,16 +1569,21 @@ function paintHeader() { paintBell(); window.PVHub?.paint(); }
   paintDot();
   setInterval(() => { if (S.email) loadHeaderData(); }, 60000);
 })();
-$("#who").onclick = (e) => window.PVHub?.accountMenu(e.currentTarget, {
+const openAcct = (e) => { const btn = e.currentTarget; window.PVHub?.accountMenu(btn, {
   initials: $("#who").textContent, name: S.name || "", email: S.email, sub: "Proview licence admin", focusFirst: e.detail === 0,
   items: [{ label: "Activity", icon: "page", run: () => setTab("activity") },
           { label: "Change password", icon: "user", run: async () => { const { error } = await sb.auth.resetPasswordForEmail(S.email, { redirectTo: location.origin + location.pathname }); toast(error ? error.message : "Password reset email sent to " + S.email, !!error); } },
           { label: "Sign out", icon: "logout", run: signOutNow, sep: true }],
 });
+  // from the sidebar card (bottom-left): open above the card, left-aligned to it
+  const m = document.querySelector(".pv-acct");
+  if (m && btn.id === "sideMe") { const r = btn.getBoundingClientRect(); m.style.right = "auto"; m.style.left = Math.round(r.left) + "px"; m.style.top = Math.max(8, Math.round(r.top - m.offsetHeight - 8)) + "px"; }
+};
+$("#who").onclick = openAcct; $("#sideMe").onclick = openAcct;
 
 // ---------- auth (same flow and wording as the other Proview apps) ----------
 const EYE = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>`;
-const ART = `<div class="auth-art"><div class="brand"><div class="pvlogo"></div><span class="wordmark">PROVIEW<span>LICENCES</span></span></div>
+const ART = `<div class="auth-art"><div class="brand"><div class="pvlogo"></div><span class="pv-brand">Proview <i>Licences</i></span></div>
   <h2>Every licence, every product — one place.</h2>
   <div class="pva-lic" aria-hidden="true"><div class="hd"><b>Licences</b><span>This week</span></div>
     <div class="li"><span class="tg">SIGNAGE</span><b>Front window TV</b><span class="st ok">Active</span></div>
@@ -1321,7 +1592,7 @@ const ART = `<div class="auth-art"><div class="brand"><div class="pvlogo"></div>
     <div class="li"><span class="tg">SIGNAGE</span><b>Menu board</b><span class="st ok">Renewed +12m</span></div>
   </div>
   <div class="sub">Manage Signage, Bookings and Employee licences from one login.</div></div>`;
-const BRAND = `<div class="auth-brand"><div class="pvlogo" role="img" aria-label="Proview logo"></div><span class="wordmark">PROVIEW<span>LICENCES</span></span></div>`;
+const BRAND = `<div class="auth-brand"><div class="pvlogo" role="img" aria-label="Proview logo"></div><span class="pv-brand">Proview <i>Licences</i></span></div>`;
 const eyeBtn = (f) => `<button type="button" class="pw-eye" data-f="${f}" title="Show password" aria-label="Show password">${EYE}</button>`;
 let AUTHMODE = "signin";
 
@@ -1434,6 +1705,7 @@ async function start() {
   $("#who").textContent = (nm.split(" ").map((w) => w[0]).slice(0, 2).join("") || "?").toUpperCase();
   $("#who").title = `${nm} · Proview licence admin`;
   S.name = nm;
+  $("#sideName").textContent = nm || S.email; $("#sideMe").title = `${nm} · Proview licence admin`;
   gate(false); $("#auth").innerHTML = ""; $("#appView").classList.remove("hidden");
   if (started) return; started = true;
   await loadAll().catch((e) => toast(e.message, true));
