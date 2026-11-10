@@ -471,6 +471,33 @@ body:has(section[data-view=customers]:not(.hidden)) #syncChips{display:none}
 html .top .top-me .top-out{background:#d92d20;border-color:#d92d20;color:#fff}
 html .top .top-me .top-out:hover{background:#b42318;border-color:#b42318;color:#fff}
 html .side .nav .cnt[hidden]{display:none!important}
+/* New customer = Proview Signage's "Add business" pop-up (signage 43f377c: .modal.wide, .form-2, label.field, .pw-wrap/.pw-eye, .login-card) */
+.nc-dlg{width:min(720px,94vw);max-height:calc(100vh - 32px)}
+.nc-dlg.nc-done{width:min(560px,94vw)}
+.nc-dlg .dh{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 12px 0 20px;border-bottom:0;font-size:18px;font-weight:650}
+.nc-dlg .db{padding:16px 20px;display:flex;flex-direction:column;gap:14px}
+.nc-dlg .df{padding:0 20px 18px;border-top:0;flex-wrap:wrap}
+.nc-dlg label.field{display:flex;flex-direction:column;gap:5px;margin:0;font-size:13px;font-weight:600;color:var(--ink2)}
+.nc-dlg label.field input,.nc-dlg label.field textarea{width:100%;box-sizing:border-box;font-weight:400}
+.nc-dlg input[type=tel]{font:15px var(--font);color:var(--ink);background:#fff;border:1px solid var(--line);border-radius:9px;padding:9px 11px}
+@media (hover:none) and (pointer:coarse){.nc-dlg input[type=tel]{font-size:16px!important}}
+.nc-dlg .req{color:#d92d20}
+.nc-dlg .nc-cap{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-top:4px}
+.nc-dlg .form-2{display:grid;grid-template-columns:1fr 1fr;gap:12px 14px}
+.nc-dlg .form-2 .full{grid-column:1/-1}
+.nc-dlg .nc-pw{display:flex;gap:6px;align-items:center}
+.nc-dlg .nc-pw .pw-wrap{position:relative;flex:1;min-width:0}
+.nc-dlg .pw-wrap input{padding-right:44px}
+.nc-dlg .pw-eye{position:absolute;right:4px;top:50%;transform:translateY(-50%);width:36px;height:34px;border:0;background:none;color:#8a8a94;cursor:pointer;display:grid;place-items:center;border-radius:8px}
+.nc-dlg .pw-eye:hover{color:#17171c;background:rgba(0,0,0,.05)}
+.nc-dlg .pw-eye.on{color:#4a6cd0}
+.nc-dlg .nc-hint{margin:0;font-size:12px;color:var(--muted);font-weight:400}
+.nc-dlg .notice.info{background:#eef3ff;border:1px solid #cfdcff;color:#213a87;padding:10px 14px;border-radius:10px;font-size:14px}
+.nc-dlg .login-card{display:grid;gap:8px}
+.nc-dlg .login-card>div{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.nc-dlg .login-card b{font-family:ui-monospace,monospace;word-break:break-all}
+.nc-dlg .nc-copy{align-self:flex-start}
+@media (max-width:640px){.nc-dlg .form-2{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -647,6 +674,34 @@ html .side .nav .cnt[hidden]{display:none!important}
     <div class="db" id="bellList"></div>
     <div class="df"><button class="btn" value="close">Close</button></div>
   </form>
+</dialog>
+
+<!-- NEW CUSTOMER: the customer plus its owner's login, as Proview Signage's "Add business" -->
+<dialog id="ncDlg" class="nc-dlg" aria-labelledby="ncTitle">
+  <div class="dh"><span id="ncTitle">New customer</span><button type="button" class="icon-btn" id="ncClose" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div>
+  <div class="db">
+    <label class="field"><span>Business name<span class="req"> *</span></span><input type="text" id="ncBiz" placeholder="e.g. Tolians" autocomplete="off"></label>
+    <div class="nc-cap">Owner login</div>
+    <div class="form-2">
+      <label class="field"><span>Name<span class="req"> *</span></span><input type="text" id="ncName" placeholder="e.g. Sam Taylor" autocomplete="off"></label>
+      <label class="field">Mobile<input type="tel" id="ncMobile" placeholder="Optional" autocomplete="off"></label>
+      <label class="field"><span>Email (they sign in with this)<span class="req"> *</span></span><input type="email" id="ncEmail" placeholder="name@company.com" autocomplete="off"></label>
+      <label class="field"><span>Password<span class="req"> *</span></span><span class="nc-pw"><span class="pw-wrap"><input type="password" id="ncPw" placeholder="At least 8 characters" autocomplete="new-password"><button type="button" class="pw-eye" data-f="ncPw" tabindex="-1" title="Show password" aria-label="Show password"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></button></span><button type="button" class="btn sm" id="ncSuggest">Suggest</button></span></label>
+    </div>
+    <div class="nc-cap">Customer details (optional)</div>
+    <div class="form-2">
+      <label class="field">Contact email<input type="email" id="ncContact" placeholder="Same as the owner’s email" autocomplete="off"></label>
+      <label class="field">Phone<input type="text" id="ncPhone" placeholder="Optional" autocomplete="off"></label>
+      <label class="field full">Notes<textarea id="ncNotes" rows="2" placeholder="Optional"></textarea></label>
+    </div>
+    <p class="nc-hint">Creates the customer here and a Proview account for this person (ready to use, the same login as the Proview dashboard), linked to the customer as its owner. App accounts with the contact email are linked to it at the next sync. No email is sent.</p>
+  </div>
+  <div class="df"><button type="button" class="btn" id="ncCancel">Cancel</button><button type="button" class="btn primary" id="ncGo">Add customer</button></div>
+</dialog>
+<dialog id="ncDone" class="nc-dlg nc-done" aria-labelledby="ncDoneTitle">
+  <div class="dh"><span id="ncDoneTitle"></span><button type="button" class="icon-btn" id="ncDoneClose" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div>
+  <div class="db" id="ncDoneBody"></div>
+  <div class="df"><button type="button" class="btn" id="ncStay">Stay here</button><button type="button" class="btn primary" id="ncOpen">Open customer</button></div>
 </dialog>
 
 <div id="toast"></div>
@@ -949,7 +1004,7 @@ function custDetail(c) {
   const pill = sum.worst === "r" ? `<span class="spill r">Action needed</span>` : sum.worst === "a" ? `<span class="spill a">Renewing soon</span>` : sum.units.length ? `<span class="spill g">All OK</span>` : "";
   return `<a class="dback" data-back="1">← All customers</a>
   <div class="cust open" data-cust="${c.id}">
-    <div class="head" style="cursor:default"><div><div class="name" style="font-size:20px">${esc(c.name)}</div><div class="meta">${esc(c.contact_email || "no email")}${c.phone ? " · " + esc(c.phone) : ""}</div></div><div class="sp"></div>${pill}</div>
+    <div class="head" style="cursor:default"><div><div class="name" style="font-size:20px">${esc(c.name)}</div><div class="meta">${esc(c.contact_email || "no email")}${c.phone ? " · " + esc(c.phone) : ""}</div>${c.owner_email ? `<div class="meta">Owner login: ${esc([c.owner_name, c.owner_email, c.owner_mobile].filter(Boolean).join(" · "))}</div>` : ""}</div><div class="sp"></div>${pill}</div>
     <div class="body">
       <div class="details">
         <div><label>Customer name</label><input type="text" data-f="name" value="${esc(c.name)}"></div>
@@ -1105,17 +1160,52 @@ async function saveCustomer(id) {
   if (error) return toast(error.message, true);
   Object.assign(S.customers.find((c) => c.id === id), patch); toast("Saved"); renderCustomers();
 }
-async function newCustomer() {
-  const r = await ask({ title: "New customer", ok: "Create", fields: [
-    { label: "Customer name", required: true },
-    { label: "Contact email (optional)", type: "email" } ] });
-  const name = r?.[0]; if (!name) return;
-  const email = r[1] || null;
-  const { data, error } = await sb.from("lic_customers").insert({ name: name.trim(), contact_email: email?.trim().toLowerCase() || null }).select().single();
-  if (error) return toast(error.message, true);
-  S.customers.push(data); S.customers.sort((a, b) => a.name.localeCompare(b.name)); openDetail(data.id);
-  toast("Customer created. Use “Move…” on an app account to link it here.");
+// New customer = Proview Signage's "Add business" (43f377c): the customer plus a ready-to-use login for its owner,
+// made in one go by lic_add_customer (master only, all or nothing). No email is sent; an existing login keeps its password.
+const SIGNIN_URL = "https://license.proviewcrm.co.uk/";
+function newCustomer() {
+  const d = $("#ncDlg");
+  ["#ncBiz", "#ncName", "#ncMobile", "#ncEmail", "#ncPw", "#ncContact", "#ncPhone", "#ncNotes"].forEach((k) => { $(k).value = ""; });
+  const pw = $("#ncPw"), eye = $('#ncDlg .pw-eye'); pw.type = "password"; eye.classList.remove("on"); eye.title = "Show password"; eye.setAttribute("aria-label", "Show password");
+  $("#ncGo").disabled = false;
+  d.showModal(); setTimeout(() => $("#ncBiz").focus(), 30);
 }
+$("#ncSuggest").onclick = () => {
+  const a = "abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789", r = crypto.getRandomValues(new Uint32Array(10));
+  const pw = $("#ncPw"); pw.value = [...r].map((n) => a[n % a.length]).join(""); pw.type = "text";
+  const eye = $("#ncDlg .pw-eye"); eye.classList.add("on"); eye.title = "Hide password"; eye.setAttribute("aria-label", "Hide password");
+};
+$("#ncCancel").onclick = $("#ncClose").onclick = () => $("#ncDlg").close();
+$("#ncGo").onclick = async () => {
+  const need = (sel, msg) => { toast(msg, true); $(sel).focus(); };
+  const biz = $("#ncBiz").value.trim(), name = $("#ncName").value.trim(), e = $("#ncEmail").value.trim().toLowerCase(), pw = $("#ncPw").value;
+  const contact = $("#ncContact").value.trim().toLowerCase();
+  if (biz.length < 2) return need("#ncBiz", "Enter the business name");
+  if (name.length < 2) return need("#ncName", "Enter the owner’s name");
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e)) return need("#ncEmail", "Enter a valid email address");
+  if (pw.length < 8) return need("#ncPw", "The password needs at least 8 characters");
+  if (contact && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(contact)) return need("#ncContact", "Enter a valid contact email, or leave it empty");
+  const go = $("#ncGo"); go.disabled = true;
+  const { data: r, error } = await sb.rpc("lic_add_customer", { p_business: biz, p_name: name, p_email: e, p_mobile: $("#ncMobile").value.trim(), p_password: pw,
+    p_contact_email: contact || null, p_phone: $("#ncPhone").value.trim() || null, p_notes: $("#ncNotes").value.trim() || null });
+  go.disabled = false;
+  if (error) return toast(error.message, true);
+  $("#ncDlg").close();
+  await loadAll().catch((err) => toast(err.message, true));
+  const details = `PROVIEW LICENCES login\n${SIGNIN_URL}\nEmail: ${e}\nPassword: ${pw}`;
+  $("#ncDoneTitle").textContent = `${biz} added`;
+  $("#ncDoneBody").innerHTML = r?.existing
+    ? `<p style="margin:0">${esc(e)} already had a PROVIEW LICENCES login, so they were made the owner of this customer and keep the password they already use. The password you typed was not applied.</p>`
+    : `<p class="muted" style="margin:0">The owner can sign in now. No email was sent, so pass these on yourself:</p>
+       <div class="notice info login-card"><div><span class="muted">Sign in at</span><b>${esc(SIGNIN_URL.replace(/^https?:\/\//, "").replace(/\/$/, ""))}</b></div><div><span class="muted">Email</span><b>${esc(e)}</b></div><div><span class="muted">Password</span><b>${esc(pw)}</b></div></div>
+       <button class="btn nc-copy" type="button" id="ncCopy"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>Copy login details</button>`;
+  const cp = $("#ncCopy");
+  if (cp) cp.onclick = async () => { try { await navigator.clipboard.writeText(details); toast("Copied"); } catch { prompt("Copy this:", details); } };
+  const done = $("#ncDone");
+  $("#ncStay").onclick = $("#ncDoneClose").onclick = () => done.close();
+  $("#ncOpen").onclick = () => { done.close(); setTab("customers"); openDetail(r.customer_id); };
+  setTimeout(() => done.showModal(), 50);
+};
 function pickCustomer(title, excludeId) {
   return new Promise((res) => {
     const dlg = $("#moveDlg");
