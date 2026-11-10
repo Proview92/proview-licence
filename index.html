@@ -694,7 +694,7 @@ html .side .nav .cnt[hidden]{display:none!important}
       <label class="field">Phone<input type="text" id="ncPhone" placeholder="Optional" autocomplete="off"></label>
       <label class="field full">Notes<textarea id="ncNotes" rows="2" placeholder="Optional"></textarea></label>
     </div>
-    <p class="nc-hint">Creates the customer here and a Proview account for this person (ready to use, the same login as the Proview dashboard), linked to the customer as its owner. App accounts with the contact email are linked to it at the next sync. No email is sent.</p>
+    <p class="nc-hint">Creates the customer here and a Proview login for this person, linked to the customer as its owner. They sign in at dashboard.proviewcrm.co.uk, which opens their Proview apps once they are an owner in an app. App accounts with the contact email are linked to this customer at the next sync. No email is sent.</p>
   </div>
   <div class="df"><button type="button" class="btn" id="ncCancel">Cancel</button><button type="button" class="btn primary" id="ncGo">Add customer</button></div>
 </dialog>
@@ -1162,7 +1162,7 @@ async function saveCustomer(id) {
 }
 // New customer = Proview Signage's "Add business" (43f377c): the customer plus a ready-to-use login for its owner,
 // made in one go by lic_add_customer (master only, all or nothing). No email is sent; an existing login keeps its password.
-const SIGNIN_URL = "https://license.proviewcrm.co.uk/";
+const SIGNIN_URL = "https://dashboard.proviewcrm.co.uk/";
 function newCustomer() {
   const d = $("#ncDlg");
   ["#ncBiz", "#ncName", "#ncMobile", "#ncEmail", "#ncPw", "#ncContact", "#ncPhone", "#ncNotes"].forEach((k) => { $(k).value = ""; });
@@ -1192,11 +1192,11 @@ $("#ncGo").onclick = async () => {
   if (error) return toast(error.message, true);
   $("#ncDlg").close();
   await loadAll().catch((err) => toast(err.message, true));
-  const details = `PROVIEW LICENCES login\n${SIGNIN_URL}\nEmail: ${e}\nPassword: ${pw}`;
+  const details = `PROVIEW login\n${SIGNIN_URL}\nEmail: ${e}\nPassword: ${pw}`;
   $("#ncDoneTitle").textContent = `${biz} added`;
   $("#ncDoneBody").innerHTML = r?.existing
-    ? `<p style="margin:0">${esc(e)} already had a PROVIEW LICENCES login, so they were made the owner of this customer and keep the password they already use. The password you typed was not applied.</p>`
-    : `<p class="muted" style="margin:0">The owner can sign in now. No email was sent, so pass these on yourself:</p>
+    ? `<p style="margin:0">${esc(e)} already had a Proview login, so they were made the owner of this customer and keep the password they already use. The password you typed was not applied.</p>`
+    : `<p class="muted" style="margin:0">The owner can sign in now. No email was sent, so pass these on yourself. The login opens their Proview apps once they are an owner in an app.</p>
        <div class="notice info login-card"><div><span class="muted">Sign in at</span><b>${esc(SIGNIN_URL.replace(/^https?:\/\//, "").replace(/\/$/, ""))}</b></div><div><span class="muted">Email</span><b>${esc(e)}</b></div><div><span class="muted">Password</span><b>${esc(pw)}</b></div></div>
        <button class="btn nc-copy" type="button" id="ncCopy"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>Copy login details</button>`;
   const cp = $("#ncCopy");
