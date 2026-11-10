@@ -978,6 +978,7 @@ function renderCustomers() {
   // problem cards first, then soonest renewal, then name
   list.sort((a, b) => (a.s.worst === "r" ? 0 : 1) - (b.s.worst === "r" ? 0 : 1) || a.s.renew - b.s.renew || a.c.name.localeCompare(b.c.name));
   $("#custList").innerHTML = list.length ? `<div class="ov-grid">${list.map((x) => custCard(x.c)).join("")}</div>`
+    : S.customers.length && q ? `<p class="muted" style="margin:0">No businesses or locations match “${esc($("#q").value.trim())}”.</p>`
     : `<div class="empty">${S.customers.length ? "No customers match." : "No customers yet. Press “Sync” to pull them in from the apps."}</div>`;
   renderBulk();
 }
