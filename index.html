@@ -391,6 +391,86 @@ html .app.collapsed .side :is(.side-foot,#pv-x)>*{width:30px!important;height:26
  html .side .nav>button svg,html .side .nav>a svg{width:18px!important;height:18px!important;margin:0!important;flex:none}
  html .side .nav .slbl,html .side .nav>a>span:not(.bell-dot):not(.cnt){display:block!important;font-size:10px!important;line-height:12px!important;font-weight:500!important;letter-spacing:-.1px!important;max-width:58px!important;overflow:visible!important;text-overflow:clip!important;white-space:nowrap;text-align:center}
 }
+/* ===== Locations page = Proview Signage's (web/css/app.css at 76996e4/1906cd5: .page-head, .btn, .card, .badge, .ov-*), same values.
+   Colours come from --ov-* (set per app on body, so dark mode follows); the fallbacks are Signage's light values. ===== */
+.pv-loc{font-family:"Inter","Segoe UI",system-ui,-apple-system,Roboto,Helvetica,Arial,sans-serif;font-size:15px;line-height:1.45;color:var(--ov-ink,#17171c);-webkit-font-smoothing:antialiased;max-width:1236px}
+.pv-loc *,.ov-list *{box-sizing:border-box}
+.pv-loc .pv-ph{display:flex;justify-content:space-between;align-items:center;gap:16px;margin:0 0 22px;padding:0;flex-wrap:wrap}
+.pv-loc .pv-ph>p{margin:0;font-size:15px;font-weight:400;line-height:1.45;letter-spacing:normal;color:var(--ov-ink2,#55555f)}
+.pv-loc .pv-acts{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.pv-loc .btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;height:38px;min-height:0;padding:0 14px;border-radius:10px;border:1px solid var(--ov-line,#e4e2dc);background:var(--ov-panel,#fff);color:var(--ov-ink,#17171c);font:600 14px "Inter","Segoe UI",system-ui,-apple-system,Roboto,Helvetica,Arial,sans-serif;line-height:normal;letter-spacing:normal;cursor:pointer;text-decoration:none;white-space:nowrap;box-shadow:none;box-sizing:border-box;width:auto;max-width:none}
+.pv-loc .btn:hover{border-color:#cfccc4;background:#fbfaf8;color:var(--ov-ink,#17171c)}
+.pv-loc .btn:disabled{opacity:.5;cursor:not-allowed}
+.pv-loc .btn svg{width:16px;height:16px;flex:none}
+.pv-loc .btn.primary,.pv-loc .btn.primary:hover{background:linear-gradient(135deg,#2f84d4 0%,#5a5fbb 100%);border-color:transparent;color:#fff}
+.pv-loc .btn.primary:hover{filter:brightness(.95)}
+.pv-loc .btn.sm{height:32px;padding:0 11px;font-size:13px;border-radius:8px}
+.pv-loc .card,.ov-list .card{background:var(--ov-panel,#fff);border:1px solid var(--ov-line,#e4e2dc);border-radius:12px;box-shadow:0 1px 2px rgba(20,20,30,.06),0 4px 16px rgba(20,20,30,.05)}
+.pv-loc .muted,.ov-list .muted{color:var(--ov-ink2,#55555f)}
+.pv-loc .small,.ov-list .small{font-size:13px}
+.pv-loc .tiny,.ov-list .tiny{font-size:12px;color:var(--ov-ink3,#8b8b95)}
+.pv-loc .grow,.ov-list .grow{flex:1;min-width:0}
+.pv-loc h3{margin:0;letter-spacing:-.015em;line-height:1.45;color:inherit}
+/* status pill (Signage .badge) */
+.ov-pill{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:650;line-height:1.45;letter-spacing:normal;padding:3px 9px;border-radius:999px;background:#eeece6;color:var(--ov-ink2,#55555f);white-space:nowrap;flex:none}
+.ov-pill::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor;opacity:.9}
+.ov-pill.ok{background:#e5f6ec;color:#12a150}
+.ov-pill.bad{background:#fdecea;color:#d92d20}
+.ov-pill.warn{background:#fff4dc;color:#a36a00}
+/* summary boxes */
+.ov-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:0 0 16px}
+.pv-loc .ov-stat{display:block;width:auto;height:auto;min-height:0;margin:0;padding:14px 16px;text-align:left;font:inherit;color:inherit;letter-spacing:normal;cursor:pointer;transition:border-color .15s,transform .15s}
+.pv-loc .ov-stat:hover{border-color:#b9c6ea;transform:translateY(-1px)}
+.pv-loc .ov-stat:focus-visible{outline:2px solid #4a6cd0;outline-offset:2px}
+.ov-stat .tiny{display:block}
+.ov-stat.ok .ov-v{color:#12a150}
+.ov-stat.warn .ov-v{color:#d48a00}
+.ov-stat.bad .ov-v{color:#d92d20}
+.ov-v{font-size:26px;font-weight:700;line-height:1.45;letter-spacing:normal;margin-top:4px}
+/* search */
+.ov-tools{display:flex;justify-content:flex-end;margin-bottom:12px}
+.pv-loc input.ov-search{display:block;height:40px;width:100%;max-width:100%;min-width:0;margin:0;font:15px "Inter","Segoe UI",system-ui,-apple-system,Roboto,Helvetica,Arial,sans-serif;color:var(--ov-ink,#17171c);background:var(--ov-panel,#fff);border:1px solid var(--ov-line,#e4e2dc);border-radius:9px;padding:9px 11px;box-shadow:none;box-sizing:border-box}
+.pv-loc input.ov-search:focus{outline:2px solid #4a6cd0;outline-offset:-1px;border-color:transparent}
+@media (hover:none) and (pointer:coarse){.pv-loc input.ov-search{font-size:16px}}
+/* business cards */
+.ov-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:18px;align-items:start}
+.ov-biz{display:flex;flex-direction:column;overflow:hidden}
+.ov-bh{display:flex;align-items:flex-start;gap:10px;padding:16px 18px 12px}
+.pv-loc .ov-bh h3{font-size:17px;font-weight:700;margin:0 0 2px}
+.ov-loc{display:flex;align-items:center;gap:10px;width:100%;padding:11px 18px;margin:0;border:0;border-top:1px solid var(--ov-line,#e4e2dc);border-radius:0;background:none;font:inherit;color:inherit;text-align:left;cursor:pointer}
+button.ov-loc:hover{background:#f8f7f4}
+.ov-bf{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 18px;border-top:1px solid var(--ov-line,#e4e2dc);margin-top:auto}
+.ov-bf .pv-acts{gap:6px;flex-wrap:nowrap}
+.ov-dot{width:9px;height:9px;border-radius:50%;flex:none;background:#c9c7c0}
+.ov-dot.ok{background:#12a150}.ov-dot.warn{background:#d48a00}.ov-dot.bad{background:#d92d20}
+.ov-chev{color:var(--ov-ink3,#8b8b95);font-size:20px;line-height:1}
+/* the lists behind the summary boxes */
+.ov-list{display:flex;flex-direction:column;max-height:60vh;overflow-y:auto;font-size:15px;line-height:1.45}
+.ov-li{display:flex;align-items:center;gap:12px;width:100%;padding:11px 6px;margin:0;border:0;border-bottom:1px solid var(--ov-line,#e4e2dc);border-radius:0;background:none;font:inherit;color:inherit;text-align:left}
+button.ov-li{cursor:pointer}
+button.ov-li:hover{background:#f8f7f4}
+.ov-li:last-child{border-bottom:0}
+.ov-li b{font-weight:700}
+.ov-empty-card{grid-column:1/-1}
+@media (max-width:700px){.ov-grid{grid-template-columns:1fr}.ov-stats{grid-template-columns:repeat(3,1fr);gap:8px}.pv-loc .ov-stat{padding:10px 10px}.ov-stat .tiny{font-size:11px}.ov-v{font-size:21px}}
+/* this app's colours for the Customers page (= Signage's values) */
+body{--ov-panel:var(--card);--ov-line:var(--line);--ov-ink:var(--ink);--ov-ink2:var(--ink2);--ov-ink3:var(--muted)}
+.pv-loc .pchips{margin:0 0 12px}
+/* summary tags in the page head (Signage .head-chips / .chip, 1906cd5); the separate sync row is only for the other pages */
+.pv-loc .head-chips{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.pv-loc .head-chips .chip{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border:0;border-radius:999px;background:#efeee9;color:#44444d;font-size:13.5px;font-weight:600;line-height:1.45;white-space:nowrap}
+.pv-loc .head-chips .chip.ok{background:#e6f6ec;color:#0b6b35}
+.pv-loc .head-chips .chip.bad{background:#fdecea;color:#d92d20}
+.pv-loc .head-chips .chip-dot{width:7px;height:7px;border-radius:50%;background:currentColor}
+body:has(section[data-view=customers]:not(.hidden)) #syncChips{display:none}
+.pv-loc .ckey{margin:0 0 16px}
+.ov-dlg{width:min(640px,94vw)}
+.ov-dlg .dh{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 10px 10px 16px}
+.ov-dlg .db{padding:6px 16px 10px}
+/* sign out: red button, white icon (as Proview Signage, eaae59c) */
+html .top .top-me .top-out{background:#d92d20;border-color:#d92d20;color:#fff}
+html .top .top-me .top-out:hover{background:#b42318;border-color:#b42318;color:#fff}
+html .side .nav .cnt[hidden]{display:none!important}
 </style>
 </head>
 <body>
@@ -406,8 +486,8 @@ html .app.collapsed .side :is(.side-foot,#pv-x)>*{width:30px!important;height:26
       <div class="nav-sep">Licences</div>
       <a data-tab="customers" class="active" href="#customers"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21h18M5 21V7l7-4 7 4v14M9 9h1M9 13h1M9 17h1M14 9h1M14 13h1M14 17h1"/></svg><span>Customers</span></a>
       <a data-tab="expiring" href="#expiring"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg><span>Expiring</span></a>
-      <a data-tab="paylog" href="#paylog"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 2h12v20l-3-2-3 2-3-2-3 2z"/><path d="M9 7h6M9 11h6M9 15h4"/></svg><span>Recent payments</span></a>
-      <a data-tab="payfail" href="#payfail"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 7v6M12 16.5v.5"/></svg><span>Failed payments</span><span class="cnt" id="failCnt" hidden></span></a>
+      <a data-tab="paylog" href="#paylog"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 2h12v20l-3-2-3 2-3-2-3 2z"/><path d="M9 7h6M9 11h6M9 15h4"/></svg><span data-long="Recent payments" data-short="Payments">Recent payments</span></a>
+      <a data-tab="payfail" href="#payfail"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 7v6M12 16.5v.5"/></svg><span data-long="Failed payments" data-short="Failed">Failed payments</span><span class="cnt" id="failCnt" hidden></span></a>
       <a data-tab="payments" href="#payments"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20M6 15h4"/></svg><span>Payment settings</span></a>
       <div class="nav-sep">Insights</div>
       <a data-tab="activity" href="#activity"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg><span>Activity</span></a>
@@ -432,15 +512,20 @@ html .app.collapsed .side :is(.side-foot,#pv-x)>*{width:30px!important;height:26
     <div class="sync" id="syncChips"></div>
 
     <!-- CUSTOMERS -->
-    <section data-view="customers">
+    <section data-view="customers" class="pv-loc">
       <div id="custTop">
-        <div class="ctop">
-          <h1>Customers</h1>
-          <div class="pchips" id="pchips" role="group" aria-label="Filter by product"></div>
-          <label style="display:flex"><span class="hidden">Search customers</span><input type="search" class="csearch" id="q" placeholder="Search"></label>
-          <button class="ghost" id="syncBtn" title="Pull the latest from all three apps">↻ Sync</button>
-          <button class="btn primary" id="newCustBtn">+ New customer</button>
+        <!-- Proview Signage's Locations page layout (LOCATIONS_PAGE_STANDARD): the title is only in the top bar -->
+        <div class="pv-ph">
+          <p class="muted" id="custDesc">Every customer with their app accounts and licences. Open one to change its licences.</p>
+          <div class="head-chips hidden" id="custChips"></div>
+          <div class="pv-acts">
+            <button class="btn" id="syncBtn" title="Pull the latest from all the apps"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-3-6.7L21 8M21 3v5h-5"/></svg><span>Sync</span></button>
+            <button class="btn primary" id="newCustBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>New customer</button>
+          </div>
         </div>
+        <div class="ov-stats" id="custStats"></div>
+        <div class="pchips" id="pchips" role="group" aria-label="Filter by product"></div>
+        <div class="ov-tools"><input type="search" class="ov-search" id="q" placeholder="Search customers, accounts or locations" aria-label="Search customers, accounts or locations"></div>
         <div class="ckey">
           <span><i class="sdot g"></i>Licensed</span>
           <span><i class="sdot a"></i>Renews within 30 days / trial</span>
@@ -492,6 +577,12 @@ html .app.collapsed .side :is(.side-foot,#pv-x)>*{width:30px!important;height:26
   </div>
   <div class="nav-scrim" id="navScrim"></div>
 </div>
+
+<!-- LIST DIALOG: what is behind a summary box -->
+<dialog id="listDlg" class="ov-dlg">
+  <div class="dh"><span id="listTitle">List</span><button type="button" class="icon-btn" id="listClose" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div>
+  <div class="db" id="listBody"></div>
+</dialog>
 
 <!-- LICENCE DIALOG -->
 <dialog id="licDlg">
@@ -658,7 +749,7 @@ async function loadAudit() {
 }
 
 async function doSync(quiet = false) {
-  const btn = $("#syncBtn"); btn.disabled = true; btn.textContent = "↻ Syncing…";
+  const btn = $("#syncBtn"); btn.disabled = true; btn.querySelector("span").textContent = "Syncing…";
   S.syncing = true; S.syncErr = ""; paintDot();
   try {
     const r = await hub("sync");
@@ -670,7 +761,7 @@ async function doSync(quiet = false) {
     if (r.customers_created) toast(`${r.customers_created} new customer record(s) created from the apps`);
     await loadAll();
   } catch (e) { S.syncErr = e.message; toast("Sync failed: " + e.message, true); }
-  finally { btn.disabled = false; btn.textContent = "↻ Sync"; S.syncing = false; paintDot(); paintHeader(); }
+  finally { btn.disabled = false; btn.querySelector("span").textContent = "Sync"; S.syncing = false; paintDot(); paintHeader(); }
 }
 
 function renderSyncChips() {
@@ -679,6 +770,12 @@ function renderSyncChips() {
     const r = s.apps[k];
     return `<span class="chip ${r?.ok ? "ok" : "bad"}" title="${esc(r?.error || "")}"><span class="dot"></span>${p.label}${r?.ok ? (Number.isFinite(r.units) ? ` · ${r.units} ${UNIT_WORD[k][r.units === 1 ? 0 : 1]}` : "") : " · offline"}</span>`;
   }).join("") + `<span class="chip">Last synced ${fmtDT(s.at)}</span>`;
+  // the Customers page opens with these as its summary tags, beside its buttons (as Proview Signage's pages)
+  $("#custChips").innerHTML = Object.entries(PRODUCTS).map(([k, p]) => {
+    const r = s.apps[k];
+    return `<span class="chip ${r?.ok ? "ok" : "bad"}" title="${esc(r?.error || (r?.ok ? "Synced" : ""))}"><span class="chip-dot"></span>${p.label}${r?.ok ? "" : " · offline"}</span>`;
+  }).join("") + `<span class="chip">Synced ${fmtDT(s.at)}</span>`;
+  $("#custChips").classList.remove("hidden"); $("#custDesc").classList.add("hidden");
 }
 
 // ---------- customers view ----------
@@ -775,23 +872,76 @@ function productLine(prod, units) {
   return `<div class="pl"><div class="pi">${icon(prod)}</div><span class="pt">${PRODUCTS[prod].label} · ${units.length} ${units.length === 1 ? one : many}</span><i class="sdot ${t}"></i>${right}</div>`;
 }
 
+// Customer card: same card as Proview Signage's business cards (LOCATIONS_PAGE_STANDARD)
+const PILL = { r: ["bad", "Action needed"], a: ["warn", "Renewing soon"], g: ["ok", "All good"], n: ["", "No licences yet"] };
+const TONE_CLS = { r: "bad", a: "warn", g: "ok", n: "" };
+function custLicText(units) {
+  if (!units.length) return "No licences yet";
+  if (units.every((u) => u.license_type === "lifetime")) return "Licences: lifetime";
+  if (units.every((u) => status(u).k === "expired")) return "Expired";
+  const tr = units.filter((u) => isTrial(u.license_type) && u.expires_at && status(u).k !== "expired").sort((x, y) => new Date(x.expires_at) - new Date(y.expires_at))[0];
+  if (tr && units.every((u) => isTrial(u.license_type))) return `Trial ends ${shortDate(tr.expires_at)}`;
+  const next = renewAt(units);
+  return `${units.length} licence${units.length === 1 ? "" : "s"}${next !== Infinity ? ` · renews ${shortDate(next)}` : ""}`;
+}
 function custCard(c) {
   const accts = accountsForCustomer(c);
   const sum = custSummary(c);
   const prods = Object.keys(PRODUCTS).filter((k) => accts.some((a) => a.product === k));
-  const pill = sum.worst === "r" ? `<span class="spill r">Action needed</span>` : sum.worst === "a" ? `<span class="spill a">Renewing soon</span>`
-    : sum.units.length ? `<span class="spill g">All OK</span>` : `<span class="spill n">No licences</span>`;
-  const licensed = sum.units.length - sum.bad.length;
-  const meta = [c.contact_email, c.phone].filter(Boolean).map(esc).join(" · ") || "No contact details";
-  return `<article class="ccard ${sum.worst === "r" ? "bad" : ""}" data-cust="${c.id}">
-    <div class="ch"><div style="flex:1;min-width:0"><h3>${esc(c.name)}</h3><div class="cm">${meta}</div></div>${pill}</div>
-    ${prods.map((k) => productLine(k, sum.units.filter((u) => u.product === k))).join("") || `<div class="cempty">No products linked yet.</div>`}
-    <div class="cf">
-      <span>${sum.bad.length ? `${licensed} of ${sum.units.length} licensed` : `${sum.units.length} licence${sum.units.length === 1 ? "" : "s"}`}</span>
-      ${sum.bad.length ? `<button type="button" class="addlic" data-addlic="${c.id}">Add licence</button>` : `<a data-open="${c.id}">Open</a>`}
-    </div>
+  const [pcls, ptxt] = PILL[sum.worst];
+  const licensed = sum.units.length - sum.bad.length, soon = sum.units.filter((u) => tone(u) === "a").length;
+  const sub = !sum.units.length ? (prods.length ? prods.map((k) => PRODUCTS[k].label).join(" · ") : "No products linked yet")
+    : [sum.bad.length ? `${licensed} of ${sum.units.length} licensed` : `${sum.units.length} licence${sum.units.length === 1 ? "" : "s"}`, soon ? `${soon} renewing soon` : ""].filter(Boolean).join(" · ");
+  const row = (k) => {
+    const units = sum.units.filter((u) => u.product === k), [one, many] = UNIT_WORD[k];
+    const bad = units.filter((u) => tone(u) === "r"), warn = units.filter((u) => tone(u) === "a");
+    const t = bad.length ? "r" : warn.length ? "a" : units.length ? "g" : "n";
+    const next = renewAt(units);
+    const right = !units.length ? "none yet" : bad.length ? `${bad.length} unlicensed` : next === Infinity ? "Lifetime" : `to ${shortDate(next)}`;
+    return `<button type="button" class="ov-loc" data-open="${c.id}" title="Open this customer"><span class="ov-dot ${TONE_CLS[t]}"></span><span class="grow">${PRODUCTS[k].label} · ${units.length} ${units.length === 1 ? one : many}</span><span class="muted small">${esc(right)}</span><span class="ov-chev" aria-hidden="true">›</span></button>`;
+  };
+  return `<article class="card ov-biz" data-cust="${c.id}">
+    <div class="ov-bh"><div class="grow"><h3>${esc(c.name)}</h3><div class="muted small">${esc(sub)}</div></div><span class="ov-pill ${pcls}">${ptxt}</span></div>
+    ${prods.map(row).join("")}
+    <div class="ov-bf"><span class="muted small">${esc(custLicText(sum.units))}</span>
+      <span class="pv-acts">${sum.bad.length ? `<button type="button" class="btn sm" data-addlic="${c.id}">Add licence</button>` : ""}<button type="button" class="btn sm primary" data-open="${c.id}">Open customer</button></span></div>
   </article>`;
 }
+
+// The summary boxes above the cards: each opens the list behind its number (as Proview Signage)
+function renderStats() {
+  const custs = S.customers.filter((c) => matches(c, "", S.prod));
+  const accts = S.accounts.filter((a) => !a.gone && (!S.prod || a.product === S.prod));
+  const units = S.units.filter((u) => !u.gone && (!S.prod || u.product === S.prod));
+  const by = (t) => units.filter((u) => tone(u) === t).length;
+  const stat = (k, v, list, cls) => `<button type="button" class="card ov-stat${cls ? " " + cls : ""}" data-list="${list}" title="Show the list"><div class="tiny">${k}</div><div class="ov-v">${v}</div></button>`;
+  const g = by("g"), a = by("a"), r = by("r");
+  $("#custStats").innerHTML = stat("Customers", custs.length, "cust") + stat("App accounts", accts.length, "acct") + stat("Licences", units.length, "units")
+    + stat("Licensed", g, "g", g ? "ok" : "") + stat("Renewing soon", a, "a", a ? "warn" : "") + stat("Licences need attention", r, "r", r ? "bad" : "");
+}
+function showList(k) {
+  const units = S.units.filter((u) => !u.gone && (!S.prod || u.product === S.prod));
+  const acc = (u) => S.accounts.find((a) => a.product === u.product && a.ext_id === u.account_ext_id);
+  const cust = (a) => a && S.customers.find((c) => c.id === a.customer_id);
+  const chev = `<span class="ov-chev" aria-hidden="true">›</span>`;
+  const unitLi = (u) => { const s = status(u), a = acc(u), c = cust(a);
+    return `<button type="button" class="ov-li" data-edit="${esc(u.product + "|" + u.ext_id)}"><span class="ov-dot ${TONE_CLS[tone(u)]}"></span><span class="grow"><b>${esc(u.name || "(unnamed)")}</b><span class="tiny" style="display:block">${esc([PRODUCTS[u.product]?.label, c?.name || a?.name].filter(Boolean).join(" · "))}</span></span><span class="ov-pill ${s.cls === "none" ? "bad" : s.cls}">${esc(s.label)}</span>${chev}</button>`; };
+  let title, items, empty;
+  if (k === "cust") { title = "Customers"; empty = "No customers yet.";
+    items = S.customers.filter((c) => matches(c, "", S.prod)).map((c) => { const sum = custSummary(c); return `<button type="button" class="ov-li" data-open="${c.id}"><span class="ov-dot ${TONE_CLS[sum.worst]}"></span><span class="grow"><b>${esc(c.name)}</b><span class="tiny" style="display:block">${esc([c.contact_email, `${sum.units.length} licence${sum.units.length === 1 ? "" : "s"}`].filter(Boolean).join(" · "))}</span></span><span class="ov-pill ${PILL[sum.worst][0]}">${PILL[sum.worst][1]}</span>${chev}</button>`; }); }
+  else if (k === "acct") { title = "App accounts"; empty = "No app accounts yet. Press Sync to pull them in.";
+    items = S.accounts.filter((a) => !a.gone && (!S.prod || a.product === S.prod)).sort((x, y) => String(x.name).localeCompare(String(y.name))).map((a) => { const c = cust(a), n = unitsForAccount(a).length, [one, many] = UNIT_WORD[a.product] || ["", ""];
+      return `<button type="button" class="ov-li" data-open="${a.customer_id || ""}"><span class="ov-dot"></span><span class="grow"><b>${esc(a.name || "(unnamed)")}</b><span class="tiny" style="display:block">${esc([PRODUCTS[a.product]?.label, c?.name].filter(Boolean).join(" · "))}</span></span><span class="muted small">${n} ${n === 1 ? one : many}</span>${chev}</button>`; }); }
+  else if (k === "units") { title = "Licences"; empty = "No licences yet."; items = units.map(unitLi); }
+  else { title = { g: "Licensed", a: "Renewing soon or on trial", r: "Licences needing attention" }[k]; empty = k === "r" ? "Every licence is fine." : "None.";
+    items = units.filter((u) => tone(u) === k).sort((x, y) => (status(x).days ?? 1e9) - (status(y).days ?? 1e9)).map(unitLi); }
+  $("#listTitle").textContent = title;
+  $("#listBody").innerHTML = items.length ? `<div class="ov-list">${items.join("")}</div>` : `<p class="muted" style="margin:6px 0">${empty}</p>`;
+  $("#listDlg").showModal();
+}
+$("#listClose").onclick = () => $("#listDlg").close();
+$("#listDlg").addEventListener("click", (e) => { if (e.target.closest("[data-open],[data-edit]") || e.target === $("#listDlg")) $("#listDlg").close(); });
+document.addEventListener("click", (e) => { const b = e.target.closest("#custStats [data-list]"); if (b) showList(b.dataset.list); });
 
 function custDetail(c) {
   const accts = accountsForCustomer(c);
@@ -818,7 +968,7 @@ function custDetail(c) {
 }
 
 function renderCustomers() {
-  renderChips();
+  renderChips(); renderStats();
   const c = S.detail && S.customers.find((x) => x.id === S.detail);
   $("#custTop").classList.toggle("hidden", !!c);
   if (c) { $("#custList").innerHTML = custDetail(c); renderBulk(); return; }
@@ -827,7 +977,7 @@ function renderCustomers() {
   const list = S.customers.filter((x) => matches(x, q, S.prod)).map((x) => ({ c: x, s: custSummary(x) }));
   // problem cards first, then soonest renewal, then name
   list.sort((a, b) => (a.s.worst === "r" ? 0 : 1) - (b.s.worst === "r" ? 0 : 1) || a.s.renew - b.s.renew || a.c.name.localeCompare(b.c.name));
-  $("#custList").innerHTML = list.length ? `<div class="cgrid">${list.map((x) => custCard(x.c)).join("")}</div>`
+  $("#custList").innerHTML = list.length ? `<div class="ov-grid">${list.map((x) => custCard(x.c)).join("")}</div>`
     : `<div class="empty">${S.customers.length ? "No customers match." : "No customers yet. Press “Sync” to pull them in from the apps."}</div>`;
   renderBulk();
 }
@@ -1042,6 +1192,9 @@ function setTab(tab) {
   if (tab === "payments" || tab === "paylog" || tab === "payfail") loadPayments();
 }
 $$(".side .nav a[data-tab]").forEach((x) => x.onclick = (e) => { e.preventDefault(); setTab(x.dataset.tab); });
+// short names under the icons in the narrow menu (iPad and phones), like the other apps' rails
+{ const mq = matchMedia("(max-width: 900px)"), set = () => $$(".side .nav [data-short]").forEach((e) => { e.textContent = mq.matches ? e.dataset.short : e.dataset.long; });
+  mq.addEventListener("change", set); set(); }
 $("#menuBtn").onclick = () => $("#appView").classList.toggle("navopen");
 $("#navScrim").onclick = () => $("#appView").classList.remove("navopen");
 const sideCollapsed = () => { try { return localStorage.getItem("licence.sideCollapsed") === "1"; } catch { return false; } };
