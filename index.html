@@ -471,46 +471,35 @@ body:has(section[data-view=customers]:not(.hidden)) #syncChips{display:none}
 html .top .top-me .top-out{background:#d92d20;border-color:#d92d20;color:#fff}
 html .top .top-me .top-out:hover{background:#b42318;border-color:#b42318;color:#fff}
 html .side .nav .cnt[hidden]{display:none!important}
-/* New customer = Proview Signage's "Add business" pop-up (signage 43f377c: .modal.wide, .form-2, label.field, .pw-wrap/.pw-eye, .login-card) */
-.nc-dlg{width:min(720px,94vw);max-height:calc(100vh - 32px)}
-.nc-dlg.nc-done{width:min(560px,94vw)}
-.nc-dlg .dh{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 12px 0 20px;border-bottom:0;font-size:18px;font-weight:650}
-.nc-dlg .db{padding:16px 20px;display:flex;flex-direction:column;gap:14px}
-.nc-dlg .df{padding:0 20px 18px;border-top:0;flex-wrap:wrap}
-.nc-dlg label.field{display:flex;flex-direction:column;gap:5px;margin:0;font-size:13px;font-weight:600;color:var(--ink2)}
-.nc-dlg label.field input,.nc-dlg label.field textarea{width:100%;box-sizing:border-box;font-weight:400}
-.nc-dlg input[type=tel]{font:15px var(--font);color:var(--ink);background:#fff;border:1px solid var(--line);border-radius:9px;padding:9px 11px}
-@media (hover:none) and (pointer:coarse){.nc-dlg input[type=tel]{font-size:16px!important}}
-.nc-dlg .req{color:#d92d20}
-.nc-dlg .nc-cap{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-top:4px}
-.nc-dlg .form-2{display:grid;grid-template-columns:1fr 1fr;gap:12px 14px}
-.nc-dlg .form-2 .full{grid-column:1/-1}
-.nc-dlg .nc-pw{display:flex;gap:6px;align-items:center}
-.nc-dlg .nc-pw .pw-wrap{position:relative;flex:1;min-width:0}
-.nc-dlg .pw-wrap input{padding-right:44px}
-.nc-dlg .pw-eye{position:absolute;right:4px;top:50%;transform:translateY(-50%);width:36px;height:34px;border:0;background:none;color:#8a8a94;cursor:pointer;display:grid;place-items:center;border-radius:8px}
-.nc-dlg .pw-eye:hover{color:#17171c;background:rgba(0,0,0,.05)}
-.nc-dlg .pw-eye.on{color:#4a6cd0}
-.nc-dlg .nc-hint{margin:0;font-size:12px;color:var(--muted);font-weight:400}
-.nc-dlg .notice.info{background:#eef3ff;border:1px solid #cfdcff;color:#213a87;padding:10px 14px;border-radius:10px;font-size:14px}
-.nc-dlg .login-card{display:grid;gap:8px}
-.nc-dlg .login-card>div{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
-.nc-dlg .login-card b{font-family:ui-monospace,monospace;word-break:break-all}
-.nc-dlg .nc-copy{align-self:flex-start}
-.nc-dlg .nc-apps{display:flex;flex-wrap:wrap;gap:8px 18px}
-.nc-dlg .nc-apps label{display:flex;align-items:center;gap:7px;font-size:14px;font-weight:500;color:var(--ink);cursor:pointer;margin:0}
-.nc-dlg .nc-apps .nc-all{flex-basis:100%;font-weight:650}
-.nc-dlg .nc-apps input{width:16px;height:16px;margin:0}
-.nc-dlg .nc-res{display:grid;gap:8px;margin:0;padding:0;list-style:none}
-.nc-dlg .nc-res li{display:flex;align-items:flex-start;gap:10px;padding:9px 12px;border:1px solid var(--line);border-radius:10px;font-size:14px}
-.nc-dlg .nc-res .mk{font-weight:800;width:18px;flex:none;text-align:center}
-.nc-dlg .nc-res li.ok .mk{color:#12805c}
-.nc-dlg .nc-res li.bad{border-color:#f4c7c3;background:#fff6f5}
-.nc-dlg .nc-res li.bad .mk{color:#d92d20}
-.nc-dlg .nc-res .tx{flex:1;min-width:0}
-.nc-dlg .nc-res .tx small{display:block;color:var(--muted);font-size:12.5px;margin-top:2px;overflow-wrap:anywhere}
-.nc-dlg .nc-res .btn{flex:none}
-@media (max-width:640px){.nc-dlg .form-2{grid-template-columns:1fr}}
+/* New customer = the shared "Add business" pop-up (pv-addbiz.js, the same file as the six apps). Its "<business> added"
+   pop-up below copies Proview WiFi's (public/admin.css .modal, .ab-done, .ab-login, .abz-ok / .abz-warn) */
+#toast{z-index:200}
+.nc-done{border:0;border-radius:18px;padding:24px;width:min(560px,calc(100vw - 28px));max-height:calc(100% - 36px);overflow:auto;box-shadow:0 30px 80px rgba(0,0,0,.3);background:#fff;color:#17171c;font:15px/1.45 var(--font);-webkit-font-smoothing:antialiased}
+.nc-done::backdrop{background:rgba(20,20,24,.5)}
+.nc-done .nd-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.nc-done .nd-title{margin:0;font-size:18px;font-weight:700;line-height:1.45;letter-spacing:-.015em}
+.nc-done .nd-x{background:none;border:0;font-family:Arial;font-size:26px;line-height:1;color:#8b8b95;cursor:pointer;padding:0 4px}
+.nc-done .nd-x:hover{color:#17171c}
+.nc-done p{margin:0}
+.nc-done .nd-muted{color:#55555f}
+.nc-done .ab-login{display:grid;gap:8px;background:#eef3ff;border:1px solid #cfdcff;color:#213a87;padding:10px 14px;border-radius:10px;font-size:14px;margin-top:12px}
+.nc-done .ab-login>div{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.nc-done .ab-login span{color:#8b8b95}
+.nc-done .ab-login b{font-family:ui-monospace,monospace;word-break:break-all}
+.nc-done .btn{padding:0 14px}
+.nc-done .btn svg{width:16px;height:16px}
+.nc-done .nd-copy{margin-top:12px}
+.nc-done .nd-cap{margin:16px 0 8px;font:600 13px/1.45 var(--font);color:#55555f}
+.nc-done .nc-res{display:grid;gap:8px;margin:0;padding:0;list-style:none}
+.nc-done .nc-res li{display:flex;align-items:flex-start;gap:10px;border-radius:10px;padding:10px 12px;border:1px solid #e4e2dc;color:#17171c}
+.nc-done .nc-res li.ok{background:#ecf8f0;border-color:#bfe3cb;color:#17592f}
+.nc-done .nc-res li.bad{background:#fff8e8;border-color:#f0dfb5;color:#4d3a10}
+.nc-done .nc-res .mk{font-weight:800;width:18px;flex:none;text-align:center}
+.nc-done .nc-res li.bad .mk{color:#d92d20}
+.nc-done .nc-res .tx{flex:1;min-width:0}
+.nc-done .nc-res .tx small{display:block;font-size:13px;margin-top:2px;overflow-wrap:anywhere}
+.nc-done .nc-res .btn{flex:none;height:32px;padding:0 11px;font-size:13px;border-radius:8px}
+.nc-done .nd-foot{display:flex;justify-content:flex-end;gap:8px;margin-top:18px;flex-wrap:wrap}
 </style>
 </head>
 <body>
@@ -689,47 +678,17 @@ html .side .nav .cnt[hidden]{display:none!important}
   </form>
 </dialog>
 
-<!-- NEW CUSTOMER: the customer plus its owner's login, as Proview Signage's "Add business" -->
-<dialog id="ncDlg" class="nc-dlg" aria-labelledby="ncTitle">
-  <div class="dh"><span id="ncTitle">New customer</span><button type="button" class="icon-btn" id="ncClose" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div>
-  <div class="db">
-    <label class="field"><span>Business name<span class="req"> *</span></span><input type="text" id="ncBiz" placeholder="e.g. Tolians" autocomplete="off"></label>
-    <div class="nc-cap">Owner login</div>
-    <div class="form-2">
-      <label class="field"><span>Name<span class="req"> *</span></span><input type="text" id="ncName" placeholder="e.g. Sam Taylor" autocomplete="off"></label>
-      <label class="field">Mobile<input type="tel" id="ncMobile" placeholder="Optional" autocomplete="off"></label>
-      <label class="field"><span>Email (they sign in with this)<span class="req"> *</span></span><input type="email" id="ncEmail" placeholder="name@company.com" autocomplete="off"></label>
-      <label class="field"><span>Password<span class="req"> *</span></span><span class="nc-pw"><span class="pw-wrap"><input type="password" id="ncPw" placeholder="At least 8 characters" autocomplete="new-password"><button type="button" class="pw-eye" data-f="ncPw" tabindex="-1" title="Show password" aria-label="Show password"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></button></span><button type="button" class="btn sm" id="ncSuggest">Suggest</button></span></label>
-    </div>
-    <div class="nc-cap">Add the business in<span class="req"> *</span></div>
-    <div class="nc-apps" id="ncApps" role="group" aria-label="Apps to add the business in">
-      <label class="nc-all"><input type="checkbox" id="ncAll"> Select all</label>
-      <label><input type="checkbox" data-app="signage"> Signage</label>
-      <label><input type="checkbox" data-app="bookings"> Bookings</label>
-      <label><input type="checkbox" data-app="employee"> Employee</label>
-      <label><input type="checkbox" data-app="label"> Label</label>
-      <label><input type="checkbox" data-app="wifi"> WiFi</label>
-      <label><input type="checkbox" data-app="qrmenu"> QR Menu</label>
-    </div>
-    <div class="nc-cap">Customer details (optional)</div>
-    <div class="form-2">
-      <label class="field">Contact email<input type="email" id="ncContact" placeholder="Same as the owner’s email" autocomplete="off"></label>
-      <label class="field">Phone<input type="text" id="ncPhone" placeholder="Optional" autocomplete="off"></label>
-      <label class="field full">Notes<textarea id="ncNotes" rows="2" placeholder="Optional"></textarea></label>
-    </div>
-    <p class="nc-hint">Creates the customer here and a Proview login for this person (they sign in at dashboard.proviewcrm.co.uk). In each ticked app it adds the business, a location with the same name and this person as its Owner / Admin, with the same email and password, linked to this customer. No email is sent.</p>
-  </div>
-  <div class="df"><button type="button" class="btn" id="ncCancel">Cancel</button><button type="button" class="btn primary" id="ncGo">Add customer</button></div>
-</dialog>
-<dialog id="ncDone" class="nc-dlg nc-done" aria-labelledby="ncDoneTitle">
-  <div class="dh"><span id="ncDoneTitle"></span><button type="button" class="icon-btn" id="ncDoneClose" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div>
-  <div class="db" id="ncDoneBody"></div>
-  <div class="df"><button type="button" class="btn" id="ncStay">Stay here</button><button type="button" class="btn primary" id="ncOpen">Open customer</button></div>
+<!-- NEW CUSTOMER: the shared "Add business" pop-up (pv-addbiz.js, opened from newCustomer()); then "<business> added", as Proview WiFi's -->
+<dialog id="ncDone" class="nc-done" aria-labelledby="ncDoneTitle">
+  <div class="nd-head"><h2 class="nd-title" id="ncDoneTitle"></h2><button type="button" class="nd-x" id="ncDoneClose" aria-label="Close" title="Close">×</button></div>
+  <div id="ncDoneBody"></div>
+  <div class="nd-foot"><button type="button" class="btn" id="ncStay">Stay here</button><button type="button" class="btn primary" id="ncOpen">Open customer</button></div>
 </dialog>
 
 <div id="toast"></div>
 
 <script src="hub.js?v=20261110b"></script>
+<script src="pv-addbiz.js?v=20261111a"></script>
 <script type="module">
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
 
@@ -1202,29 +1161,24 @@ async function saveCustomer(id) {
   if (error) return toast(error.message, true);
   Object.assign(S.customers.find((c) => c.id === id), patch); toast("Saved"); renderCustomers();
 }
-// New customer = Proview Signage's "Add business" (43f377c): the customer plus a ready-to-use login for its owner,
+// New customer = the "Add business" pop-up of the six apps (pv-addbiz.js, the same file): the customer plus a ready-to-use login for its owner,
 // made in one go by lic_add_customer (master only, all or nothing). No email is sent; an existing login keeps its password.
 // Then, in each ticked app, the business, a same-name location and the owner as Owner / Admin, through the licence hub's
 // create_business (each app's own Add business). Apps can't share one transaction, so each app shows its own ✓ or ✗.
 const SIGNIN_URL = "https://dashboard.proviewcrm.co.uk/";
-const ncTicks = () => [...document.querySelectorAll("#ncApps [data-app]")];
-const ncSyncAll = () => { const t = ncTicks(), on = t.filter((x) => x.checked).length; $("#ncAll").checked = on === t.length; $("#ncAll").indeterminate = on > 0 && on < t.length; };
+const NC_SECTIONS = [
+  { key: "apps", legend: "Add the business in", req: true, all: { title: "Select all", sub: "Every Proview app" },
+    checks: NC_APPS.map((k) => ({ value: k, title: PRODUCTS[k].label })) },
+  { key: "cust", legend: "Customer details", optional: true, fields: [
+    { key: "contact", label: "Contact email", type: "email", ph: "Same as the owner’s email" },
+    { key: "phone", label: "Phone", type: "tel", ph: "Optional" },
+    { key: "notes", label: "Notes", area: true, ph: "Optional" } ] },
+];
 function newCustomer() {
-  const d = $("#ncDlg");
-  ["#ncBiz", "#ncName", "#ncMobile", "#ncEmail", "#ncPw", "#ncContact", "#ncPhone", "#ncNotes"].forEach((k) => { $(k).value = ""; });
-  const pw = $("#ncPw"), eye = $('#ncDlg .pw-eye'); pw.type = "password"; eye.classList.remove("on"); eye.title = "Show password"; eye.setAttribute("aria-label", "Show password");
-  ncTicks().forEach((x) => { x.checked = false; }); ncSyncAll();
-  $("#ncGo").disabled = false;
-  d.showModal(); setTimeout(() => $("#ncBiz").focus(), 30);
+  window.pvAddBiz({ title: "New customer", signin: "password", licence: false, pwPlaceholder: "At least 8 characters", sections: NC_SECTIONS,
+    hint: "Adds the customer and its owner’s login. No email is sent.",
+    go: "Add customer", onSubmit: ncSubmit });
 }
-$("#ncAll").onchange = () => { ncTicks().forEach((x) => { x.checked = $("#ncAll").checked; }); ncSyncAll(); };
-ncTicks().forEach((x) => { x.onchange = ncSyncAll; });
-$("#ncSuggest").onclick = () => {
-  const a = "abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789", r = crypto.getRandomValues(new Uint32Array(10));
-  const pw = $("#ncPw"); pw.value = [...r].map((n) => a[n % a.length]).join(""); pw.type = "text";
-  const eye = $("#ncDlg .pw-eye"); eye.classList.add("on"); eye.title = "Hide password"; eye.setAttribute("aria-label", "Hide password");
-};
-$("#ncCancel").onclick = $("#ncClose").onclick = () => $("#ncDlg").close();
 // one row of the result: ✓ or ✗, the reason, and Retry on a ✗
 function ncRow(k, r, e) {
   const name = "Proview " + PRODUCTS[k].label;
@@ -1234,23 +1188,20 @@ function ncRow(k, r, e) {
     : `Business added, with ${esc(e)} as its Owner / Admin.`}</small></span></li>`;
   return `<li class="bad" data-res="${k}"><span class="mk" aria-label="Failed">✗</span><span class="tx"><b>${esc(name)}</b><small>Not added: ${esc(r.error || "unknown error")}</small></span><button type="button" class="btn sm" data-retry="${k}">Retry</button></li>`;
 }
-$("#ncGo").onclick = async () => {
-  const need = (sel, msg) => { toast(msg, true); $(sel).focus(); };
-  const biz = $("#ncBiz").value.trim(), name = $("#ncName").value.trim(), e = $("#ncEmail").value.trim().toLowerCase(), pw = $("#ncPw").value;
-  const contact = $("#ncContact").value.trim().toLowerCase(), mobile = $("#ncMobile").value.trim();
-  const apps = ncTicks().filter((x) => x.checked).map((x) => x.dataset.app);
-  if (biz.length < 2) return need("#ncBiz", "Enter the business name");
-  if (name.length < 2) return need("#ncName", "Enter the owner’s name");
-  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e)) return need("#ncEmail", "Enter a valid email address");
-  if (pw.length < 8) return need("#ncPw", "The password needs at least 8 characters");
-  if (!apps.length) return need("#ncAll", "Tick at least one app");
-  if (contact && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(contact)) return need("#ncContact", "Enter a valid contact email, or leave it empty");
-  const go = $("#ncGo"); go.disabled = true;
+async function ncSubmit(v, ui) {
+  const need = (k, msg) => { toast(msg, true); ui.input(k).focus(); };
+  const { biz, name, email: e, mobile, password: pw } = v;
+  const contact = v.extra.contact.toLowerCase(), apps = v.checks.apps;
+  if (biz.length < 2) return need("biz", "Enter the business name");
+  if (name.length < 2) return need("name", "Enter the owner’s name");
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e)) return need("email", "Enter a valid email address");
+  if (pw.length < 8) return need("pw", "The password needs at least 8 characters");
+  if (!apps.length) return need("apps", "Tick at least one app");
+  if (contact && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(contact)) return need("contact", "Enter a valid contact email, or leave it empty");
   const { data: r, error } = await sb.rpc("lic_add_customer", { p_business: biz, p_name: name, p_email: e, p_mobile: mobile, p_password: pw,
-    p_contact_email: contact || null, p_phone: $("#ncPhone").value.trim() || null, p_notes: $("#ncNotes").value.trim() || null });
-  go.disabled = false;
-  if (error) return toast(error.message, true);
-  $("#ncDlg").close();
+    p_contact_email: contact || null, p_phone: v.extra.phone || null, p_notes: v.extra.notes || null });
+  if (error) { toast(error.message, true); return false; }
+  ui.close();
   const details = `PROVIEW login\n${SIGNIN_URL}\nEmail: ${e}\nPassword: ${pw}`;
   const res = {};   // per app: { ok, existing } or { ok: false, error }
   const paint = () => { $("#ncRes").innerHTML = apps.map((k) => ncRow(k, res[k], e)).join(""); };
@@ -1263,22 +1214,25 @@ $("#ncGo").onclick = async () => {
     paint();
     await loadAll().catch((err) => toast(err.message, true));
   };
+  const COPY = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
   $("#ncDoneTitle").textContent = `${biz} added`;
   $("#ncDoneBody").innerHTML = (r?.existing
-    ? `<p style="margin:0">${esc(e)} already had a Proview login, so they were made the owner of this customer and keep the password they already use. The password you typed was not applied.</p>`
-    : `<p class="muted" style="margin:0">The owner can sign in now. No email was sent, so pass these on yourself.</p>
-       <div class="notice info login-card"><div><span class="muted">Sign in at</span><b>${esc(SIGNIN_URL.replace(/^https?:\/\//, "").replace(/\/$/, ""))}</b></div><div><span class="muted">Email</span><b>${esc(e)}</b></div><div><span class="muted">Password</span><b>${esc(pw)}</b></div></div>
-       <button class="btn nc-copy" type="button" id="ncCopy"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>Copy login details</button>`)
-    + `<div class="nc-cap">Apps</div><ul class="nc-res" id="ncRes"></ul>`;
+    ? `<p>${esc(e)} already had a Proview login, so they were made the owner of this customer and keep the password they already use. The password you typed was not applied.</p>`
+    : `<p class="nd-muted">The owner can sign in now. No email was sent, so pass these on yourself:</p>
+       <div class="ab-login"><div><span>Sign in at</span><b>${esc(SIGNIN_URL.replace(/^https?:\/\//, "").replace(/\/$/, ""))}</b></div><div><span>Email</span><b>${esc(e)}</b></div><div><span>Password</span><b>${esc(pw)}</b></div></div>
+       <button class="btn nd-copy" type="button" id="ncCopy">${COPY}Copy login details</button>`)
+    + `<div class="nd-cap">Apps</div><ul class="nc-res" id="ncRes"></ul>`;
   const cp = $("#ncCopy");
   if (cp) cp.onclick = async () => { try { await navigator.clipboard.writeText(details); toast("Copied"); } catch { prompt("Copy this:", details); } };
   $("#ncRes").onclick = (ev) => { const b = ev.target.closest("[data-retry]"); if (b) run([b.dataset.retry]); };
   const done = $("#ncDone");
   $("#ncStay").onclick = $("#ncDoneClose").onclick = () => done.close();
+  done.onclick = (ev) => { if (ev.target === done) done.close(); };
   $("#ncOpen").onclick = () => { done.close(); setTab("customers"); openDetail(r.customer_id); };
   setTimeout(() => done.showModal(), 50);
   run(apps);
-};
+  return true;
+}
 function pickCustomer(title, excludeId) {
   return new Promise((res) => {
     const dlg = $("#moveDlg");
