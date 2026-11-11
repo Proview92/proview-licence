@@ -345,6 +345,34 @@ async function syncApps(db: any, list: App[]) {
 
 const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 
+// New customer's "3-day trial" (Licence cards, as each app's own Add business): the hub call that starts it in each app,
+// for the business that hub_call 'add_business' has just made (r = that call's answer). Each app's own master trial:
+//   Signage   'trial' { account_id }   -> master_trial (business trial + its location's trial7; TVs paired during it play)
+//   Employee  'trial' { account_id }   -> pe_master_trial (owner trial3 + location trial3: staff package and staff follow)
+//   Bookings  'set' trial  on the new location   (= bk_master_trial: 3 days on the business's unlicensed location)
+//   QR Menu   'set' trial3 on the new location   (= pq_master_trial: 3 days)
+//   WiFi      'set' trial  on the new location   (= WiFi's own Add business trial, setLicence 'trial': 3 days)
+//   Label     'set' trial  until now + 3 days    (= Label's own Add business, pl_set_site_licence 'trial')
+// The location is the one add_business just made with no licence, so this never replaces a licence already set.
+const TRIAL_NOTE = "3-day trial chosen in the licence portal's New customer";
+export function trialCall(product: string, r: any, now = Date.now()): [string, Record<string, unknown>] | null {
+  const site = r?.site_id != null ? String(r.site_id) : "";
+  const set = (type: string, extra: Record<string, unknown> = {}) =>
+    site ? ["set", { unit: site, kind: "location", type, extend: false, expires: null, notes: TRIAL_NOTE, ...extra }] as [string, Record<string, unknown>] : null;
+  switch (product) {
+    case "signage": case "employee": return r?.account_id ? ["trial", { account_id: String(r.account_id) }] : null;
+    case "bookings": case "wifi": return set("trial");
+    case "qrmenu": return set("trial3");
+    case "label": return set("trial", { expires: new Date(now + 3 * 86400e3).toISOString() });
+  }
+  return null;
+}
+// either answer -> { applied, expires_at, license_type? }
+export function trialResult(action: string, a: any) {
+  if (action === "trial") return { applied: !!a?.applied, expires_at: a?.expires_at ?? null };
+  return { applied: /^trial/.test(String(a?.license_type ?? "")), expires_at: a?.expires_at ?? null, license_type: a?.license_type ?? null };
+}
+
 Deno.serve(async (req) => {
   const h = cors(req);
   if (req.method === "OPTIONS") return new Response("ok", { headers: h });
@@ -381,7 +409,13 @@ Deno.serve(async (req) => {
     // each app's hub_call 'add_business' (the app's own master Add business; token-authorised). Apps can't share a
     // transaction, so each app is all or nothing on its own and the result is per app. Each new account is linked
     // to the customer straight away, then the apps that worked are synced.
-    // body: { customer_id, apps: ["signage", ...], business, name, email, mobile, password, contact_email }
+    // body: { customer_id, apps: ["signage", ...], business, name, email, mobile, password, contact_email,
+    //         licence: 'none' | 'trial' | 'set', invite: true|false }
+    //   licence 'trial': straight after each app's add_business, that app's own 3-day trial (trialCall above);
+    //   'none' / 'set': no licence (for 'set' the portal opens the customer's page so the master sets them there).
+    //   invite: only recorded in the audit. With an invite the portal sends a random password nobody sees (as each
+    //   app's own invite does) and emails ONE set-your-password link for the Proview login; the owner opens each app
+    //   from the dashboard (sso-assert), which signs them in without the app's password.
     if (action === "create_business") {
       const { data: cust } = await db.from("lic_customers").select("id,name,contact_email").eq("id", body.customer_id ?? "").maybeSingle();
       if (!cust) return json({ error: "Customer not found" }, 400);
@@ -393,6 +427,7 @@ Deno.serve(async (req) => {
       if (business.length < 2) return json({ error: "Enter the business name." }, 400);
       if (name.length < 2) return json({ error: "Enter the owner's name." }, 400);
       if (!EMAIL_RE.test(email)) return json({ error: "Enter a valid email address." }, 400);
+      const licence = ["none", "trial", "set"].includes(body.licence) ? body.licence : "none";
       const args = { business, name, email, mobile: String(body.mobile ?? "").trim() || null, password, contact_email: contact };
       const results: Record<string, any> = {};
       await Promise.all(want.map(async (product) => {
@@ -406,7 +441,23 @@ Deno.serve(async (req) => {
             customer_id: cust.id, link_checked: true, gone: false, synced_at: new Date().toISOString() }, { onConflict: "product,ext_id" });
           results[product] = { ok: true, existing: !!r.existing, account_id: ext, ...(error ? { link_error: error.message } : {}) };
           await db.from("lic_audit").insert({ admin_email: adminEmail, product, account_name: business, action: "added business",
-            after: { customer: cust.name, owner: email, existing: !!r.existing, account_id: ext } });
+            after: { customer: cust.name, owner: email, existing: !!r.existing, account_id: ext, licence, invite: !!body.invite } });
+          if (licence === "trial") {
+            // the business is made either way: a trial that can't start is reported on its own, not as a failed app
+            const tc = trialCall(product, { ...r, account_id: ext });
+            try {
+              if (!tc) throw new Error("The app didn't say which location it made.");
+              const t = trialResult(tc[0], await callApp(app, tc[0], tc[1]));
+              results[product].trial = t;
+              await db.from("lic_audit").insert({ admin_email: adminEmail, product, account_name: business,
+                unit_ext_id: tc[0] === "set" ? String(tc[1].unit) : null,
+                action: t.applied ? "started 3-day trial" : "no trial (already licensed)", after: { ...t, account_id: ext } });
+            } catch (e) {
+              const msg = String((e as Error).message ?? e);
+              results[product].trial_error = msg;
+              await db.from("lic_audit").insert({ admin_email: adminEmail, product, account_name: business, action: "failed", error: `3-day trial: ${msg}` });
+            }
+          }
         } catch (e) {
           const msg = String((e as Error).message ?? e);
           results[product] = { ok: false, error: msg };

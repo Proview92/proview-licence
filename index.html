@@ -498,6 +498,11 @@ html .side .nav .cnt[hidden]{display:none!important}
 .nc-done .nc-res li.bad .mk{color:#d92d20}
 .nc-done .nc-res .tx{flex:1;min-width:0}
 .nc-done .nc-res .tx small{display:block;font-size:13px;margin-top:2px;overflow-wrap:anywhere}
+.nc-done .abz-ok{background:#ecf8f0;border:1px solid #bfe3cb;color:#17592f;border-radius:10px;padding:10px 12px;margin:0}
+.nc-done .abz-warn{background:#fff8e8;border:1px solid #f0dfb5;color:#4d3a10;border-radius:10px;padding:10px 12px;margin:0}
+.nc-done .nd-lic{margin-top:12px}
+.nc-done .nc-res .nd-warn{color:#8a5a00}
+.nc-done .nd-foot [hidden]{display:none}
 .nc-done .nc-res .btn{flex:none;height:32px;padding:0 11px;font-size:13px;border-radius:8px}
 .nc-done .nd-foot{display:flex;justify-content:flex-end;gap:8px;margin-top:18px;flex-wrap:wrap}
 </style>
@@ -688,7 +693,7 @@ html .side .nav .cnt[hidden]{display:none!important}
 <div id="toast"></div>
 
 <script src="hub.js?v=20261110b"></script>
-<script src="pv-addbiz.js?v=20261111a"></script>
+<script src="pv-addbiz.js?v=20261111b"></script>
 <script type="module">
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
 
@@ -1161,71 +1166,106 @@ async function saveCustomer(id) {
   if (error) return toast(error.message, true);
   Object.assign(S.customers.find((c) => c.id === id), patch); toast("Saved"); renderCustomers();
 }
-// New customer = the "Add business" pop-up of the six apps (pv-addbiz.js, the same file): the customer plus a ready-to-use login for its owner,
-// made in one go by lic_add_customer (master only, all or nothing). No email is sent; an existing login keeps its password.
-// Then, in each ticked app, the business, a same-name location and the owner as Owner / Admin, through the licence hub's
-// create_business (each app's own Add business). Apps can't share one transaction, so each app shows its own ✓ or ✗.
+// New customer = the "Add business" pop-up of the six apps (pv-addbiz.js, the same file), with its two choices (design D):
+//   How will they sign in?  Email them an invite (default): lic_add_customer makes the Proview login with a random password
+//                           nobody sees, then ONE email from this project (the Proview login's own "reset password" email,
+//                           as each app's invite) takes them to dashboard.proviewcrm.co.uk to choose their password.
+//                           Each ticked app gets its own random password nobody sees, and no email: the owner opens the
+//                           apps from the dashboard, whose sign-in (sso-assert / each app's sso-login) needs no app password.
+//                           Set a password now: as before, one password for the Proview login and every app, no email.
+//   Licence                 None yet (as before) | 3-day trial: each ticked app's own master trial, run by the licence hub
+//                           straight after that app's add_business | Set it now: the customer's page opens behind the result.
+// lic_add_customer (master only, all or nothing): the customer and the owner's Proview login; an existing login keeps its
+// password. Then, in each ticked app, the business, a same-name location and the owner as Owner / Admin, through the
+// licence hub's create_business. Apps can't share one transaction, so each app shows its own ✓ or ✗ (Retry on a ✗).
 const SIGNIN_URL = "https://dashboard.proviewcrm.co.uk/";
+const SIGNIN_HOST = SIGNIN_URL.replace(/^https?:\/\//, "").replace(/\/$/, "");
 const NC_SECTIONS = [
   { key: "apps", legend: "Add the business in", req: true, all: { title: "Select all", sub: "Every Proview app" },
     checks: NC_APPS.map((k) => ({ value: k, title: PRODUCTS[k].label })) },
 ];   // the customer's contact email and phone are the owner's email and mobile (change them later on the customer's page)
+const ncRand = (n) => { const a = "abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789"; return [...crypto.getRandomValues(new Uint32Array(n))].map((x) => a[x % a.length]).join(""); };
+const ncWhen = (iso) => new Date(iso).toLocaleString("en-GB", { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
 function newCustomer() {
-  window.pvAddBiz({ title: "New customer", signin: "password", licence: false, pwPlaceholder: "At least 8 characters", sections: NC_SECTIONS,
-    hint: "Adds the customer and its owner’s login. No email is sent.",
-    go: "Add customer", onSubmit: ncSubmit });
+  const ui = window.pvAddBiz({ title: "New customer", pwPlaceholder: "At least 8 characters", sections: NC_SECTIONS,
+    hint: "Adds the customer, its owner’s Proview login and the business in each ticked app.", onSubmit: ncSubmit });
+  // the primary button says what will happen ("Add customer" with a password; the shared file's "Add and send invite" for an invite)
+  const go = ui.el.querySelector("#pvAbGo"), sync = () => { go.textContent = ui.el.querySelector('input[name="pvAbSi"]:checked')?.value === "pw" ? "Add customer" : "Add and send invite"; };
+  ui.el.addEventListener("change", (e) => { if (e.target.name === "pvAbSi") sync(); });
+  sync();
 }
-// one row of the result: ✓ or ✗, the reason, and Retry on a ✗
-function ncRow(k, r, e) {
+// one row of the result: ✓ or ✗, the reason, the trial, and Retry on a ✗
+function ncRow(k, r, e, lic) {
   const name = "Proview " + PRODUCTS[k].label;
   if (!r) return `<li data-res="${k}"><span class="mk">…</span><span class="tx"><b>${esc(name)}</b><small>Adding…</small></span></li>`;
-  if (r.ok) return `<li class="ok" data-res="${k}"><span class="mk" aria-label="Done">✓</span><span class="tx"><b>${esc(name)}</b><small>${r.existing
-    ? `Business added. ${esc(e)} already had a ${esc(name)} login, so they kept their password.`
-    : `Business added, with ${esc(e)} as its Owner / Admin.`}</small></span></li>`;
+  if (r.ok) {
+    const trial = lic !== "trial" ? "" : r.trial?.applied ? ` On a 3-day trial until ${esc(ncWhen(r.trial.expires_at))}.`
+      : r.trial ? " It already had a licence, so no trial was added."
+      : ` <span class="nd-warn">The trial couldn’t be started${r.trial_error ? ` (${esc(r.trial_error)})` : ""}: set a licence on the customer’s page.</span>`;
+    return `<li class="ok" data-res="${k}"><span class="mk" aria-label="Done">✓</span><span class="tx"><b>${esc(name)}</b><small>${r.existing
+      ? `Business added. ${esc(e)} already had a ${esc(name)} login, so they kept their password.`
+      : `Business added, with ${esc(e)} as its Owner / Admin.`}${trial}</small></span></li>`;
+  }
   return `<li class="bad" data-res="${k}"><span class="mk" aria-label="Failed">✗</span><span class="tx"><b>${esc(name)}</b><small>Not added: ${esc(r.error || "unknown error")}</small></span><button type="button" class="btn sm" data-retry="${k}">Retry</button></li>`;
 }
 async function ncSubmit(v, ui) {
   const need = (k, msg) => { toast(msg, true); ui.input(k).focus(); };
-  const { biz, name, email: e, mobile, password: pw } = v;
+  const { biz, name, email: e, mobile, invite, lic } = v;
+  const pw = invite ? ncRand(24) : v.password;   // an invite: a random password nobody sees, as each app's own invite
   const apps = v.checks.apps;
   if (biz.length < 2) return need("biz", "Enter the business name");
   if (name.length < 2) return need("name", "Enter the owner’s name");
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e)) return need("email", "Enter a valid email address");
-  if (pw.length < 8) return need("pw", "The password needs at least 8 characters");
+  if (!invite && pw.length < 8) return need("pw", "The password needs at least 8 characters");
   if (!apps.length) return need("apps", "Tick at least one app");
   const { data: r, error } = await sb.rpc("lic_add_customer", { p_business: biz, p_name: name, p_email: e, p_mobile: mobile, p_password: pw,
     p_contact_email: null, p_phone: mobile || null, p_notes: null });
   if (error) { toast(error.message, true); return false; }
+  // the one invite email: the Proview login's "choose a password" link, which opens the dashboard (new logins only)
+  let mailErr = null;
+  if (invite && !r?.existing) {
+    try { const { error: me } = await sb.auth.resetPasswordForEmail(e, { redirectTo: SIGNIN_URL }); if (me) mailErr = me; } catch (x) { mailErr = x; }
+  }
   ui.close();
   const details = `PROVIEW login\n${SIGNIN_URL}\nEmail: ${e}\nPassword: ${pw}`;
-  const res = {};   // per app: { ok, existing } or { ok: false, error }
-  const paint = () => { $("#ncRes").innerHTML = apps.map((k) => ncRow(k, res[k], e)).join(""); };
+  const res = {};   // per app: { ok, existing, trial?, trial_error? } or { ok: false, error }
+  const paint = () => { $("#ncRes").innerHTML = apps.map((k) => ncRow(k, res[k], e, lic)).join(""); };
   const run = async (list) => {
     list.forEach((k) => { delete res[k]; }); paint();
     try {
-      const out = await hub("create_business", { customer_id: r.customer_id, apps: list, business: biz, name, email: e, mobile, password: pw });
+      const out = await hub("create_business", { customer_id: r.customer_id, apps: list, business: biz, name, email: e, mobile, password: pw, licence: lic, invite });
       list.forEach((k) => { res[k] = out.results?.[k] || { ok: false, error: "No answer from the licence hub" }; });
     } catch (err) { list.forEach((k) => { res[k] = { ok: false, error: err.message }; }); }
     paint();
     await loadAll().catch((err) => toast(err.message, true));
   };
   const COPY = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
+  let signIn;
+  if (r?.existing) signIn = `<p>${esc(e)} already had a Proview login, so they were made the owner of this customer and keep the password they already use.${invite ? " No invite was needed." : " The password you typed was not applied."}</p>`;
+  else if (invite && mailErr) signIn = `<p class="abz-warn">The customer was added, but the invite email couldn’t be sent (${esc(mailErr.message || String(mailErr))}). They can use “Forgot password?” at ${esc(SIGNIN_HOST)} with ${esc(e)}.</p>`;
+  else if (invite) signIn = `<p class="abz-ok">Invite sent to <b>${esc(e)}</b>. They open the email link and choose their own password, then open their apps from ${esc(SIGNIN_HOST)}.</p>`;
+  else signIn = `<p class="nd-muted">The owner can sign in now. No email was sent, so pass these on yourself:</p>
+       <div class="ab-login"><div><span>Sign in at</span><b>${esc(SIGNIN_HOST)}</b></div><div><span>Email</span><b>${esc(e)}</b></div><div><span>Password</span><b>${esc(pw)}</b></div></div>
+       <button class="btn nd-copy" type="button" id="ncCopy">${COPY}Copy login details</button>`;
+  const licLine = lic === "trial" ? `<p class="nd-muted nd-lic">Each app below starts its own 3-day trial: full access for 3 days, then it locks.</p>`
+    : lic === "set" ? `<p class="nd-muted nd-lic">Next, set their licences on the customer’s page (open behind this pop-up).</p>`
+    : `<p class="nd-muted nd-lic">No licence yet: they buy one when they sign in.</p>`;
   $("#ncDoneTitle").textContent = `${biz} added`;
-  $("#ncDoneBody").innerHTML = (r?.existing
-    ? `<p>${esc(e)} already had a Proview login, so they were made the owner of this customer and keep the password they already use. The password you typed was not applied.</p>`
-    : `<p class="nd-muted">The owner can sign in now. No email was sent, so pass these on yourself:</p>
-       <div class="ab-login"><div><span>Sign in at</span><b>${esc(SIGNIN_URL.replace(/^https?:\/\//, "").replace(/\/$/, ""))}</b></div><div><span>Email</span><b>${esc(e)}</b></div><div><span>Password</span><b>${esc(pw)}</b></div></div>
-       <button class="btn nd-copy" type="button" id="ncCopy">${COPY}Copy login details</button>`)
-    + `<div class="nd-cap">Apps</div><ul class="nc-res" id="ncRes"></ul>`;
+  $("#ncDoneBody").innerHTML = signIn + licLine + `<div class="nd-cap">Apps</div><ul class="nc-res" id="ncRes"></ul>`;
   const cp = $("#ncCopy");
   if (cp) cp.onclick = async () => { try { await navigator.clipboard.writeText(details); toast("Copied"); } catch { prompt("Copy this:", details); } };
   $("#ncRes").onclick = (ev) => { const b = ev.target.closest("[data-retry]"); if (b) run([b.dataset.retry]); };
   const done = $("#ncDone");
+  const openIt = () => { setTab("customers"); openDetail(r.customer_id); };
+  $("#ncStay").hidden = lic === "set";
+  $("#ncOpen").textContent = lic === "set" ? "Set licences" : "Open customer";
   $("#ncStay").onclick = $("#ncDoneClose").onclick = () => done.close();
   done.onclick = (ev) => { if (ev.target === done) done.close(); };
-  $("#ncOpen").onclick = () => { done.close(); setTab("customers"); openDetail(r.customer_id); };
+  $("#ncOpen").onclick = () => { done.close(); openIt(); };
   setTimeout(() => done.showModal(), 50);
-  run(apps);
+  // "Set it now": the customer's page opens straight away, behind the result, and fills in as each app is added
+  const ran = run(apps);
+  if (lic === "set") { await loadAll().catch(() => {}); if (S.customers.some((c) => c.id === r.customer_id)) openIt(); ran.then(() => { if (S.detail === r.customer_id) openDetail(r.customer_id); }); }
   return true;
 }
 function pickCustomer(title, excludeId) {
