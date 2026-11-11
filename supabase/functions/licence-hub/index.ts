@@ -22,6 +22,7 @@ const TYPES: Record<string, string[]> = {
   employee: ["trial3", "m1", "m3", "m6", "m12", "m24", "m36", "lifetime", "custom"],
   wifi: ["trial", "m1", "m3", "m6", "m12", "m24", "m36", "lifetime", "custom"],
   qrmenu: ["trial3", "m1", "m3", "m6", "m12", "m24", "m36", "lifetime", "custom"],
+  label: [], // Label's licence belongs to the business and isn't set from the portal yet: its hub has no units
 };
 
 async function callApp(app: App, action: string, args: Record<string, unknown> = {}) {
@@ -51,6 +52,7 @@ async function pushPlans(db: any, apps: Record<string, App>) {
   const { data: plans } = await db.from("lic_plans").select("*").eq("active", true);
   const out: Record<string, unknown> = {};
   for (const app of Object.values(apps)) {
+    if (!TYPES[app.product]?.length) continue; // no licences sold through the portal (Label)
     const mine = Object.fromEntries((plans ?? []).filter((p: any) => p.product === app.product)
       .map((p: any) => [p.plan, { label: p.label, amount: p.amount, currency: p.currency, link: p.link, ref: Object.keys(REF_CODES).find((k) => REF_CODES[k] === app.product) }]));
     try {
@@ -234,6 +236,65 @@ async function checkPayments(db: any, apps: Record<string, App>) {
   return { ok: !err, applied, seen, failed, error: err };
 }
 
+// read every app's accounts and units (or only those given), then attach accounts seen for the first time to a
+// master customer: matched by contact email, else a new customer
+async function syncApps(db: any, list: App[]) {
+  const result: Record<string, unknown> = {};
+  for (const app of list) {
+    try {
+      const d = await callApp(app, "list");
+      const now = new Date().toISOString();
+      const accounts = (d.accounts ?? []).map((a: any) => ({
+        product: app.product, ext_id: String(a.id), name: a.name, contact_email: a.contact_email?.toLowerCase() ?? null,
+        extra: { created_at: a.created_at, self_signup: a.self_signup, suspended: a.suspended ?? false, phone: a.phone ?? null },
+        gone: false, synced_at: now,
+      }));
+      const units = (d.units ?? []).map((x: any) => ({
+        product: app.product, ext_id: String(x.id), account_ext_id: x.account_id ? String(x.account_id) : null,
+        name: x.name, detail: x.detail ?? null, license_type: x.license_type ?? null,
+        starts_at: x.starts_at ?? null, expires_at: x.expires_at ?? null, notes: x.notes ?? null,
+        extra: { last_seen: x.last_seen ?? null, archived: x.archived ?? false }, gone: false, synced_at: now,
+      }));
+      if (accounts.length) {
+        const { error } = await db.from("lic_accounts").upsert(accounts, { onConflict: "product,ext_id" });
+        if (error) throw error;
+      }
+      if (units.length) {
+        const { error } = await db.from("lic_units").upsert(units, { onConflict: "product,ext_id" });
+        if (error) throw error;
+      }
+      await db.from("lic_accounts").update({ gone: true }).eq("product", app.product).lt("synced_at", now);
+      await db.from("lic_units").update({ gone: true }).eq("product", app.product).lt("synced_at", now);
+      result[app.product] = { ok: true, accounts: accounts.length, units: units.length };
+    } catch (e) {
+      result[app.product] = { ok: false, error: String((e as Error).message ?? e) };
+    }
+  }
+
+  // first time we see an account, attach it to a master customer (matched by email, else new)
+  const { data: fresh } = await db.from("lic_accounts").select("*").eq("link_checked", false).is("customer_id", null);
+  let linked = 0, created = 0;
+  for (const a of fresh ?? []) {
+    let cid: string | null = null;
+    if (a.contact_email) {
+      const { data: m } = await db.from("lic_customers").select("id").eq("contact_email", a.contact_email).limit(1);
+      cid = m?.[0]?.id ?? null;
+    }
+    if (!cid) {
+      const { data: c, error } = await db.from("lic_customers")
+        .insert({ name: a.name || a.contact_email || "Unnamed", contact_email: a.contact_email, phone: a.extra?.phone ?? null })
+        .select("id").single();
+      if (error) continue;
+      cid = c.id; created++;
+    } else linked++;
+    await db.from("lic_accounts").update({ customer_id: cid, link_checked: true }).eq("product", a.product).eq("ext_id", a.ext_id);
+  }
+  await db.from("lic_accounts").update({ link_checked: true }).eq("link_checked", false);
+  return { ok: true, apps: result, auto_linked: linked, customers_created: created };
+}
+
+const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+
 Deno.serve(async (req) => {
   const h = cors(req);
   if (req.method === "OPTIONS") return new Response("ok", { headers: h });
@@ -264,59 +325,48 @@ Deno.serve(async (req) => {
 
     const apps = await loadApps(db);
 
-    if (action === "sync") {
-      const result: Record<string, unknown> = {};
-      for (const app of Object.values(apps)) {
-        try {
-          const d = await callApp(app, "list");
-          const now = new Date().toISOString();
-          const accounts = (d.accounts ?? []).map((a: any) => ({
-            product: app.product, ext_id: String(a.id), name: a.name, contact_email: a.contact_email?.toLowerCase() ?? null,
-            extra: { created_at: a.created_at, self_signup: a.self_signup, suspended: a.suspended ?? false, phone: a.phone ?? null },
-            gone: false, synced_at: now,
-          }));
-          const units = (d.units ?? []).map((x: any) => ({
-            product: app.product, ext_id: String(x.id), account_ext_id: x.account_id ? String(x.account_id) : null,
-            name: x.name, detail: x.detail ?? null, license_type: x.license_type ?? null,
-            starts_at: x.starts_at ?? null, expires_at: x.expires_at ?? null, notes: x.notes ?? null,
-            extra: { last_seen: x.last_seen ?? null, archived: x.archived ?? false }, gone: false, synced_at: now,
-          }));
-          if (accounts.length) {
-            const { error } = await db.from("lic_accounts").upsert(accounts, { onConflict: "product,ext_id" });
-            if (error) throw error;
-          }
-          if (units.length) {
-            const { error } = await db.from("lic_units").upsert(units, { onConflict: "product,ext_id" });
-            if (error) throw error;
-          }
-          await db.from("lic_accounts").update({ gone: true }).eq("product", app.product).lt("synced_at", now);
-          await db.from("lic_units").update({ gone: true }).eq("product", app.product).lt("synced_at", now);
-          result[app.product] = { ok: true, accounts: accounts.length, units: units.length };
-        } catch (e) {
-          result[app.product] = { ok: false, error: String((e as Error).message ?? e) };
-        }
-      }
+    if (action === "sync") return json(await syncApps(db, Object.values(apps)));
 
-      // first time we see an account, attach it to a master customer (matched by email, else new)
-      const { data: fresh } = await db.from("lic_accounts").select("*").eq("link_checked", false).is("customer_id", null);
-      let linked = 0, created = 0;
-      for (const a of fresh ?? []) {
-        let cid: string | null = null;
-        if (a.contact_email) {
-          const { data: m } = await db.from("lic_customers").select("id").eq("contact_email", a.contact_email).limit(1);
-          cid = m?.[0]?.id ?? null;
+    // New customer: create the business, a same-name location and the owner's login in each ticked app, through
+    // each app's hub_call 'add_business' (the app's own master Add business; token-authorised). Apps can't share a
+    // transaction, so each app is all or nothing on its own and the result is per app. Each new account is linked
+    // to the customer straight away, then the apps that worked are synced.
+    // body: { customer_id, apps: ["signage", ...], business, name, email, mobile, password, contact_email }
+    if (action === "create_business") {
+      const { data: cust } = await db.from("lic_customers").select("id,name,contact_email").eq("id", body.customer_id ?? "").maybeSingle();
+      if (!cust) return json({ error: "Customer not found" }, 400);
+      const want: string[] = Array.isArray(body.apps) ? [...new Set(body.apps.map(String))] as string[] : [];
+      if (!want.length) return json({ error: "Tick at least one app." }, 400);
+      const business = String(body.business ?? "").trim(), name = String(body.name ?? "").trim();
+      const email = String(body.email ?? "").trim().toLowerCase(), password = String(body.password ?? "");
+      const contact = String(body.contact_email ?? cust.contact_email ?? "").trim().toLowerCase() || email;
+      if (business.length < 2) return json({ error: "Enter the business name." }, 400);
+      if (name.length < 2) return json({ error: "Enter the owner's name." }, 400);
+      if (!EMAIL_RE.test(email)) return json({ error: "Enter a valid email address." }, 400);
+      const args = { business, name, email, mobile: String(body.mobile ?? "").trim() || null, password, contact_email: contact };
+      const results: Record<string, any> = {};
+      await Promise.all(want.map(async (product) => {
+        const app = apps[product];
+        if (!app) { results[product] = { ok: false, error: "This app isn't connected to the licence portal." }; return; }
+        try {
+          const r = await callApp(app, "add_business", args);
+          const ext = String(r?.account_id ?? "");
+          if (!ext) throw new Error("The app didn't say which account it made.");
+          const { error } = await db.from("lic_accounts").upsert({ product, ext_id: ext, name: business, contact_email: contact,
+            customer_id: cust.id, link_checked: true, gone: false, synced_at: new Date().toISOString() }, { onConflict: "product,ext_id" });
+          results[product] = { ok: true, existing: !!r.existing, account_id: ext, ...(error ? { link_error: error.message } : {}) };
+          await db.from("lic_audit").insert({ admin_email: adminEmail, product, account_name: business, action: "added business",
+            after: { customer: cust.name, owner: email, existing: !!r.existing, account_id: ext } });
+        } catch (e) {
+          const msg = String((e as Error).message ?? e);
+          results[product] = { ok: false, error: msg };
+          await db.from("lic_audit").insert({ admin_email: adminEmail, product, account_name: business, action: "failed", error: `Add business: ${msg}` });
         }
-        if (!cid) {
-          const { data: c, error } = await db.from("lic_customers")
-            .insert({ name: a.name || a.contact_email || "Unnamed", contact_email: a.contact_email, phone: a.extra?.phone ?? null })
-            .select("id").single();
-          if (error) continue;
-          cid = c.id; created++;
-        } else linked++;
-        await db.from("lic_accounts").update({ customer_id: cid, link_checked: true }).eq("product", a.product).eq("ext_id", a.ext_id);
-      }
-      await db.from("lic_accounts").update({ link_checked: true }).eq("link_checked", false);
-      return json({ ok: true, apps: result, auto_linked: linked, customers_created: created });
+      }));
+      const done = want.filter((p) => results[p]?.ok).map((p) => apps[p]);
+      let sync: unknown = null;
+      if (done.length) { try { sync = await syncApps(db, done); } catch (e) { sync = { ok: false, error: String((e as Error).message ?? e) }; } }
+      return json({ ok: want.every((p) => results[p]?.ok), results, sync });
     }
 
     if (action === "set") {
@@ -327,7 +377,7 @@ Deno.serve(async (req) => {
         const app = apps[it.product];
         if (!app) { out.push({ ...it, ok: false, error: "Unknown product" }); continue; }
         const type = it.type ?? null;
-        if (type !== null && !TYPES[it.product].includes(type)) { out.push({ ...it, ok: false, error: `Unknown licence type ${type}` }); continue; }
+        if (type !== null && !(TYPES[it.product] ?? []).includes(type)) { out.push({ ...it, ok: false, error: `Unknown licence type ${type}` }); continue; }
         const { data: before } = await db.from("lic_units").select("*").eq("product", it.product).eq("ext_id", String(it.unit)).maybeSingle();
         const { data: acc } = before?.account_ext_id
           ? await db.from("lic_accounts").select("name").eq("product", it.product).eq("ext_id", before.account_ext_id).maybeSingle()

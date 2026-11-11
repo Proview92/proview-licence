@@ -497,6 +497,19 @@ html .side .nav .cnt[hidden]{display:none!important}
 .nc-dlg .login-card>div{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
 .nc-dlg .login-card b{font-family:ui-monospace,monospace;word-break:break-all}
 .nc-dlg .nc-copy{align-self:flex-start}
+.nc-dlg .nc-apps{display:flex;flex-wrap:wrap;gap:8px 18px}
+.nc-dlg .nc-apps label{display:flex;align-items:center;gap:7px;font-size:14px;font-weight:500;color:var(--ink);cursor:pointer;margin:0}
+.nc-dlg .nc-apps .nc-all{flex-basis:100%;font-weight:650}
+.nc-dlg .nc-apps input{width:16px;height:16px;margin:0}
+.nc-dlg .nc-res{display:grid;gap:8px;margin:0;padding:0;list-style:none}
+.nc-dlg .nc-res li{display:flex;align-items:flex-start;gap:10px;padding:9px 12px;border:1px solid var(--line);border-radius:10px;font-size:14px}
+.nc-dlg .nc-res .mk{font-weight:800;width:18px;flex:none;text-align:center}
+.nc-dlg .nc-res li.ok .mk{color:#12805c}
+.nc-dlg .nc-res li.bad{border-color:#f4c7c3;background:#fff6f5}
+.nc-dlg .nc-res li.bad .mk{color:#d92d20}
+.nc-dlg .nc-res .tx{flex:1;min-width:0}
+.nc-dlg .nc-res .tx small{display:block;color:var(--muted);font-size:12.5px;margin-top:2px;overflow-wrap:anywhere}
+.nc-dlg .nc-res .btn{flex:none}
 @media (max-width:640px){.nc-dlg .form-2{grid-template-columns:1fr}}
 </style>
 </head>
@@ -688,13 +701,23 @@ html .side .nav .cnt[hidden]{display:none!important}
       <label class="field"><span>Email (they sign in with this)<span class="req"> *</span></span><input type="email" id="ncEmail" placeholder="name@company.com" autocomplete="off"></label>
       <label class="field"><span>Password<span class="req"> *</span></span><span class="nc-pw"><span class="pw-wrap"><input type="password" id="ncPw" placeholder="At least 8 characters" autocomplete="new-password"><button type="button" class="pw-eye" data-f="ncPw" tabindex="-1" title="Show password" aria-label="Show password"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></button></span><button type="button" class="btn sm" id="ncSuggest">Suggest</button></span></label>
     </div>
+    <div class="nc-cap">Add the business in<span class="req"> *</span></div>
+    <div class="nc-apps" id="ncApps" role="group" aria-label="Apps to add the business in">
+      <label class="nc-all"><input type="checkbox" id="ncAll"> Select all</label>
+      <label><input type="checkbox" data-app="signage"> Signage</label>
+      <label><input type="checkbox" data-app="bookings"> Bookings</label>
+      <label><input type="checkbox" data-app="employee"> Employee</label>
+      <label><input type="checkbox" data-app="label"> Label</label>
+      <label><input type="checkbox" data-app="wifi"> WiFi</label>
+      <label><input type="checkbox" data-app="qrmenu"> QR Menu</label>
+    </div>
     <div class="nc-cap">Customer details (optional)</div>
     <div class="form-2">
       <label class="field">Contact email<input type="email" id="ncContact" placeholder="Same as the owner’s email" autocomplete="off"></label>
       <label class="field">Phone<input type="text" id="ncPhone" placeholder="Optional" autocomplete="off"></label>
       <label class="field full">Notes<textarea id="ncNotes" rows="2" placeholder="Optional"></textarea></label>
     </div>
-    <p class="nc-hint">Creates the customer here and a Proview login for this person, linked to the customer as its owner. They sign in at dashboard.proviewcrm.co.uk, which opens their Proview apps once they are an owner in an app. App accounts with the contact email are linked to this customer at the next sync. No email is sent.</p>
+    <p class="nc-hint">Creates the customer here and a Proview login for this person (they sign in at dashboard.proviewcrm.co.uk). In each ticked app it adds the business, a location with the same name and this person as its Owner / Admin, with the same email and password, linked to this customer. No email is sent.</p>
   </div>
   <div class="df"><button type="button" class="btn" id="ncCancel">Cancel</button><button type="button" class="btn primary" id="ncGo">Add customer</button></div>
 </dialog>
@@ -738,7 +761,10 @@ const PRODUCTS = {
   employee: { label: "Employee", unit: "Staff member", units: "staff", app: "https://employee.proviewcrm.co.uk", trial: "trial3" },
   wifi:     { label: "WiFi",     unit: "Location", units: "locations",   app: "https://wifi.proviewcrm.co.uk/admin", trial: "trial" },
   qrmenu:   { label: "QR Menu",  unit: "Location", units: "locations",   app: "https://qrmenu.proviewcrm.co.uk", trial: "trial3" },
+  label:    { label: "Label",    unit: "Business", units: "businesses",  app: "https://label.proviewcrm.co.uk", trial: null, noSale: true }, // licence per business, not sold here yet
 };
+// the New customer pop-up's app tick boxes, in this order
+const NC_APPS = ["signage", "bookings", "employee", "label", "wifi", "qrmenu"];
 const PLAN_LABEL = { trial: "Trial (3 days)", trial3: "Trial (3 days)", trial7: "Trial (3 days)",
   m1: "1 month", m3: "3 months", m6: "6 months", m12: "12 months", m24: "24 months", m36: "36 months",
   lifetime: "Lifetime", custom: "Custom end date" };
@@ -860,10 +886,11 @@ const ICONS = {
   bookings: '<rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M16 3v4M8 3v4M3 10h18"></path>',
   employee: '<circle cx="9" cy="8" r="3.5"></circle><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"></path>',
   wifi: '<path d="M2 8.8a15 15 0 0 1 20 0"></path><path d="M5 12.5a10 10 0 0 1 14 0"></path><path d="M8.5 16a5 5 0 0 1 7 0"></path><path d="M12 20h.01"></path>',
+  label: '<path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z"></path><path d="M7.5 7.5h.01"></path>',
   qrmenu: '<rect x="3" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="3" width="7" height="7" rx="1"></rect><rect x="3" y="14" width="7" height="7" rx="1"></rect><path d="M14 14h3v3h-3zM20 14v.01M14 20h.01M17 20h4v-3"></path>',
 };
 const icon = (k) => `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[k]}</svg>`;
-const UNIT_WORD = { signage: ["screen", "screens"], bookings: ["location", "locations"], employee: ["staff", "staff"], wifi: ["location", "locations"], qrmenu: ["location", "locations"] };
+const UNIT_WORD = { signage: ["screen", "screens"], bookings: ["location", "locations"], employee: ["staff", "staff"], wifi: ["location", "locations"], qrmenu: ["location", "locations"], label: ["business", "businesses"] };
 const shortDate = (d) => { const x = new Date(d); return x.toLocaleDateString("en-GB", { day: "numeric", month: "short", ...(x.getFullYear() !== new Date().getFullYear() ? { year: "numeric" } : {}) }); };
 const renewAt = (units) => Math.min(...units.filter((u) => u.license_type !== "lifetime" && u.expires_at && tone(u) !== "r").map((u) => +new Date(u.expires_at)), Infinity);
 
@@ -1162,49 +1189,80 @@ async function saveCustomer(id) {
 }
 // New customer = Proview Signage's "Add business" (43f377c): the customer plus a ready-to-use login for its owner,
 // made in one go by lic_add_customer (master only, all or nothing). No email is sent; an existing login keeps its password.
+// Then, in each ticked app, the business, a same-name location and the owner as Owner / Admin, through the licence hub's
+// create_business (each app's own Add business). Apps can't share one transaction, so each app shows its own ✓ or ✗.
 const SIGNIN_URL = "https://dashboard.proviewcrm.co.uk/";
+const ncTicks = () => [...document.querySelectorAll("#ncApps [data-app]")];
+const ncSyncAll = () => { const t = ncTicks(), on = t.filter((x) => x.checked).length; $("#ncAll").checked = on === t.length; $("#ncAll").indeterminate = on > 0 && on < t.length; };
 function newCustomer() {
   const d = $("#ncDlg");
   ["#ncBiz", "#ncName", "#ncMobile", "#ncEmail", "#ncPw", "#ncContact", "#ncPhone", "#ncNotes"].forEach((k) => { $(k).value = ""; });
   const pw = $("#ncPw"), eye = $('#ncDlg .pw-eye'); pw.type = "password"; eye.classList.remove("on"); eye.title = "Show password"; eye.setAttribute("aria-label", "Show password");
+  ncTicks().forEach((x) => { x.checked = false; }); ncSyncAll();
   $("#ncGo").disabled = false;
   d.showModal(); setTimeout(() => $("#ncBiz").focus(), 30);
 }
+$("#ncAll").onchange = () => { ncTicks().forEach((x) => { x.checked = $("#ncAll").checked; }); ncSyncAll(); };
+ncTicks().forEach((x) => { x.onchange = ncSyncAll; });
 $("#ncSuggest").onclick = () => {
   const a = "abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789", r = crypto.getRandomValues(new Uint32Array(10));
   const pw = $("#ncPw"); pw.value = [...r].map((n) => a[n % a.length]).join(""); pw.type = "text";
   const eye = $("#ncDlg .pw-eye"); eye.classList.add("on"); eye.title = "Hide password"; eye.setAttribute("aria-label", "Hide password");
 };
 $("#ncCancel").onclick = $("#ncClose").onclick = () => $("#ncDlg").close();
+// one row of the result: ✓ or ✗, the reason, and Retry on a ✗
+function ncRow(k, r, e) {
+  const name = "Proview " + PRODUCTS[k].label;
+  if (!r) return `<li data-res="${k}"><span class="mk">…</span><span class="tx"><b>${esc(name)}</b><small>Adding…</small></span></li>`;
+  if (r.ok) return `<li class="ok" data-res="${k}"><span class="mk" aria-label="Done">✓</span><span class="tx"><b>${esc(name)}</b><small>${r.existing
+    ? `Business added. ${esc(e)} already had a ${esc(name)} login, so they kept their password.`
+    : `Business added, with ${esc(e)} as its Owner / Admin.`}</small></span></li>`;
+  return `<li class="bad" data-res="${k}"><span class="mk" aria-label="Failed">✗</span><span class="tx"><b>${esc(name)}</b><small>Not added: ${esc(r.error || "unknown error")}</small></span><button type="button" class="btn sm" data-retry="${k}">Retry</button></li>`;
+}
 $("#ncGo").onclick = async () => {
   const need = (sel, msg) => { toast(msg, true); $(sel).focus(); };
   const biz = $("#ncBiz").value.trim(), name = $("#ncName").value.trim(), e = $("#ncEmail").value.trim().toLowerCase(), pw = $("#ncPw").value;
-  const contact = $("#ncContact").value.trim().toLowerCase();
+  const contact = $("#ncContact").value.trim().toLowerCase(), mobile = $("#ncMobile").value.trim();
+  const apps = ncTicks().filter((x) => x.checked).map((x) => x.dataset.app);
   if (biz.length < 2) return need("#ncBiz", "Enter the business name");
   if (name.length < 2) return need("#ncName", "Enter the owner’s name");
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e)) return need("#ncEmail", "Enter a valid email address");
   if (pw.length < 8) return need("#ncPw", "The password needs at least 8 characters");
+  if (!apps.length) return need("#ncAll", "Tick at least one app");
   if (contact && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(contact)) return need("#ncContact", "Enter a valid contact email, or leave it empty");
   const go = $("#ncGo"); go.disabled = true;
-  const { data: r, error } = await sb.rpc("lic_add_customer", { p_business: biz, p_name: name, p_email: e, p_mobile: $("#ncMobile").value.trim(), p_password: pw,
+  const { data: r, error } = await sb.rpc("lic_add_customer", { p_business: biz, p_name: name, p_email: e, p_mobile: mobile, p_password: pw,
     p_contact_email: contact || null, p_phone: $("#ncPhone").value.trim() || null, p_notes: $("#ncNotes").value.trim() || null });
   go.disabled = false;
   if (error) return toast(error.message, true);
   $("#ncDlg").close();
-  await loadAll().catch((err) => toast(err.message, true));
   const details = `PROVIEW login\n${SIGNIN_URL}\nEmail: ${e}\nPassword: ${pw}`;
+  const res = {};   // per app: { ok, existing } or { ok: false, error }
+  const paint = () => { $("#ncRes").innerHTML = apps.map((k) => ncRow(k, res[k], e)).join(""); };
+  const run = async (list) => {
+    list.forEach((k) => { delete res[k]; }); paint();
+    try {
+      const out = await hub("create_business", { customer_id: r.customer_id, apps: list, business: biz, name, email: e, mobile, password: pw });
+      list.forEach((k) => { res[k] = out.results?.[k] || { ok: false, error: "No answer from the licence hub" }; });
+    } catch (err) { list.forEach((k) => { res[k] = { ok: false, error: err.message }; }); }
+    paint();
+    await loadAll().catch((err) => toast(err.message, true));
+  };
   $("#ncDoneTitle").textContent = `${biz} added`;
-  $("#ncDoneBody").innerHTML = r?.existing
+  $("#ncDoneBody").innerHTML = (r?.existing
     ? `<p style="margin:0">${esc(e)} already had a Proview login, so they were made the owner of this customer and keep the password they already use. The password you typed was not applied.</p>`
-    : `<p class="muted" style="margin:0">The owner can sign in now. No email was sent, so pass these on yourself. The login opens their Proview apps once they are an owner in an app.</p>
+    : `<p class="muted" style="margin:0">The owner can sign in now. No email was sent, so pass these on yourself.</p>
        <div class="notice info login-card"><div><span class="muted">Sign in at</span><b>${esc(SIGNIN_URL.replace(/^https?:\/\//, "").replace(/\/$/, ""))}</b></div><div><span class="muted">Email</span><b>${esc(e)}</b></div><div><span class="muted">Password</span><b>${esc(pw)}</b></div></div>
-       <button class="btn nc-copy" type="button" id="ncCopy"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>Copy login details</button>`;
+       <button class="btn nc-copy" type="button" id="ncCopy"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>Copy login details</button>`)
+    + `<div class="nc-cap">Apps</div><ul class="nc-res" id="ncRes"></ul>`;
   const cp = $("#ncCopy");
   if (cp) cp.onclick = async () => { try { await navigator.clipboard.writeText(details); toast("Copied"); } catch { prompt("Copy this:", details); } };
+  $("#ncRes").onclick = (ev) => { const b = ev.target.closest("[data-retry]"); if (b) run([b.dataset.retry]); };
   const done = $("#ncDone");
   $("#ncStay").onclick = $("#ncDoneClose").onclick = () => done.close();
   $("#ncOpen").onclick = () => { done.close(); setTab("customers"); openDetail(r.customer_id); };
   setTimeout(() => done.showModal(), 50);
+  run(apps);
 };
 function pickCustomer(title, excludeId) {
   return new Promise((res) => {
@@ -1385,7 +1443,7 @@ function renderPayments() {
     </div>
   </div>
 
-  ${Object.entries(PRODUCTS).map(([prod, pr]) => `<div class="acct" style="margin:0 0 14px">
+  ${Object.entries(PRODUCTS).filter(([, pr]) => !pr.noSale).map(([prod, pr]) => `<div class="acct" style="margin:0 0 14px">
     <div class="ah"><span class="ptag">${pr.label}</span><span class="pn">Prices for ${pr.units}</span><span class="sp"></span>
       <span class="small">${P.plans.filter((x) => x.product === prod).length} plan(s) on sale</span></div>
     <div class="pay-grid"><span class="hd">Sell online</span><span></span><span class="hd">Price</span><span class="hd lnk">Stripe Payment Link</span>
@@ -1409,7 +1467,7 @@ function renderPayments() {
   };
   $("#paySavePlans").onclick = async () => {
     const plans = [];
-    for (const prod of Object.keys(PRODUCTS)) for (const k of PAY_PLANS) {
+    for (const prod of Object.keys(PRODUCTS).filter((k) => !PRODUCTS[k].noSale)) for (const k of PAY_PLANS) {
       const on = $(`[data-pp="${prod}|${k}|on"]`).checked;
       const amount = Math.round(parseFloat($(`[data-pp="${prod}|${k}|amount"]`).value) * 100);
       const link = $(`[data-pp="${prod}|${k}|link"]`).value.trim();
