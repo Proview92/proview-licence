@@ -1695,10 +1695,9 @@ function showLogin(msg, kind) {
     <label class="af">Password<div class="pw-wrap"><input id="lgPw" type="password" autocomplete="${up ? "new-password" : "current-password"}" placeholder="${up ? "At least 8 characters" : "••••••••"}" required>${eyeBtn("lgPw")}</div></label>
     <label class="af ${up ? "" : "hidden"}">Confirm password<div><div class="pw-wrap"><input id="lgPw2" type="password" autocomplete="new-password" placeholder="Type it again">${eyeBtn("lgPw2")}</div><div class="pw-match" id="pwMatch"></div></div></label>
     <button class="go" type="submit" id="authGo">${up ? "Create account" : "Sign in"}</button>
-    <div class="alinks"><button type="button" id="authSwap">${up ? "I already have an account" : "Create an account"}</button><button type="button" class="${up ? "hidden" : ""}" id="authReset">Forgot password?</button></div>
+    <div class="alinks"><span class="small" style="align-self:center;color:#8b8b95">Proview master account only</span><button type="button" id="authReset">Forgot password?</button></div>
   </form></div>`;
   $("#authForm").onsubmit = authSubmit;
-  $("#authSwap").onclick = () => { AUTHMODE = up ? "signin" : "signup"; showLogin(); };
   $("#authReset").onclick = authReset;
   $("#lgPw").oninput = authMatch; $("#lgPw2").oninput = authMatch;
   setTimeout(() => (keep ? $("#lgPw") : $("#lgEmail"))?.focus(), 50);
@@ -1785,7 +1784,7 @@ async function start() {
   const { data: { session } } = await sb.auth.getSession();
   if (!session) return showLogin();
   const { data: ok } = await sb.rpc("is_lic_admin");
-  if (!ok) { await sb.auth.signOut(); return showLogin("This account isn’t a Proview licence administrator. Ask Proview for access.", "bad"); }
+  if (!ok) { await sb.auth.signOut(); return showLogin("This portal is for the Proview master account only.", "bad"); }
   S.email = session.user.email;
   const nm = S.email.split("@")[0].split(/[._-]+/).filter(Boolean).map((w) => w[0].toUpperCase() + w.slice(1)).join(" ");
   $("#who").textContent = (nm.split(" ").map((w) => w[0]).slice(0, 2).join("") || "?").toUpperCase();
