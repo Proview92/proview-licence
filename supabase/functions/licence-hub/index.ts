@@ -22,7 +22,19 @@ const TYPES: Record<string, string[]> = {
   employee: ["trial3", "m1", "m3", "m6", "m12", "m24", "m36", "lifetime", "custom"],
   wifi: ["trial", "m1", "m3", "m6", "m12", "m24", "m36", "lifetime", "custom"],
   qrmenu: ["trial3", "m1", "m3", "m6", "m12", "m24", "m36", "lifetime", "custom"],
-  label: [], // Label's licence belongs to the business and isn't set from the portal yet: its hub has no units
+  label: ["trial", "m1", "m3", "m6", "m12", "m24", "m36", "lifetime", "custom"], // per location (trial = set by hand)
+};
+
+// What a unit is (PER_LOCATION_LICENCE_SPEC): every app licenses each location; Signage also each TV and Employee each
+// extra person over the package ("Staff add-on"). An app that sends no kind sends its old unit type, DEFAULT_KIND.
+const KINDS: Record<string, string[]> = {
+  signage: ["screen", "location"], employee: ["staff", "location"],
+  bookings: ["location"], wifi: ["location"], qrmenu: ["location"], label: ["location"],
+};
+const DEFAULT_KIND: Record<string, string> = { signage: "screen", employee: "staff", bookings: "location", wifi: "location", qrmenu: "location", label: "location" };
+const kindOf = (product: string, k: unknown) => {
+  const v = typeof k === "string" && k ? k : DEFAULT_KIND[product];
+  return (KINDS[product] ?? []).includes(v) ? v : null;
 };
 
 async function callApp(app: App, action: string, args: Record<string, unknown> = {}) {
@@ -39,7 +51,39 @@ async function callApp(app: App, action: string, args: Record<string, unknown> =
 }
 
 const PAY_PLANS = ["m1", "m3", "m6", "m12", "m24", "m36", "lifetime"];
-const REF_CODES: Record<string, string> = { pvs: "signage", pvb: "bookings", pve: "employee", pvw: "wifi", pvq: "qrmenu" };
+const REF_CODES: Record<string, string> = { pvs: "signage", pvb: "bookings", pve: "employee", pvw: "wifi", pvq: "qrmenu", pvl: "label" };
+const codeOf = (product: string) => Object.keys(REF_CODES).find((k) => REF_CODES[k] === product);
+// Stripe client_reference_id (/home/claude/HUB_UNITS.md): the unit is the middle parts joined with "/", as before.
+//   pvs__<screen>__<plan>                 Signage TV            unit <screen>
+//   pvs__loc__<site>__<plan>              Signage location      unit loc/<site>          (the unit id Signage lists)
+//   pve__<org>__<member>__<plan>          Employee staff add-on unit <org>/<member>
+//   pve__loc__<org>__<location>__<plan>   Employee location     unit loc/<org>/<location> (the unit id Employee lists)
+//   pvl__<site>__<plan>                   Label location        unit <site>   (pvl__loc__<site>__<plan> also accepted)
+//   pvb / pvq / pvw __<id>__<plan>        Bookings / QR Menu / WiFi location (unchanged)
+// kind: "location" when the second part is "loc", else the app's default kind.
+export function parseRef(ref: string) {
+  const parts = (ref || "").split("__"); const product = REF_CODES[parts[0]];
+  if (!product || parts.length < 3 || parts.some((x) => !x)) return null;
+  const loc = parts[1] === "loc";
+  if (loc && parts.length < 4) return null;
+  const kind = loc ? "location" : DEFAULT_KIND[product];
+  if (!KINDS[product].includes(kind)) return null;
+  // location-only apps list their locations without the "loc/" prefix
+  const idParts = loc && DEFAULT_KIND[product] === "location" ? parts.slice(2, -1) : parts.slice(1, -1);
+  return { product, kind, plan: parts[parts.length - 1], unit: idParts.join("/") };
+}
+// The prices an app gets (hub_plans), as in HUB_UNITS.md. ref = the product code; the app builds the full reference.
+//   one kind (Bookings, QR Menu, WiFi, Label), or an app that doesn't list other kinds yet: flat { m12: {...} } with
+//   only its default kind (older builds read it as they always have)
+//   several kinds, app lists them: { location: { m12: {...} }, screen: { m12: {...} } }   (Employee: location / staff)
+export function plansFor(product: string, rows: any[], kindsListed: Set<string>) {
+  const code = codeOf(product), def = DEFAULT_KIND[product];
+  const entry = (p: any) => [p.plan, { label: p.label, amount: p.amount, currency: p.currency, link: p.link, ref: code, kind: p.kind || def, plan: p.plan }];
+  const mine = rows.filter((p: any) => p.product === product);
+  const nested = KINDS[product].length > 1 && KINDS[product].some((k) => k !== def && kindsListed.has(k));
+  if (!nested) return Object.fromEntries(mine.filter((p: any) => (p.kind || def) === def).map(entry));
+  return Object.fromEntries(KINDS[product].map((k) => [k, Object.fromEntries(mine.filter((p: any) => (p.kind || def) === k).map(entry))]));
+}
 
 async function loadApps(db: any): Promise<Record<string, App>> {
   const { data, error } = await db.rpc("lic_app_config");
@@ -52,15 +96,18 @@ async function pushPlans(db: any, apps: Record<string, App>) {
   const { data: plans } = await db.from("lic_plans").select("*").eq("active", true);
   const out: Record<string, unknown> = {};
   for (const app of Object.values(apps)) {
-    if (!TYPES[app.product]?.length) continue; // no licences sold through the portal (Label)
-    const mine = Object.fromEntries((plans ?? []).filter((p: any) => p.product === app.product)
-      .map((p: any) => [p.plan, { label: p.label, amount: p.amount, currency: p.currency, link: p.link, ref: Object.keys(REF_CODES).find((k) => REF_CODES[k] === app.product) }]));
+    if (!TYPES[app.product]?.length) continue;
+    // the per-kind form goes only to an app that already lists units of another kind (an older build would read the
+    // kind names as plans)
+    const { data: kinds } = await db.from("lic_units").select("kind").eq("product", app.product).eq("gone", false);
+    const mine = plansFor(app.product, plans ?? [], new Set((kinds ?? []).map((k: any) => k.kind)));
     try {
       const r = await fetch(`${app.url}/rest/v1/rpc/hub_plans`, {
         method: "POST", headers: { apikey: app.apikey, "Content-Type": "application/json" },
         body: JSON.stringify({ p_token: app.token, p_plans: mine }),
       });
-      out[app.product] = r.ok ? { ok: true, plans: Object.keys(mine).length } : { ok: false, error: `HTTP ${r.status}` };
+      const n = Object.values(mine).reduce((t: number, v: any) => t + (v && typeof v === "object" && !("link" in v) ? Object.keys(v).length : 1), 0);
+      out[app.product] = r.ok ? { ok: true, plans: n } : { ok: false, error: `HTTP ${r.status}` };
     } catch (e) { out[app.product] = { ok: false, error: String((e as Error).message ?? e) }; }
   }
   return out;
@@ -70,7 +117,8 @@ const fmtDay = (d = new Date()) => d.toLocaleDateString("en-GB", { day: "numeric
 
 // ---------- online payments (Stripe) ----------
 // The apps open a Stripe Payment Link with client_reference_id set to:
-//   pvs__<screen uuid>__<plan>   pvb__<site id>__<plan>   pve__<org id>__<member id>__<plan>   pvw__<wifi site id>__<plan>   pvq__<qrmenu location id>__<plan>
+//   pvs__<screen uuid>__<plan>   pvb__<site id>__<plan>   pve__<org id>__<member id>__<plan> (staff add-on)   pvw__<wifi site id>__<plan>
+//   pvq__<qrmenu location id>__<plan>   pvl__<label location id>__<plan>   pvs__loc__<site id>__<plan>   pve__loc__<org id>__<location id>__<plan>
 // Every 5 minutes (and on "Check now") we read Stripe and:
 //   • apply paid checkouts (one-off plans, and the first month of a monthly subscription)
 //   • remember which subscription belongs to which licence, then apply each monthly renewal invoice
@@ -125,22 +173,19 @@ async function checkPayments(db: any, apps: Record<string, App>) {
   const since = Math.max(Number(c.last_created || 0) - 25 * 3600, Math.floor(Date.now() / 1000) - 30 * 86400);
   let applied = 0, seen = 0, failed = 0, maxCreated = Number(c.last_created || 0), err: string | null = null;
   const { data: planRows } = await db.from("lic_plans").select("*");
-  const planOf = (prod: string, plan: string) => (planRows ?? []).find((p: any) => p.product === prod && p.plan === plan);
-  const parseRef = (ref: string) => {
-    const parts = (ref || "").split("__"); const product = REF_CODES[parts[0]];
-    if (!product || parts.length < 3) return null;
-    return { product, plan: parts[parts.length - 1], unit: parts.slice(1, -1).join("/") };
-  };
+  const planOf = (prod: string, kind: string, plan: string) =>
+    (planRows ?? []).find((p: any) => p.product === prod && (p.kind || DEFAULT_KIND[prod]) === kind && p.plan === plan);
   const iso = (t: number) => new Date(Number(t) * 1000).toISOString();
 
   // add the paid time to the licence; returns an error message or null
-  async function applyPaid(id: string, product: string, unit: string, plan: string, amount: number, currency: string, email: string | null, what: string) {
+  async function applyPaid(id: string, product: string, kind: string, unit: string, plan: string, amount: number, currency: string, email: string | null, what: string) {
     const note = (n: string) => db.from("lic_payments").update({ note: n }).eq("session_id", id);
-    const p = planOf(product, plan);
+    const p = planOf(product, kind, plan);
     if (!p) { await note("Unknown plan; not applied"); return; }
     if (Number(amount) < p.amount || String(currency).toLowerCase() !== p.currency) { await note("Amount does not match the plan; not applied"); return; }
     try {
-      const res = await callApp(apps[product], "set", { unit, type: plan, extend: true, notes: `${what} ${fmtDay()}` });
+      if (!apps[product]) { await note("This app isn't connected to the licence portal; not applied"); return; }
+      const res = await callApp(apps[product], "set", { unit, kind, type: plan, extend: true, notes: `${what} ${fmtDay()}` });
       const { data: before } = await db.from("lic_units").select("name,account_ext_id,license_type,expires_at").eq("product", product).eq("ext_id", unit).maybeSingle();
       const { data: acc } = before?.account_ext_id
         ? await db.from("lic_accounts").select("name").eq("product", product).eq("ext_id", before.account_ext_id).maybeSingle() : { data: null };
@@ -148,7 +193,7 @@ async function checkPayments(db: any, apps: Record<string, App>) {
         .eq("product", product).eq("ext_id", unit);
       await db.from("lic_payments").update({ applied: true, applied_at: new Date().toISOString(), note: null }).eq("session_id", id);
       await db.from("lic_audit").insert({ admin_email: "Online payment (Stripe)", product, unit_ext_id: unit, unit_name: before?.name ?? null,
-        account_name: acc?.name ?? null, action: `${what.toLowerCase()} ${plan}`,
+        account_name: acc?.name ?? null, action: `${what.toLowerCase()} ${plan}${kind === DEFAULT_KIND[product] ? "" : ` (${kind})`}`,
         before: before ? { license_type: before.license_type, expires_at: before.expires_at } : null,
         after: { ...res, amount, currency, email } });
       applied++;
@@ -172,9 +217,9 @@ async function checkPayments(db: any, apps: Record<string, App>) {
       const email = x.customer_details?.email ?? null;
       const sub = typeof x.subscription === "string" ? x.subscription : x.subscription?.id;
       if (x.payment_status === "paid") {
-        if (sub) await db.from("lic_subscriptions").upsert({ subscription_id: sub, product: r.product, unit_ext_id: r.unit, plan: r.plan, email }, { onConflict: "subscription_id" });
+        if (sub) await db.from("lic_subscriptions").upsert({ subscription_id: sub, product: r.product, kind: r.kind, unit_ext_id: r.unit, plan: r.plan, email }, { onConflict: "subscription_id" });
         const { data: ins } = await db.from("lic_payments").insert({
-          session_id: x.id, product: r.product, unit_ext_id: r.unit, plan: r.plan, amount: x.amount_total, currency: x.currency,
+          session_id: x.id, product: r.product, unit_kind: r.kind, unit_ext_id: r.unit, plan: r.plan, amount: x.amount_total, currency: x.currency,
           email, paid_at: iso(x.created), status: "paid", kind: "checkout", subscription_id: sub ?? null,
         }).select("session_id");
         await resolveFailures(x.id);
@@ -182,7 +227,7 @@ async function checkPayments(db: any, apps: Record<string, App>) {
         await db.from("lic_payments").update({ resolved: true }).eq("product", r.product).eq("unit_ext_id", r.unit)
           .eq("kind", "checkout").in("status", ["failed", "abandoned"]).lte("paid_at", iso(x.created));
         if (!ins?.length) return; // already handled
-        await applyPaid(x.id, r.product, r.unit, r.plan, x.amount_total, x.currency, email, sub ? "Subscribed online" : "Paid online");
+        await applyPaid(x.id, r.product, r.kind, r.unit, r.plan, x.amount_total, x.currency, email, sub ? "Subscribed online" : "Paid online");
         return;
       }
       // not paid: a declined card shows on the payment intent; an expired checkout with no attempt means the customer left
@@ -190,7 +235,7 @@ async function checkPayments(db: any, apps: Record<string, App>) {
       const declined = declineReason(pi?.last_payment_error);
       if (!declined && x.status !== "expired") return; // still open, nothing tried yet
       await recordFailure(`${x.id}:failed`, {
-        product: r.product, unit_ext_id: r.unit, plan: r.plan, amount: x.amount_total, currency: x.currency, email,
+        product: r.product, unit_kind: r.kind, unit_ext_id: r.unit, plan: r.plan, amount: x.amount_total, currency: x.currency, email,
         paid_at: iso(x.created), kind: "checkout", subscription_id: sub ?? null,
         status: declined ? "failed" : "abandoned",
         reason: declined ?? "Customer left the checkout without paying",
@@ -208,7 +253,8 @@ async function checkPayments(db: any, apps: Record<string, App>) {
         const s = subId && subOf(subId);
         if (!s) return;
         const email = inv.customer_email ?? s.email ?? null;
-        const base = { product: s.product, unit_ext_id: s.unit_ext_id, plan: s.plan, amount: inv.amount_due, currency: inv.currency, email, kind: "renewal", subscription_id: subId };
+        const sk = s.kind || DEFAULT_KIND[s.product];
+        const base = { product: s.product, unit_kind: sk, unit_ext_id: s.unit_ext_id, plan: s.plan, amount: inv.amount_due, currency: inv.currency, email, kind: "renewal", subscription_id: subId };
         if (inv.status === "paid") {
           const { data: ins } = await db.from("lic_payments").insert({
             session_id: inv.id, ...base, amount: inv.amount_paid, status: "paid",
@@ -217,7 +263,7 @@ async function checkPayments(db: any, apps: Record<string, App>) {
           await resolveFailures(inv.id);
           await db.from("lic_payments").update({ resolved: true }).eq("subscription_id", subId).eq("status", "failed").lte("paid_at", iso(inv.created));
           if (!ins?.length) return;
-          await applyPaid(inv.id, s.product, s.unit_ext_id, s.plan, inv.amount_paid, inv.currency, email, "Renewed online");
+          await applyPaid(inv.id, s.product, sk, s.unit_ext_id, s.plan, inv.amount_paid, inv.currency, email, "Renewed online");
           return;
         }
         if (!(inv.status === "open" && inv.attempt_count > 0) && inv.status !== "uncollectible") return;
@@ -249,11 +295,15 @@ async function syncApps(db: any, list: App[]) {
         extra: { created_at: a.created_at, self_signup: a.self_signup, suspended: a.suspended ?? false, phone: a.phone ?? null },
         gone: false, synced_at: now,
       }));
-      const units = (d.units ?? []).map((x: any) => ({
-        product: app.product, ext_id: String(x.id), account_ext_id: x.account_id ? String(x.account_id) : null,
+      const units = (d.units ?? []).filter((x: any) => kindOf(app.product, x.kind)).map((x: any) => ({
+        product: app.product, kind: kindOf(app.product, x.kind), ext_id: String(x.id), account_ext_id: x.account_id ? String(x.account_id) : null,
         name: x.name, detail: x.detail ?? null, license_type: x.license_type ?? null,
         starts_at: x.starts_at ?? null, expires_at: x.expires_at ?? null, notes: x.notes ?? null,
-        extra: { last_seen: x.last_seen ?? null, archived: x.archived ?? false }, gone: false, synced_at: now,
+        extra: { last_seen: x.last_seen ?? null, archived: x.archived ?? false,
+          // Employee staff (HUB_UNITS.md): covered by the location package (10 per licensed location) or by a valid add-on
+          ...(typeof x.covered === "boolean" ? { covered: x.covered } : {}), ...(typeof x.package === "boolean" ? { package: x.package } : {}),
+          ...(typeof x.needs_addon === "boolean" ? { needs_addon: x.needs_addon } : {}), ...(x.location_id ? { location_id: String(x.location_id) } : {}) },
+        gone: false, synced_at: now,
       }));
       if (accounts.length) {
         const { error } = await db.from("lic_accounts").upsert(accounts, { onConflict: "product,ext_id" });
@@ -379,12 +429,14 @@ Deno.serve(async (req) => {
         const type = it.type ?? null;
         if (type !== null && !(TYPES[it.product] ?? []).includes(type)) { out.push({ ...it, ok: false, error: `Unknown licence type ${type}` }); continue; }
         const { data: before } = await db.from("lic_units").select("*").eq("product", it.product).eq("ext_id", String(it.unit)).maybeSingle();
+        const kind = kindOf(it.product, it.kind ?? before?.kind);
+        if (!kind) { out.push({ ...it, ok: false, error: `Unknown kind ${it.kind}` }); continue; }
         const { data: acc } = before?.account_ext_id
           ? await db.from("lic_accounts").select("name").eq("product", it.product).eq("ext_id", before.account_ext_id).maybeSingle()
           : { data: null };
         try {
           const after = await callApp(app, "set", {
-            unit: String(it.unit), type, extend: !!it.extend, expires: it.expires ?? null, notes: it.notes ?? null,
+            unit: String(it.unit), kind, type, extend: !!it.extend, expires: it.expires ?? null, notes: it.notes ?? null,
           });
           await db.from("lic_units").update({
             license_type: after.license_type, starts_at: after.starts_at, expires_at: after.expires_at, notes: after.notes,
@@ -396,7 +448,7 @@ Deno.serve(async (req) => {
             before: before ? { license_type: before.license_type, starts_at: before.starts_at, expires_at: before.expires_at } : null,
             after,
           });
-          out.push({ product: it.product, unit: it.unit, ok: true, after });
+          out.push({ product: it.product, kind, unit: it.unit, ok: true, after });
         } catch (e) {
           const msg = String((e as Error).message ?? e);
           await db.from("lic_audit").insert({
@@ -410,17 +462,19 @@ Deno.serve(async (req) => {
     }
 
     if (action === "save_plans") {
-      // plans: [{product, plan, label, amount, currency, link, active}]
-      const plans = Array.isArray(body.plans) ? body.plans : [];
+      // plans: [{product, kind?, plan, label, amount, currency, link, active}] (no kind = the product's default kind)
+      const plans = (Array.isArray(body.plans) ? body.plans : []).map((p: any) => ({ ...p, kind: p.kind || DEFAULT_KIND[p.product] }));
       for (const p of plans) {
-        if (!TYPES[p.product] || !PAY_PLANS.includes(p.plan)) throw new Error(`Unknown plan ${p.product}/${p.plan}`);
+        if (!TYPES[p.product] || !PAY_PLANS.includes(p.plan) || !(KINDS[p.product] ?? []).includes(p.kind)) throw new Error(`Unknown plan ${p.product}/${p.kind}/${p.plan}`);
         if (p.active && !/^https:\/\/(buy|checkout)\.stripe\.com\//.test(p.link || "")) throw new Error(`${p.label}: paste a Stripe Payment Link (https://buy.stripe.com/…)`);
         if (p.active && !(Number(p.amount) > 0)) throw new Error(`${p.label}: enter the price`);
       }
+      // replace the prices of each product + kind sent (a kind not sent keeps its prices)
       const touched = [...new Set(plans.map((p: any) => p.product))];
-      for (const prod of touched) await db.from("lic_plans").delete().eq("product", prod);
+      const pairs = [...new Set(plans.map((p: any) => `${p.product}|${p.kind}`))] as string[];
+      for (const pk of pairs) { const [prod, kind] = pk.split("|"); await db.from("lic_plans").delete().eq("product", prod).eq("kind", kind); }
       const rows = plans.filter((p: any) => p.active).map((p: any) => ({
-        product: p.product, plan: p.plan, label: p.label, amount: Math.round(Number(p.amount)), currency: (p.currency || "gbp").toLowerCase(),
+        product: p.product, kind: p.kind, plan: p.plan, label: p.label, amount: Math.round(Number(p.amount)), currency: (p.currency || "gbp").toLowerCase(),
         link: p.link.trim(), active: true, updated_at: new Date().toISOString() }));
       if (rows.length) { const { error } = await db.from("lic_plans").insert(rows); if (error) throw error; }
       const pushed = await pushPlans(db, apps);
@@ -433,7 +487,7 @@ Deno.serve(async (req) => {
     if (action === "check_payments") return json(await checkPayments(db, apps));
 
     if (action === "apps") {
-      return json({ apps: Object.values(apps).map((a) => ({ product: a.product, label: a.label, app_url: a.app_url })), types: TYPES });
+      return json({ apps: Object.values(apps).map((a) => ({ product: a.product, label: a.label, app_url: a.app_url })), types: TYPES, kinds: KINDS, default_kind: DEFAULT_KIND });
     }
 
     return json({ error: "Unknown action" }, 400);

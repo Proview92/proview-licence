@@ -761,8 +761,22 @@ const PRODUCTS = {
   employee: { label: "Employee", unit: "Staff member", units: "staff", app: "https://employee.proviewcrm.co.uk", trial: "trial3" },
   wifi:     { label: "WiFi",     unit: "Location", units: "locations",   app: "https://wifi.proviewcrm.co.uk/admin", trial: "trial" },
   qrmenu:   { label: "QR Menu",  unit: "Location", units: "locations",   app: "https://qrmenu.proviewcrm.co.uk", trial: "trial3" },
-  label:    { label: "Label",    unit: "Business", units: "businesses",  app: "https://label.proviewcrm.co.uk", trial: null, noSale: true }, // licence per business, not sold here yet
+  label:    { label: "Label",    unit: "Location", units: "locations",   app: "https://label.proviewcrm.co.uk", trial: "trial" },
 };
+// What each licence is for (PER_LOCATION_LICENCE_SPEC): every app licenses each location; Signage also each TV and
+// Employee each extra person over the package. Units synced before kinds existed read as their app's old kind.
+const KINDS = { signage: ["screen", "location"], bookings: ["location"], employee: ["location", "staff"], wifi: ["location"], qrmenu: ["location"], label: ["location"] };
+const DEFAULT_KIND = { signage: "screen", bookings: "location", employee: "staff", wifi: "location", qrmenu: "location", label: "location" };
+const KIND_LABEL = { location: "Location", screen: "TV", staff: "Staff add-on" };
+const KIND_WORD = { location: ["location", "locations"], screen: ["TV", "TVs"], staff: ["staff add-on", "staff add-ons"] };
+const kindOf = (u) => u.kind || DEFAULT_KIND[u.product] || "location";
+const multiKind = (prod) => (KINDS[prod] || []).length > 1;
+// "3 TVs, 1 location" / "2 locations"
+function unitCount(prod, units) {
+  const by = (KINDS[prod] || ["location"]).map((k) => [k, units.filter((u) => kindOf(u) === k).length]).filter(([, n]) => n);
+  if (!by.length) return "0 " + KIND_WORD[(KINDS[prod] || ["location"])[0]][1];
+  return by.map(([k, n]) => `${n} ${KIND_WORD[k][n === 1 ? 0 : 1]}`).join(", ");
+}
 // the New customer pop-up's app tick boxes, in this order
 const NC_APPS = ["signage", "bookings", "employee", "label", "wifi", "qrmenu"];
 const PLAN_LABEL = { trial: "Trial (3 days)", trial3: "Trial (3 days)", trial7: "Trial (3 days)",
@@ -785,7 +799,9 @@ function toast(msg, err = false) {
 
 // ---------- licence status ----------
 function status(u) {
-  if (!u.license_type) return { k: "none", label: "No licence", cls: "none", days: null };
+  // Employee staff covered by the location package (10 staff per licensed location) need no add-on of their own
+  if (u.extra?.package === true && kindOf(u) === "staff") return { k: "ok", label: "In the location package", cls: "ok", days: null, pkg: true };
+  if (!u.license_type) return { k: "none", label: u.extra?.needs_addon === false ? "Covered" : u.extra?.needs_addon ? "Needs a Staff add-on" : "No licence", cls: u.extra?.needs_addon === false ? "ok" : "none", days: null };
   if (u.license_type === "lifetime") return { k: "ok", label: "Lifetime", cls: "ok", days: null };
   if (!u.expires_at) return { k: "ok", label: PLAN_LABEL[u.license_type] || u.license_type, cls: "ok", days: null };
   const days = Math.ceil((new Date(u.expires_at) - Date.now()) / 86400000);
@@ -849,7 +865,7 @@ function renderSyncChips() {
   const s = S.lastSync; if (!s) return;
   $("#syncChips").innerHTML = Object.entries(PRODUCTS).map(([k, p]) => {
     const r = s.apps[k];
-    return `<span class="chip ${r?.ok ? "ok" : "bad"}" title="${esc(r?.error || "")}"><span class="dot"></span>${p.label}${r?.ok ? (Number.isFinite(r.units) ? ` · ${r.units} ${UNIT_WORD[k][r.units === 1 ? 0 : 1]}` : "") : " · offline"}</span>`;
+    return `<span class="chip ${r?.ok ? "ok" : "bad"}" title="${esc(r?.error || "")}"><span class="dot"></span>${p.label}${r?.ok ? (Number.isFinite(r.units) ? ` · ${unitCount(k, S.units.filter((u) => u.product === k && !u.gone))}` : "") : " · offline"}</span>`;
   }).join("") + `<span class="chip">Last synced ${fmtDT(s.at)}</span>`;
   // the Customers page opens with these as its summary tags, beside its buttons (as Proview Signage's pages)
   $("#custChips").innerHTML = Object.entries(PRODUCTS).map(([k, p]) => {
@@ -876,6 +892,7 @@ function matches(c, q, prod) {
 // green = licensed · amber = renews within 30 days or on trial · red = expired (incl. grace) or no licence
 function tone(u) {
   const s = status(u);
+  if (u.extra?.needs_addon === false && kindOf(u) === "staff" && ["none", "expired", "grace"].includes(s.k)) return "g";   // covered (package / add-on)
   if (["none", "expired", "grace"].includes(s.k)) return "r";
   if (s.k === "expiring" || (isTrial(u.license_type) && s.k === "ok")) return "a";
   return "g";
@@ -890,7 +907,6 @@ const ICONS = {
   qrmenu: '<rect x="3" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="3" width="7" height="7" rx="1"></rect><rect x="3" y="14" width="7" height="7" rx="1"></rect><path d="M14 14h3v3h-3zM20 14v.01M14 20h.01M17 20h4v-3"></path>',
 };
 const icon = (k) => `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[k]}</svg>`;
-const UNIT_WORD = { signage: ["screen", "screens"], bookings: ["location", "locations"], employee: ["staff", "staff"], wifi: ["location", "locations"], qrmenu: ["location", "locations"], label: ["business", "businesses"] };
 const shortDate = (d) => { const x = new Date(d); return x.toLocaleDateString("en-GB", { day: "numeric", month: "short", ...(x.getFullYear() !== new Date().getFullYear() ? { year: "numeric" } : {}) }); };
 const renewAt = (units) => Math.min(...units.filter((u) => u.license_type !== "lifetime" && u.expires_at && tone(u) !== "r").map((u) => +new Date(u.expires_at)), Infinity);
 
@@ -913,7 +929,7 @@ function unitRow(u) {
   const arch = u.extra?.archived ? ` <span class="pill none">archived</span>` : "";
   return `<tr>
     <td class="cb"><input type="checkbox" data-sel="${esc(key)}" ${S.sel.has(key) ? "checked" : ""}></td>
-    <td><div>${esc(u.name || "(unnamed)")}${arch}</div><div class="small">${esc(u.detail || "")}</div>${extra}</td>
+    <td><div>${multiKind(u.product) ? `<span class="pill none" title="What this licence is for">${KIND_LABEL[kindOf(u)]}</span> ` : ""}${esc(u.name || "(unnamed)")}${arch}</div><div class="small">${esc(u.detail || "")}</div>${extra}</td>
     <td class="hide-sm small">${esc(PLAN_LABEL[u.license_type] || u.license_type || "—")}${u.notes ? `<div title="${esc(u.notes)}">📝 ${esc(u.notes.slice(0, 40))}${u.notes.length > 40 ? "…" : ""}</div>` : ""}</td>
     <td><span class="pill ${s.cls}">${esc(s.label)}</span></td>
     <td style="text-align:right;white-space:nowrap">
@@ -935,13 +951,12 @@ function accountBlock(a) {
       <button class="btn sm" data-move="${esc(a.product + "|" + a.ext_id)}">Move…</button>
       <a class="btn sm" href="${p.app}" target="_blank" rel="noopener">Open app ↗</a>
     </div>
-    ${units.length ? `<table><thead><tr><th class="cb"></th><th>${p.unit}</th><th class="hide-sm">Plan</th><th>Status</th><th></th></tr></thead><tbody>${units.map(unitRow).join("")}</tbody></table>`
-      : `<div class="small" style="padding:10px 12px">No ${p.units} yet.</div>`}
+    ${units.length ? `<table><thead><tr><th class="cb"></th><th>${multiKind(a.product) ? "Licence" : p.unit}</th><th class="hide-sm">Plan</th><th>Status</th><th></th></tr></thead><tbody>${units.map(unitRow).join("")}</tbody></table>`
+      : `<div class="small" style="padding:10px 12px">No ${multiKind(a.product) ? "licences" : p.units} yet.</div>`}
   </div>`;
 }
 
 function productLine(prod, units) {
-  const [one, many] = UNIT_WORD[prod];
   const bad = units.filter((u) => tone(u) === "r"), warn = units.filter((u) => tone(u) === "a");
   const t = bad.length ? "r" : warn.length ? "a" : units.length ? "g" : "n";
   let right;
@@ -951,7 +966,7 @@ function productLine(prod, units) {
     const next = renewAt(units);
     right = next === Infinity ? `<span class="pr">Lifetime</span>` : `<span class="pr ${t === "a" ? "a" : ""}">to ${esc(shortDate(next))}</span>`;
   }
-  return `<div class="pl"><div class="pi">${icon(prod)}</div><span class="pt">${PRODUCTS[prod].label} · ${units.length} ${units.length === 1 ? one : many}</span><i class="sdot ${t}"></i>${right}</div>`;
+  return `<div class="pl"><div class="pi">${icon(prod)}</div><span class="pt">${PRODUCTS[prod].label} · ${esc(unitCount(prod, units))}</span><i class="sdot ${t}"></i>${right}</div>`;
 }
 
 // Customer card: same card as Proview Signage's business cards (LOCATIONS_PAGE_STANDARD)
@@ -975,12 +990,12 @@ function custCard(c) {
   const sub = !sum.units.length ? (prods.length ? prods.map((k) => PRODUCTS[k].label).join(" · ") : "No products linked yet")
     : [sum.bad.length ? `${licensed} of ${sum.units.length} licensed` : `${sum.units.length} licence${sum.units.length === 1 ? "" : "s"}`, soon ? `${soon} renewing soon` : ""].filter(Boolean).join(" · ");
   const row = (k) => {
-    const units = sum.units.filter((u) => u.product === k), [one, many] = UNIT_WORD[k];
+    const units = sum.units.filter((u) => u.product === k);
     const bad = units.filter((u) => tone(u) === "r"), warn = units.filter((u) => tone(u) === "a");
     const t = bad.length ? "r" : warn.length ? "a" : units.length ? "g" : "n";
     const next = renewAt(units);
     const right = !units.length ? "none yet" : bad.length ? `${bad.length} unlicensed` : next === Infinity ? "Lifetime" : `to ${shortDate(next)}`;
-    return `<button type="button" class="ov-loc" data-open="${c.id}" title="Open this customer"><span class="ov-dot ${TONE_CLS[t]}"></span><span class="grow">${PRODUCTS[k].label} · ${units.length} ${units.length === 1 ? one : many}</span><span class="muted small">${esc(right)}</span><span class="ov-chev" aria-hidden="true">›</span></button>`;
+    return `<button type="button" class="ov-loc" data-open="${c.id}" title="Open this customer"><span class="ov-dot ${TONE_CLS[t]}"></span><span class="grow">${PRODUCTS[k].label} · ${esc(unitCount(k, units))}</span><span class="muted small">${esc(right)}</span><span class="ov-chev" aria-hidden="true">›</span></button>`;
   };
   return `<article class="card ov-biz" data-cust="${c.id}">
     <div class="ov-bh"><div class="grow"><h3>${esc(c.name)}</h3><div class="muted small">${esc(sub)}</div></div><span class="ov-pill ${pcls}">${ptxt}</span></div>
@@ -1007,13 +1022,13 @@ function showList(k) {
   const cust = (a) => a && S.customers.find((c) => c.id === a.customer_id);
   const chev = `<span class="ov-chev" aria-hidden="true">›</span>`;
   const unitLi = (u) => { const s = status(u), a = acc(u), c = cust(a);
-    return `<button type="button" class="ov-li" data-edit="${esc(u.product + "|" + u.ext_id)}"><span class="ov-dot ${TONE_CLS[tone(u)]}"></span><span class="grow"><b>${esc(u.name || "(unnamed)")}</b><span class="tiny" style="display:block">${esc([PRODUCTS[u.product]?.label, c?.name || a?.name].filter(Boolean).join(" · "))}</span></span><span class="ov-pill ${s.cls === "none" ? "bad" : s.cls}">${esc(s.label)}</span>${chev}</button>`; };
+    return `<button type="button" class="ov-li" data-edit="${esc(u.product + "|" + u.ext_id)}"><span class="ov-dot ${TONE_CLS[tone(u)]}"></span><span class="grow"><b>${esc(u.name || "(unnamed)")}</b><span class="tiny" style="display:block">${esc([PRODUCTS[u.product]?.label, KIND_LABEL[kindOf(u)], c?.name || a?.name].filter(Boolean).join(" · "))}</span></span><span class="ov-pill ${s.cls === "none" ? "bad" : s.cls}">${esc(s.label)}</span>${chev}</button>`; };
   let title, items, empty;
   if (k === "cust") { title = "Customers"; empty = "No customers yet.";
     items = S.customers.filter((c) => matches(c, "", S.prod)).map((c) => { const sum = custSummary(c); return `<button type="button" class="ov-li" data-open="${c.id}"><span class="ov-dot ${TONE_CLS[sum.worst]}"></span><span class="grow"><b>${esc(c.name)}</b><span class="tiny" style="display:block">${esc([c.contact_email, `${sum.units.length} licence${sum.units.length === 1 ? "" : "s"}`].filter(Boolean).join(" · "))}</span></span><span class="ov-pill ${PILL[sum.worst][0]}">${PILL[sum.worst][1]}</span>${chev}</button>`; }); }
   else if (k === "acct") { title = "App accounts"; empty = "No app accounts yet. Press Sync to pull them in.";
-    items = S.accounts.filter((a) => !a.gone && (!S.prod || a.product === S.prod)).sort((x, y) => String(x.name).localeCompare(String(y.name))).map((a) => { const c = cust(a), n = unitsForAccount(a).length, [one, many] = UNIT_WORD[a.product] || ["", ""];
-      return `<button type="button" class="ov-li" data-open="${a.customer_id || ""}"><span class="ov-dot"></span><span class="grow"><b>${esc(a.name || "(unnamed)")}</b><span class="tiny" style="display:block">${esc([PRODUCTS[a.product]?.label, c?.name].filter(Boolean).join(" · "))}</span></span><span class="muted small">${n} ${n === 1 ? one : many}</span>${chev}</button>`; }); }
+    items = S.accounts.filter((a) => !a.gone && (!S.prod || a.product === S.prod)).sort((x, y) => String(x.name).localeCompare(String(y.name))).map((a) => { const c = cust(a), au = unitsForAccount(a);
+      return `<button type="button" class="ov-li" data-open="${a.customer_id || ""}"><span class="ov-dot"></span><span class="grow"><b>${esc(a.name || "(unnamed)")}</b><span class="tiny" style="display:block">${esc([PRODUCTS[a.product]?.label, c?.name].filter(Boolean).join(" · "))}</span></span><span class="muted small">${esc(unitCount(a.product, au))}</span>${chev}</button>`; }); }
   else if (k === "units") { title = "Licences"; empty = "No licences yet."; items = units.map(unitLi); }
   else { title = { g: "Licensed", a: "Renewing soon or on trial", r: "Licences needing attention" }[k]; empty = k === "r" ? "Every licence is fine." : "None.";
     items = units.filter((u) => tone(u) === k).sort((x, y) => (status(x).days ?? 1e9) - (status(y).days ?? 1e9)).map(unitLi); }
@@ -1081,7 +1096,7 @@ function renderExpiring() {
     rows.map(({ u, s }) => { const a = acc(u), c = cust(a), key = u.product + "|" + u.ext_id;
       return `<tr><td><div>${esc(c?.name || a?.name || "?")}</div><div class="small">${esc(c?.contact_email || "")}</div></td>
         <td><span class="ptag">${PRODUCTS[u.product].label}</span></td>
-        <td>${esc(u.name || "")}<div class="small">${esc(PLAN_LABEL[u.license_type] || u.license_type)}</div></td>
+        <td>${esc(u.name || "")}<div class="small">${esc([KIND_LABEL[kindOf(u)], PLAN_LABEL[u.license_type] || u.license_type].join(" · "))}</div></td>
         <td><span class="pill ${s.cls}">${esc(s.label)}</span></td>
         <td style="text-align:right;white-space:nowrap"><button class="btn sm" data-quick="${esc(key)}">+12m</button> <button class="btn sm" data-edit="${esc(key)}">Change…</button></td></tr>`; }).join("")
   }</tbody></table></div>` : `<div class="empty">Nothing expiring in this window.</div>`;
@@ -1125,7 +1140,7 @@ async function applyChanges(items) {
 function openLicence(key) {
   const u = findUnit(key); if (!u) return;
   const p = PRODUCTS[u.product];
-  $("#licTitle").textContent = `${p.label} · ${u.name || p.unit}`;
+  $("#licTitle").textContent = `${p.label} · ${KIND_LABEL[kindOf(u)]} · ${u.name || KIND_LABEL[kindOf(u)]}`;
   $("#licCurrent").textContent = "Now: " + status(u).label + (u.license_type ? ` (${PLAN_LABEL[u.license_type] || u.license_type})` : "");
   $("#licPlan").innerHTML = planOptions(u.product);
   $("#licDate").value = u.expires_at ? u.expires_at.slice(0, 10) : "";
@@ -1147,14 +1162,14 @@ $("#licDlg").addEventListener("close", async () => {
   const dlg = $("#licDlg"); if (dlg.returnValue !== "save") return;
   const u = findUnit(dlg.dataset.key); const type = $("#licPlan").value;
   if (type === "custom" && !$("#licDate").value) return toast("Choose an expiry date", true);
-  await applyChanges([{ product: u.product, unit: u.ext_id, type, extend: $("#licExtend").checked,
+  await applyChanges([{ product: u.product, kind: kindOf(u), unit: u.ext_id, type, extend: $("#licExtend").checked,
     expires: type === "custom" ? new Date($("#licDate").value + "T23:59:00").toISOString() : null, notes: $("#licNotes").value || null }]);
 });
 $("#licRemove").onclick = async () => {
   const dlg = $("#licDlg"); const u = findUnit(dlg.dataset.key);
   if (!(await ask({ title: "Remove licence", message: `Remove the licence for "${u.name}"? It will stop working in ${PRODUCTS[u.product].label}.`, ok: "Remove licence", danger: true }))) return;
   dlg.close();
-  await applyChanges([{ product: u.product, unit: u.ext_id, type: null }]);
+  await applyChanges([{ product: u.product, kind: kindOf(u), unit: u.ext_id, type: null }]);
 };
 
 // ---------- bulk ----------
@@ -1169,7 +1184,7 @@ $("#bulkClear").onclick = () => { S.sel.clear(); renderCustomers(); };
 $("#bulkApply").onclick = async () => {
   const type = $("#bulkPlan").value;
   if (type === "custom" && !$("#bulkDate").value) return toast("Choose an expiry date", true);
-  const items = [...S.sel.values()].map((u) => ({ product: u.product, unit: u.ext_id, type, extend: $("#bulkExtend").checked,
+  const items = [...S.sel.values()].map((u) => ({ product: u.product, kind: kindOf(u), unit: u.ext_id, type, extend: $("#bulkExtend").checked,
     expires: type === "custom" ? new Date($("#bulkDate").value + "T23:59:00").toISOString() : null }));
   if (!(await ask({ title: "Apply licences", message: `Apply "${PLAN_LABEL[type]}" to ${items.length} licence(s)?`, ok: "Apply" }))) return;
   $("#bulkApply").disabled = true;
@@ -1385,7 +1400,7 @@ function payTable(rows, empty, failedView) {
   return `<table><thead><tr><th>${failedView ? "When" : "Paid"}</th><th>Product</th><th>For</th><th>Plan</th><th>Amount</th><th class="hide-sm">Email</th><th>Status</th>${failedView ? "<th>Reason</th>" : ""}</tr></thead><tbody>${
     rows.map((r) => `<tr><td class="small">${esc(fmtDT(r.paid_at || r.created_at))}</td>
       <td><span class="ptag">${esc(PRODUCTS[r.product]?.label || r.product || "")}</span></td>
-      <td>${esc(unitName(r))}${accName(r) ? `<div class="small">${esc(accName(r))}</div>` : ""}</td><td class="small">${esc(PLAN_LABEL[r.plan] || r.plan || "")}${kind(r)}</td>
+      <td>${r.unit_kind && multiKind(r.product) ? `<span class="pill none">${KIND_LABEL[r.unit_kind] || r.unit_kind}</span> ` : ""}${esc(unitName(r))}${accName(r) ? `<div class="small">${esc(accName(r))}</div>` : ""}</td><td class="small">${esc(PLAN_LABEL[r.plan] || r.plan || "")}${kind(r)}</td>
       <td>${esc(gbp(r.amount, r.currency || "gbp"))}</td><td class="small hide-sm">${esc(r.email || "")}</td>
       <td>${status(r)}${!failedView && isPaid(r) && !r.applied ? `<div class="small">${esc(r.note || "Waiting to be applied")}</div>` : ""}</td>
       ${failedView ? `<td class="small" style="min-width:180px">${why(r)}</td>` : ""}</tr>`).join("")
@@ -1413,12 +1428,16 @@ function renderPayLists() {
 
 function renderPayments() {
   const st = P.settings || {};
-  const planRow = (prod, k) => {
-    const p = P.plans.find((x) => x.product === prod && x.plan === k);
-    return `<label class="row" style="gap:6px"><input type="checkbox" data-pp="${prod}|${k}|on" ${p ? "checked" : ""}> ${esc(PLAN_LABEL[k])}</label>
-      <span class="small">£</span><input type="number" min="0" step="0.01" data-pp="${prod}|${k}|amount" value="${p ? (p.amount / 100).toFixed(2) : ""}" placeholder="0.00">
-      <input class="lnk" type="text" data-pp="${prod}|${k}|link" value="${esc(p?.link || "")}" placeholder="https://buy.stripe.com/…">`;
+  const planOf = (prod, kind, k) => P.plans.find((x) => x.product === prod && (x.kind || DEFAULT_KIND[prod]) === kind && x.plan === k);
+  const planRow = (prod, kind, k) => {
+    const p = planOf(prod, kind, k), f = `${prod}|${kind}|${k}`;
+    return `<label class="row" style="gap:6px"><input type="checkbox" data-pp="${f}|on" ${p ? "checked" : ""}> ${esc(PLAN_LABEL[k])}</label>
+      <span class="small">£</span><input type="number" min="0" step="0.01" data-pp="${f}|amount" value="${p ? (p.amount / 100).toFixed(2) : ""}" placeholder="0.00">
+      <input class="lnk" type="text" data-pp="${f}|link" value="${esc(p?.link || "")}" placeholder="https://buy.stripe.com/…">`;
   };
+  const kindNote = { location: "Each location needs its own licence.", screen: "Each TV also needs its own licence, on top of its location.",
+    staff: "Each location includes 10 staff; every extra person needs a Staff add-on." };
+  const SALE = Object.keys(PRODUCTS).flatMap((prod) => (KINDS[prod] || ["location"]).map((kind) => [prod, kind]));
   $("#payView").innerHTML = `
   <div class="acct" style="margin:0 0 14px">
     <div class="ah"><span class="pn">Stripe</span>
@@ -1437,17 +1456,18 @@ function renderPayments() {
       </div>
       <ol class="pay-steps mt">
         <li>In Stripe → Developers → API keys → <b>Create restricted key</b>, give it <b>Read</b> access to <b>Checkout Sessions</b>, <b>Invoices</b> and <b>PaymentIntents</b> only, and paste it above.</li>
-        <li>In Stripe → <b>Payment Links</b>, create one link per product and plan (e.g. “Proview Bookings – 12 months”). Paste each link and its price below.</li>
+        <li>In Stripe → <b>Payment Links</b>, create one link per product, licence and plan (e.g. “Proview Bookings – location – 12 months”, “Proview Signage – TV – 12 months”). Paste each link and its price below.</li>
         <li>Customers see “Buy / renew online” in their app. Every 5 minutes this portal checks Stripe and applies paid licences automatically; they appear in Activity.</li>
       </ol>
     </div>
   </div>
 
-  ${Object.entries(PRODUCTS).filter(([, pr]) => !pr.noSale).map(([prod, pr]) => `<div class="acct" style="margin:0 0 14px">
-    <div class="ah"><span class="ptag">${pr.label}</span><span class="pn">Prices for ${pr.units}</span><span class="sp"></span>
-      <span class="small">${P.plans.filter((x) => x.product === prod).length} plan(s) on sale</span></div>
+  ${SALE.map(([prod, kind]) => `<div class="acct" style="margin:0 0 14px" data-prices="${prod}|${kind}">
+    <div class="ah"><span class="ptag">${PRODUCTS[prod].label}</span><span class="pn">Prices for ${multiKind(prod) ? esc(KIND_LABEL[kind]) + " licences" : KIND_WORD[kind][1]}</span><span class="sp"></span>
+      <span class="small">${P.plans.filter((x) => x.product === prod && (x.kind || DEFAULT_KIND[prod]) === kind).length} plan(s) on sale</span></div>
+    ${multiKind(prod) ? `<div class="small" style="padding:8px 14px 0">${esc(kindNote[kind])}</div>` : ""}
     <div class="pay-grid"><span class="hd">Sell online</span><span></span><span class="hd">Price</span><span class="hd lnk">Stripe Payment Link</span>
-      ${PAY_PLANS.map((k) => planRow(prod, k)).join("")}</div>
+      ${PAY_PLANS.map((k) => planRow(prod, kind, k)).join("")}</div>
   </div>`).join("")}
   <div class="row" style="justify-content:flex-end;margin-bottom:18px"><button class="btn primary" id="paySavePlans">Save prices and update the apps</button></div>
 
@@ -1467,20 +1487,21 @@ function renderPayments() {
   };
   $("#paySavePlans").onclick = async () => {
     const plans = [];
-    for (const prod of Object.keys(PRODUCTS).filter((k) => !PRODUCTS[k].noSale)) for (const k of PAY_PLANS) {
-      const on = $(`[data-pp="${prod}|${k}|on"]`).checked;
-      const amount = Math.round(parseFloat($(`[data-pp="${prod}|${k}|amount"]`).value) * 100);
-      const link = $(`[data-pp="${prod}|${k}|link"]`).value.trim();
-      const label = PLAN_LABEL[k];
-      if (on && !(amount > 0)) return toast(`${PRODUCTS[prod].label} ${label}: enter the price`, true);
-      if (on && !/^https:\/\/(buy|checkout)\.stripe\.com\//.test(link)) return toast(`${PRODUCTS[prod].label} ${label}: paste a Stripe Payment Link (https://buy.stripe.com/…)`, true);
-      plans.push({ product: prod, plan: k, label, amount: on ? amount : 0, currency: "gbp", link, active: on });
+    for (const [prod, kind] of SALE) for (const k of PAY_PLANS) {
+      const f = `${prod}|${kind}|${k}`;
+      const on = $(`[data-pp="${f}|on"]`).checked;
+      const amount = Math.round(parseFloat($(`[data-pp="${f}|amount"]`).value) * 100);
+      const link = $(`[data-pp="${f}|link"]`).value.trim();
+      const label = PLAN_LABEL[k], what = `${PRODUCTS[prod].label}${multiKind(prod) ? " " + KIND_LABEL[kind] : ""} ${label}`;
+      if (on && !(amount > 0)) return toast(`${what}: enter the price`, true);
+      if (on && !/^https:\/\/(buy|checkout)\.stripe\.com\//.test(link)) return toast(`${what}: paste a Stripe Payment Link (https://buy.stripe.com/…)`, true);
+      plans.push({ product: prod, kind, plan: k, label, amount: on ? amount : 0, currency: "gbp", link, active: on });
     }
     $("#paySavePlans").disabled = true;
     try {
       const r = await hub("save_plans", { plans });
       const bad = Object.entries(r.pushed || {}).filter(([, v]) => !v.ok);
-      toast(bad.length ? "Saved, but couldn’t update: " + bad.map(([k]) => PRODUCTS[k].label).join(", ") : "Prices saved and sent to all three apps", !!bad.length);
+      toast(bad.length ? "Saved, but couldn’t update: " + bad.map(([k]) => PRODUCTS[k].label).join(", ") : "Prices saved and sent to the apps", !!bad.length);
     } catch (e) { toast(e.message, true); }
     $("#paySavePlans").disabled = false; P.editing = false; loadPayments();
   };
@@ -1549,12 +1570,12 @@ function inboxItems() {
       open: () => { setTab("payments"); },
       actions: u ? [{ label: "Change licence…", kind: "pri", run: async () => { window.PVHub.close(); openLicence(u.product + "|" + u.ext_id); } }] : [] });
   }
-  const bad = S.units.filter((u) => !u.gone && !u.extra?.archived && u.license_type && ["expired", "grace"].includes(status(u).k))
+  const bad = S.units.filter((u) => !u.gone && !u.extra?.archived && u.license_type && ["expired", "grace"].includes(status(u).k) && tone(u) === "r")
     .sort((a, b) => (status(a).k === "grace" ? 0 : 1) - (status(b).k === "grace" ? 0 : 1) || new Date(b.expires_at) - new Date(a.expires_at)).slice(0, 60);
   for (const u of bad) {
     const c = custOfUnit(u), key = u.product + "|" + u.ext_id;
     out.push({ key: "lic:" + key + ":" + u.expires_at, icon: "check", at: u.expires_at,
-      title: `${c?.name || "?"} · ${PRODUCTS[u.product].label} ${u.name || ""}`, sub: status(u).label,
+      title: `${c?.name || "?"} · ${PRODUCTS[u.product].label} ${KIND_LABEL[kindOf(u)].toLowerCase()} ${u.name || ""}`, sub: status(u).label,
       open: () => { setTab("customers"); if (c) openDetail(c.id); },
       actions: [{ label: "+12 months", kind: "pri", run: async () => { await applyChanges([{ product: u.product, unit: u.ext_id, type: "m12", extend: true }]); } },
                 { label: "Change…", run: async () => { window.PVHub.close(); openLicence(key); } }] });
