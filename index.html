@@ -453,6 +453,14 @@ html .app.collapsed .side :is(.side-foot,#pv-x)>*{width:30px!important;height:26
 button.ov-loc:hover{background:#f8f7f4}
 .ov-bf{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 18px;border-top:1px solid var(--ov-line,#e4e2dc);margin-top:auto}
 .ov-bf .pv-acts{gap:6px;flex-wrap:nowrap}
+/* Customer card "Open ▾" quick menu (MASTER_OPEN_SPEC) */
+.pv-open{position:relative}
+.ov-biz:has(details.pv-open[open]){overflow:visible}
+.pv-open>summary{list-style:none;cursor:pointer;display:inline-flex;align-items:center}
+.pv-open>summary::-webkit-details-marker{display:none}
+.pv-open-m{position:absolute;right:0;bottom:calc(100% + 4px);z-index:30;min-width:190px;background:#fff;border:1px solid var(--line,#e5e7eb);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.12);padding:4px;display:flex;flex-direction:column}
+.pv-open-m button{all:unset;cursor:pointer;padding:8px 10px;border-radius:7px;font-size:13px;white-space:nowrap}
+.pv-open-m button:hover,.pv-open-m button:focus-visible{background:rgba(0,0,0,.05)}
 .ov-dot{width:9px;height:9px;border-radius:50%;flex:none;background:#c9c7c0}
 .ov-dot.ok{background:#12a150}.ov-dot.warn{background:#d48a00}.ov-dot.bad{background:#d92d20}
 .ov-chev{color:var(--ov-ink3,#8b8b95);font-size:20px;line-height:1}
@@ -851,6 +859,35 @@ function renderSyncChips() {
   $("#custChips").classList.remove("hidden"); $("#custDesc").classList.add("hidden");
 }
 
+// ---------- open a customer's app account as the master (MASTER_OPEN_SPEC / MASTER_OPEN_PROTOCOL) ----------
+// sso-assert { action: "go", app, business: <lic_accounts.ext_id> } signs a biz claim (licence admins only);
+// the app's sso-login honours it only for its master and opens exactly that business, in a new tab.
+const OPENABLE = new Set(["signage", "bookings", "employee", "label", "qrmenu", "wifi"]);
+const canOpen = (a) => !!a && !a.gone && OPENABLE.has(a.product) && a.ext_id != null && a.ext_id !== "";
+async function openInApp(key) {
+  const [p, ...rest] = key.split("|"); const ext = rest.join("|");
+  const a = S.accounts.find((x) => x.product === p && String(x.ext_id) === ext);
+  if (!canOpen(a)) return toast("That account can't be opened.", true);
+  const w = window.open("about:blank", "_blank");   // opened inside the click, so pop-up blockers allow it
+  try {
+    const { data, error } = await sb.functions.invoke("sso-assert", { body: { action: "go", app: p, business: String(a.ext_id) } });
+    if (error) { let m = error.message; try { m = (await error.context.json()).error || m; } catch {} throw new Error(m); }
+    if (!data?.url) throw new Error("No sign-in link came back.");
+    if (w && !w.closed) { try { w.opener = null; } catch {} w.location.replace(data.url); }
+    else window.open(data.url, "_blank", "noopener");
+  } catch (e) {
+    if (w && !w.closed) w.close();
+    toast(`Couldn't open ${PRODUCTS[p]?.label || p}: ${e.message}`, true);
+  }
+}
+function openMenu(c, accts) {
+  const list = accts.filter(canOpen).sort((x, y) => PRODUCTS[x.product].label.localeCompare(PRODUCTS[y.product].label) || String(x.name).localeCompare(String(y.name)));
+  if (!list.length) return "";
+  const multi = (k) => list.filter((a) => a.product === k).length > 1;
+  return `<details class="pv-open"><summary class="btn sm">Open ▾</summary><div class="pv-open-m" role="menu">${list.map((a) =>
+    `<button type="button" role="menuitem" data-openapp="${esc(a.product + "|" + a.ext_id)}">Open in ${PRODUCTS[a.product].label}${multi(a.product) ? ` <span class="muted small">${esc(a.name || "")}</span>` : ""}</button>`).join("")}</div></details>`;
+}
+
 // ---------- customers view ----------
 function unitsForAccount(a) { return S.units.filter((u) => u.product === a.product && u.account_ext_id === a.ext_id && !u.gone); }
 function accountsForCustomer(c) { return S.accounts.filter((a) => a.customer_id === c.id && !a.gone); }
@@ -925,7 +962,7 @@ function accountBlock(a) {
       <span class="sp"></span>
       <button class="btn sm" data-selall="${esc(a.product + "|" + a.ext_id)}">Select all</button>
       <button class="btn sm" data-move="${esc(a.product + "|" + a.ext_id)}">Move…</button>
-      <a class="btn sm" href="${p.app}" target="_blank" rel="noopener">Open app ↗</a>
+      ${canOpen(a) ? `<button type="button" class="btn sm primary" data-openapp="${esc(a.product + "|" + a.ext_id)}" title="Open ${esc(a.name || "this business")} in Proview ${p.label}, signed in as Proview">Open in ${p.label} ↗</button>` : ""}
     </div>
     ${units.length ? `<table><thead><tr><th class="cb"></th><th>${multiKind(a.product) ? "Licence" : p.unit}</th><th class="hide-sm">Plan</th><th>Status</th><th></th></tr></thead><tbody>${units.map(unitRow).join("")}</tbody></table>`
       : `<div class="small" style="padding:10px 12px">No ${multiKind(a.product) ? "licences" : p.units} yet.</div>`}
@@ -981,7 +1018,7 @@ function custCard(c) {
     <div class="ov-bh"><div class="grow"><h3 title="${esc(c.name)}">${esc(c.name)}</h3><div class="muted small">${esc(sub)}</div></div><span class="ov-pill ${pcls}">${ptxt}</span></div>
     <div class="ov-apps">${TILE_ORDER.map(tile).join("")}</div>
     <div class="ov-bf"><span class="muted small">${esc(custLicText(sum.units))}</span>
-      <span class="pv-acts">${sum.bad.length ? `<button type="button" class="btn sm" data-addlic="${c.id}">Add licence</button>` : ""}<button type="button" class="btn sm primary" data-open="${c.id}">Open customer</button></span></div>
+      <span class="pv-acts">${sum.bad.length ? `<button type="button" class="btn sm" data-addlic="${c.id}">Add licence</button>` : ""}${openMenu(c, accts)}<button type="button" class="btn sm primary" data-open="${c.id}">Open customer</button></span></div>
   </article>`;
 }
 
@@ -1321,6 +1358,9 @@ async function deleteCustomer(id) {
 
 // ---------- events ----------
 document.addEventListener("click", (e) => {
+  const oa = e.target.closest("[data-openapp]");
+  if (oa) { oa.closest("details")?.removeAttribute("open"); openInApp(oa.dataset.openapp); return; }
+  if (!e.target.closest("details.pv-open")) document.querySelectorAll("details.pv-open[open]").forEach((d) => d.removeAttribute("open"));
   const t = e.target.closest("[data-open],[data-back],[data-addlic],[data-prod],[data-edit],[data-quick],[data-savecust],[data-move],[data-merge],[data-delcust],[data-selall]");
   if (!t) return;
   if (t.dataset.open) openDetail(t.dataset.open);

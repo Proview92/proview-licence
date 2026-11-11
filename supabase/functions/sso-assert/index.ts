@@ -6,6 +6,9 @@
 // but only if that email is an owner/manager there (staff keep their own logins).
 //
 //   POST { action: "go", app, return? }  → { url }    open this URL to arrive signed in
+//   POST { action: "go", app, business }  → { url }    licence admins only: the assertion also carries
+//        biz: "<lic_accounts.ext_id>", and the app opens the master straight inside that business
+//        (MASTER_OPEN_PROTOCOL.md). The app honours biz only for its own master.
 //   POST { action: "apps" }              → { apps: [{ app, name, url, ok, reason }] }
 //
 // Ed25519 private key: hub_private.sso_keys (or the SSO_PRIVATE_JWK secret). Apps hold only the public key.
@@ -66,9 +69,11 @@ async function key() {
   KEY = await crypto.subtle.importKey("jwk", jwk, { name: "Ed25519" }, false, ["sign"]);
   return KEY;
 }
-async function assertion(email: string, app: string, mode: "login" | "check") {
+async function assertion(email: string, app: string, mode: "login" | "check", biz?: string) {
   const now = Math.floor(Date.now() / 1000);
-  const p = new TextEncoder().encode(JSON.stringify({ iss: "proview-account", aud: app, email, mode, iat: now, exp: now + 120, jti: crypto.randomUUID() }));
+  const claims: Record<string, unknown> = { iss: "proview-account", aud: app, email, mode, iat: now, exp: now + 120, jti: crypto.randomUUID() };
+  if (biz) claims.biz = biz;
+  const p = new TextEncoder().encode(JSON.stringify(claims));
   const sig = new Uint8Array(await crypto.subtle.sign({ name: "Ed25519" }, await key(), p));
   return b64u(p) + "." + b64u(sig);
 }
@@ -116,9 +121,18 @@ Deno.serve(async (req) => {
   if (body.action === "go") {
     const app = String(body.app || "");
     if (!APPS[app]) return json({ error: "Unknown app" }, 400);
+    // Open one customer's business as the master: licence admins only (the portal's own rule, on the caller's JWT).
+    const rawBiz = body.business ?? body.biz;
+    let biz: string | undefined;
+    if (rawBiz !== undefined && rawBiz !== null && rawBiz !== "") {
+      biz = String(rawBiz).trim();
+      if (!biz || biz.length > 200 || typeof rawBiz === "object") return json({ error: "Unknown business" }, 400);
+      const { data: isAdmin, error: aerr } = await sb.rpc("is_lic_admin");
+      if (aerr || isAdmin !== true) return json({ error: "Only the Proview licence administrator can open a customer." }, 403);
+    }
     const c = await check(app, email);
     if (!c.ok) return json({ error: `${APPS[app].name}: ${c.reason || "no account for this email."}` }, 403);
-    return json({ url: landing(app, body.return) + "#pv_sso=" + await assertion(email, app, "login") });
+    return json({ url: landing(app, body.return) + "#pv_sso=" + await assertion(email, app, "login", biz) });
   }
   return json({ error: "Unknown action" }, 400);
 });
