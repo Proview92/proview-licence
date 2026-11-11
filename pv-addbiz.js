@@ -48,6 +48,13 @@
     '.pv-addbiz .pv-ab-ts{display:block;font:400 13px/18px ' + F + ';color:#55555f}',
     '.pv-addbiz .pv-ab-pill{display:block;flex:none;margin:0;padding:3px 8px;border:0;border-radius:999px;background:#e2ecfa;font:700 11px/1.45 ' + F + ';letter-spacing:normal;color:#1f4f96;white-space:nowrap}',
     '.pv-addbiz .pv-ab-lic{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}',
+    // sign-in choices side by side, styled like the licence cards
+    '.pv-addbiz .pv-ab-si{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}',
+    '.pv-addbiz .pv-ab-si .pv-ab-card{flex-wrap:wrap;gap:8px;padding:12px}',
+    '.pv-addbiz .pv-ab-si .pv-ab-card.on{padding:11px}',
+    '.pv-addbiz .pv-ab-si .pv-ab-ts{font-size:12px;line-height:17px}',
+    '.pv-addbiz .pv-ab-si .pv-ab-t{flex:1 1 calc(100% - 30px)}',
+    '.pv-addbiz .pv-ab-si .pv-ab-pill{margin-left:30px}',
     '.pv-addbiz .pv-ab-lic .pv-ab-card{flex-wrap:wrap;gap:8px;padding:12px}',
     '.pv-addbiz .pv-ab-lic .pv-ab-card.on{padding:11px}',
     '.pv-addbiz .pv-ab-lic .pv-ab-ts{font-size:12px;line-height:17px}',
@@ -73,7 +80,7 @@
     '.pv-addbiz .pv-ab-chks .pv-ab-radio{margin:0}',
     '.pv-addbiz .pv-ab-chks .pv-ab-all{grid-column:1/-1}',
     '@media (max-width:700px){.pv-addbiz .pv-ab-grid{grid-template-columns:1fr}}',
-    '@media (max-width:640px){.pv-addbiz .pv-ab-lic{grid-template-columns:1fr}.pv-addbiz .pv-ab-chks{grid-template-columns:repeat(2,minmax(0,1fr))}.pv-addbiz .pv-ab-foot{flex-wrap:wrap}.pv-addbiz .pv-ab-hint{flex-basis:100%}}',
+    '@media (max-width:640px){.pv-addbiz .pv-ab-lic,.pv-addbiz .pv-ab-si{grid-template-columns:1fr}.pv-addbiz .pv-ab-chks{grid-template-columns:repeat(2,minmax(0,1fr))}.pv-addbiz .pv-ab-foot{flex-wrap:wrap}.pv-addbiz .pv-ab-hint{flex-basis:100%}}',
     '@media (hover:none) and (pointer:coarse){.pv-addbiz .pv-ab-inp,.pv-addbiz .pv-ab-radio{font-size:16px!important}}'
   ].join('\n');
   var EYE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>';
@@ -117,8 +124,10 @@
       field('pvAbMob', 'Mobile <span class="pv-ab-optl">(optional)</span>', 'tel', '07…') +
     '</div>' +
     (choose ? '<fieldset class="pv-ab-set"><legend class="pv-ab-legend">How will they sign in?</legend>' +
+      '<div class="pv-ab-si">' +
       card('pvAbSi', 'invite', 'Email them an invite', 'They get an email link and choose their own password.', true, 'Recommended') +
       card('pvAbSi', 'pw', 'Set a password now', 'No email is sent. You pass the password on yourself.', false) +
+      '</div>' +
       pwRow(o, true) +
     '</fieldset>' : '<div class="pv-ab-set">' + pwRow(o, false) + '</div>') +
     (o.licence === false ? '' : '<fieldset class="pv-ab-set"><legend class="pv-ab-legend">Licence</legend><div class="pv-ab-lic">' +
