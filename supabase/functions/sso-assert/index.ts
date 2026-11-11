@@ -15,7 +15,7 @@ const APPS: Record<string, { name: string; home: string; origins: string[]; land
   bookings: {
     name: "Proview Bookings", home: "https://bookings.proviewcrm.co.uk/",
     origins: ["https://bookings.proviewcrm.co.uk"], land: "",
-    check: "https://otljdgrjrikuejmlwnpv.supabase.co/functions/v1/sso-login",
+    check: "https://bgsimnrmlzsrfkjpntvj.supabase.co/functions/v1/sso-login",
   },
   employee: {
     name: "Proview Employee", home: "https://employee.proviewcrm.co.uk/",
