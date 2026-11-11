@@ -1169,11 +1169,7 @@ const SIGNIN_URL = "https://dashboard.proviewcrm.co.uk/";
 const NC_SECTIONS = [
   { key: "apps", legend: "Add the business in", req: true, all: { title: "Select all", sub: "Every Proview app" },
     checks: NC_APPS.map((k) => ({ value: k, title: PRODUCTS[k].label })) },
-  { key: "cust", legend: "Customer details", optional: true, fields: [
-    { key: "contact", label: "Contact email", type: "email", ph: "Same as the owner’s email" },
-    { key: "phone", label: "Phone", type: "tel", ph: "Optional" },
-    { key: "notes", label: "Notes", area: true, ph: "Optional" } ] },
-];
+];   // the customer's contact email and phone are the owner's email and mobile (change them later on the customer's page)
 function newCustomer() {
   window.pvAddBiz({ title: "New customer", signin: "password", licence: false, pwPlaceholder: "At least 8 characters", sections: NC_SECTIONS,
     hint: "Adds the customer and its owner’s login. No email is sent.",
@@ -1191,15 +1187,14 @@ function ncRow(k, r, e) {
 async function ncSubmit(v, ui) {
   const need = (k, msg) => { toast(msg, true); ui.input(k).focus(); };
   const { biz, name, email: e, mobile, password: pw } = v;
-  const contact = v.extra.contact.toLowerCase(), apps = v.checks.apps;
+  const apps = v.checks.apps;
   if (biz.length < 2) return need("biz", "Enter the business name");
   if (name.length < 2) return need("name", "Enter the owner’s name");
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e)) return need("email", "Enter a valid email address");
   if (pw.length < 8) return need("pw", "The password needs at least 8 characters");
   if (!apps.length) return need("apps", "Tick at least one app");
-  if (contact && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(contact)) return need("contact", "Enter a valid contact email, or leave it empty");
   const { data: r, error } = await sb.rpc("lic_add_customer", { p_business: biz, p_name: name, p_email: e, p_mobile: mobile, p_password: pw,
-    p_contact_email: contact || null, p_phone: v.extra.phone || null, p_notes: v.extra.notes || null });
+    p_contact_email: null, p_phone: mobile || null, p_notes: null });
   if (error) { toast(error.message, true); return false; }
   ui.close();
   const details = `PROVIEW login\n${SIGNIN_URL}\nEmail: ${e}\nPassword: ${pw}`;
