@@ -433,7 +433,19 @@ html .app.collapsed .side :is(.side-foot,#pv-x)>*{width:30px!important;height:26
 .pv-loc input.ov-search:focus{outline:2px solid #4a6cd0;outline-offset:-1px;border-color:transparent}
 @media (hover:none) and (pointer:coarse){.pv-loc input.ov-search{font-size:16px}}
 /* business cards */
-.ov-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:18px;align-items:start}
+.ov-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:18px;align-items:stretch}
+/* Customer cards: the same six app slots on every card, so every card is the same size */
+.ov-biz .ov-bh h3,.ov-biz .ov-bh .muted{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ov-biz .ov-bh .grow{min-width:0}
+.ov-apps{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:12px 18px 14px;border-top:1px solid var(--ov-line,#e4e2dc)}
+.ov-app{display:flex;flex-direction:column;gap:3px;min-width:0;padding:9px 10px;border:1px solid var(--ov-line,#e4e2dc);border-radius:9px;background:#fff;font:inherit;color:inherit;text-align:left;cursor:pointer}
+.ov-app:hover{background:#f8f7f4;border-color:#d6d3cb}
+.ov-app .an{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ov-app .ad{font-size:12px;color:var(--ink2,#6b6a66);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ov-app .ad.a{color:#b87400;font-weight:600}.ov-app .ad.r{color:#d92d20;font-weight:600}
+.ov-app.off{background:#faf9f7;border-style:dashed;cursor:default}
+.ov-app.off .an{color:#b3b1aa;font-weight:500}.ov-app.off .ad{color:#c9c7c0}
+.ov-app.off .ov-dot{background:transparent;border:1px solid #d6d3cb}
 .ov-biz{display:flex;flex-direction:column;overflow:hidden}
 .ov-bh{display:flex;align-items:flex-start;gap:10px;padding:16px 18px 12px}
 .pv-loc .ov-bh h3{font-size:17px;font-weight:700;margin:0 0 2px}
@@ -953,17 +965,21 @@ function custCard(c) {
   const licensed = sum.units.length - sum.bad.length, soon = sum.units.filter((u) => tone(u) === "a").length;
   const sub = !sum.units.length ? (prods.length ? prods.map((k) => PRODUCTS[k].label).join(" · ") : "No products linked yet")
     : [sum.bad.length ? `${licensed} of ${sum.units.length} licensed` : `${sum.units.length} licence${sum.units.length === 1 ? "" : "s"}`, soon ? `${soon} renewing soon` : ""].filter(Boolean).join(" · ");
-  const row = (k) => {
-    const units = sum.units.filter((u) => u.product === k);
+  // Same six slots, same order, on every card: an app the customer doesn't have is a faint dashed slot
+  const tile = (k) => {
+    const units = sum.units.filter((u) => u.product === k), has = prods.includes(k) || units.length;
+    if (!has) return `<div class="ov-app off" title="No ${esc(PRODUCTS[k].label)}"><span class="an"><span class="ov-dot"></span>${PRODUCTS[k].label}</span><span class="ad">—</span></div>`;
     const bad = units.filter((u) => tone(u) === "r"), warn = units.filter((u) => tone(u) === "a");
     const t = bad.length ? "r" : warn.length ? "a" : units.length ? "g" : "n";
     const next = renewAt(units);
-    const right = !units.length ? "none yet" : bad.length ? `${bad.length} unlicensed` : next === Infinity ? "Lifetime" : `to ${shortDate(next)}`;
-    return `<button type="button" class="ov-loc" data-open="${c.id}" title="Open this customer"><span class="ov-dot ${TONE_CLS[t]}"></span><span class="grow">${PRODUCTS[k].label} · ${esc(unitCount(k, units))}</span><span class="muted small">${esc(right)}</span><span class="ov-chev" aria-hidden="true">›</span></button>`;
+    const trial = units.length && units.every((u) => isTrial(u.license_type));
+    const right = !units.length ? "none yet" : bad.length ? `${bad.length} unlicensed` : next === Infinity ? "Lifetime" : `${trial ? "Trial to" : "to"} ${shortDate(next)}`;
+    return `<button type="button" class="ov-app" data-open="${c.id}" title="${esc(PRODUCTS[k].label + " · " + unitCount(k, units) + " · " + right)}"><span class="an"><span class="ov-dot ${TONE_CLS[t]}"></span>${PRODUCTS[k].label}</span><span class="ad ${t === "r" || t === "a" ? t : ""}">${esc(right)}</span></button>`;
   };
+  const TILE_ORDER = ["signage", "bookings", "employee", "label", "qrmenu", "wifi"];
   return `<article class="card ov-biz" data-cust="${c.id}">
-    <div class="ov-bh"><div class="grow"><h3>${esc(c.name)}</h3><div class="muted small">${esc(sub)}</div></div><span class="ov-pill ${pcls}">${ptxt}</span></div>
-    ${prods.map(row).join("")}
+    <div class="ov-bh"><div class="grow"><h3 title="${esc(c.name)}">${esc(c.name)}</h3><div class="muted small">${esc(sub)}</div></div><span class="ov-pill ${pcls}">${ptxt}</span></div>
+    <div class="ov-apps">${TILE_ORDER.map(tile).join("")}</div>
     <div class="ov-bf"><span class="muted small">${esc(custLicText(sum.units))}</span>
       <span class="pv-acts">${sum.bad.length ? `<button type="button" class="btn sm" data-addlic="${c.id}">Add licence</button>` : ""}<button type="button" class="btn sm primary" data-open="${c.id}">Open customer</button></span></div>
   </article>`;
