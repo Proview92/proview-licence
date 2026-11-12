@@ -580,6 +580,7 @@ html .side .nav .cnt[hidden]{display:none!important}
 .linkbtn{background:none;border:0;padding:0;color:var(--brand);font:600 12px var(--font,inherit);cursor:pointer}
 @media (max-width:700px){.appc .hide-sm{display:none}.appc .un,.appc .um{max-width:180px}}
 #licDlg .licend{background:#f8f7f4;border:1px solid var(--line);border-radius:10px;padding:10px 12px 12px;margin-bottom:6px}
+#licDlg.first .licend{display:none}
 #licDlg .dpick{display:flex;align-items:center;gap:6px;margin-top:4px}
 #licDlg .dp{display:flex;flex-direction:column;align-items:center;width:58px}
 #licDlg .dp.dpy{width:78px}
@@ -756,6 +757,7 @@ html .side .nav .cnt[hidden]{display:none!important}
       </div>
       <label for="licPlan">Plan</label>
       <select id="licPlan"></select>
+      <div class="small" id="licEnds" style="margin-top:4px"></div>
       <label class="row" id="licExtendRow" style="gap:6px;color:var(--ink);font-size:13px"><input type="checkbox" id="licExtend" checked style="width:auto"> Add to the current end date (if still active)</label>
       <label for="licNotes">Notes (optional)</label>
       <input type="text" id="licNotes" placeholder="e.g. Paid by invoice 1043">
@@ -1385,14 +1387,20 @@ function licSync(fromDate) {
   const v = $("#licPlan").value, pv = licPreview(u, v, $("#licExtend").checked);
   $("#licExtendRow").classList.toggle("hidden", !/^m\d+$/.test(v) || !(u.expires_at && Date.parse(u.expires_at) > Date.now()));
   if (pv !== null && !fromDate) dpSet(new Date((pv || LIFETIME_YMD) + "T12:00:00"));
+  $("#licEnds").textContent = !$("#licDlg").classList.contains("first") ? "" : v === "lifetime" ? "No end date." : pv ? `Ends ${new Date(pv + "T12:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}.` : "";
 }
 function openLicence(key) {
   const u = findUnit(key); if (!u) return;
   const p = PRODUCTS[u.product];
   $("#licTitle").textContent = `${p.label} · ${KIND_LABEL[kindOf(u)]} · ${u.name || KIND_LABEL[kindOf(u)]}`;
   $("#licCurrent").textContent = "Now: " + status(u).label + (u.license_type ? ` · ${PLAN_LABEL[u.license_type] || u.license_type}` : "");
-  $("#licPlan").innerHTML = `<option value="">Keep the plan · use the end date above</option>` + planOptions(u.product);
-  $("#licPlan").value = "";
+  // no licence yet: just the fixed plans (no end date to edit, no custom date)
+  const first = !u.license_type;
+  $("#licDlg").classList.toggle("first", first);
+  $("#licPlan").innerHTML = first
+    ? ["m1", "m3", "m6", "m12", "m24", "m36", "lifetime"].map((k) => `<option value="${k}">${PLAN_LABEL[k]}</option>`).join("")
+    : `<option value="">Keep the plan · use the end date above</option>` + planOptions(u.product);
+  $("#licPlan").value = first ? "m12" : "";
   $("#licDate").value = ""; ["dpD", "dpM", "dpY"].forEach((i) => ($("#" + i).value = "")); $("#dpW").textContent = "";
   if (u.license_type === "lifetime") dpSet(new Date(LIFETIME_YMD + "T12:00:00"));
   else if (u.expires_at) dpSet(new Date(u.expires_at));
