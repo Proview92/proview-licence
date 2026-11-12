@@ -462,9 +462,9 @@ button.ov-app:active{background:#f1efea}
 button.ov-app:hover .ov-go,button.ov-app:focus-visible .ov-go{color:#4a6cd0}
 button.ov-app .an{padding-right:10px}
 .ov-app.idle .ov-lg img{filter:grayscale(1);opacity:.45}
-.ov-app.off{background:#faf9f7;border-style:dashed}
-.ov-app.off .an{color:#b3b1aa;font-weight:500}.ov-app.off .ad{color:#c9c7c0}
-.ov-app.off .ov-lg img{filter:grayscale(1);opacity:.3}
+.ov-app.off{background:#fff;cursor:pointer;font:inherit;color:inherit;text-align:left}
+.ov-app.off:hover{border-color:var(--brand);background:var(--brand-soft,#eef2fb)}
+.ov-app.off .ad{color:var(--brand);font-weight:600}
 /* Narrow cards (phones): two columns of three, so names and dates fit and each box is a big tap target */
 .ov-biz{container-type:inline-size}
 @container (max-width:440px){.ov-apps{grid-template-columns:repeat(2,1fr);gap:8px;padding:12px 14px 14px}.ov-app{padding:10px 10px;min-height:56px}}
@@ -1169,7 +1169,7 @@ function custCard(c) {
   const tile = (k) => {
     const units = sum.units.filter((u) => u.product === k), has = prods.includes(k) || units.length;
     const name = PRODUCTS[k].label, logo = `<span class="ov-lg"><img src="${appLogo(k)}" alt="" width="20" height="20"></span>`;
-    if (!has) return `<div class="ov-app off" title="No ${esc(name)}"><span class="an">${logo}<span class="nm">${name}</span></span><span class="ad"><span class="ov-dot"></span><span class="at">—</span></span><button type="button" class="ov-add" data-addapp="${esc(c.id + "|" + k)}" title="Add ${esc(cardTitle(c))} to ${esc(name)}" aria-label="Add to ${esc(name)}">+</button></div>`;
+    if (!has) return `<button type="button" class="ov-app off" data-addapp="${esc(c.id + "|" + k)}" title="Add ${esc(cardTitle(c))} to ${esc(name)}"><span class="an">${logo}<span class="nm">${name}</span></span><span class="ad"><span class="at">+ Add ${esc(name)}</span></span></button>`;
     const bad = units.filter((u) => tone(u) === "r"), warn = units.filter((u) => tone(u) === "a");
     const t = bad.length ? "r" : warn.length ? "a" : units.length ? "g" : "n";
     const next = renewAt(units);
