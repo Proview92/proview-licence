@@ -740,6 +740,24 @@ async function deleteCard(db: any, apps: Record<string, App>, adminEmail: string
   return { status: 200, body: { ok, deleted: ok, results } };
 }
 
+// Delete one app account: the business in that one app and everything in it (hub_call 'delete_account'); the card and
+// its other apps stay. The card itself goes only if it then holds nothing.
+async function deleteAccount(db: any, apps: Record<string, App>, adminEmail: string | null, product: string, ext: string) {
+  const { data: a } = await db.from("lic_accounts").select("*").eq("product", product).eq("ext_id", ext).maybeSingle();
+  if (!a) return { status: 200, body: { ok: true, already: true } };
+  const app = apps[product];
+  if (!app) return { status: 400, body: { error: "This app isn't connected to the licence portal." } };
+  try { await callApp(app, "delete_account", { account_id: String(ext) }); }
+  catch (e) {
+    await db.from("lic_audit").insert({ admin_email: adminEmail, product, account_name: a.name, action: "failed", error: `Delete: ${errText(e)}` });
+    return { status: 400, body: { error: errText(e) } };
+  }
+  await db.from("lic_units").delete().eq("product", product).eq("account_ext_id", ext);
+  await db.from("lic_accounts").delete().eq("product", product).eq("ext_id", ext);
+  await db.from("lic_audit").insert({ admin_email: adminEmail, product, account_name: a.name, action: "deleted business in app", after: { account_id: ext, card: a.customer_id } });
+  return { status: 200, body: { ok: true, deleted: true } };
+}
+
 Deno.serve(async (req) => {
   const h = cors(req);
   if (req.method === "OPTIONS") return new Response("ok", { headers: h });
@@ -779,6 +797,7 @@ Deno.serve(async (req) => {
     //          { customer, app, site }           one location unit of one app (as the split does)
     //   split_preview { customer? }  -> { plan }  split { customer? } -> { ok, split: [...] }
     if (action === "pause" || action === "resume") { const r = await pauseCard(db, apps, adminEmail, String(body.customer ?? ""), action === "pause"); return json(r.body, r.status); }
+    if (action === "delete_account") { const r = await deleteAccount(db, apps, adminEmail, String(body.product ?? ""), String(body.account ?? "")); return json(r.body, r.status); }
     if (action === "delete_business") { const r = await deleteCard(db, apps, adminEmail, String(body.customer ?? ""), String(body.confirm ?? "")); return json(r.body, r.status); }
     if (action === "link") { const r = await linkCards(db, apps, adminEmail, String(body.customer_a ?? ""), String(body.customer_b ?? "")); return json(r.body, r.status); }
     if (action === "unlink") { const r = await unlinkCard(db, apps, adminEmail, body); return json(r.body, r.status); }

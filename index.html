@@ -598,6 +598,8 @@ html .side .nav .cnt[hidden]{display:none!important}
 #addAppDlg .aa-lic small{display:block;color:var(--ink2,#6b6a66);font-weight:400}
 #addAppDlg .aa-lic input[type=radio]{width:auto;height:auto;margin:3px 0 0;flex:none}
 #addAppDlg .aa-lic span{flex:1;text-align:left;font-size:14px}
+.appc-h .btn.dangerghost{border-color:#f3c7c3;color:#c0362c;background:#fff}
+.appc-h .btn.dangerghost:hover{background:#fdecea}
 </style>
 </head>
 <body>
@@ -1122,6 +1124,7 @@ function accountBlock(a) {
       <img src="${appLogo(a.product)}" alt="">
       <div class="grow"><div class="appc-t">${p.label} <span class="muted">· ${esc(a.name || "(unnamed)")}</span></div><div class="tiny" title="${esc(sub)}">${esc(sub)}</div></div>
       <button class="btn sm" data-move="${esc(key)}" title="Move this app account to another business">Move…</button>
+      <button class="btn sm dangerghost" data-delacct="${esc(key)}" title="Delete ${esc(a.name || "this business")} in ${p.label} only">Delete</button>
       ${canOpen(a) ? `<button type="button" class="btn sm primary" data-openapp="${esc(key)}" title="Open ${esc(a.name || "this business")} in Proview ${p.label}, signed in as Proview">Open ↗</button>` : ""}
     </div>
     ${units.length ? `<table><thead><tr><th class="cb"><button type="button" class="linkbtn" data-selall="${esc(key)}" title="Select every licence here">All</button></th><th>${multiKind(a.product) ? "Licence" : p.unit}</th><th class="hide-sm" style="width:20%">Plan</th><th style="width:20%">Status</th><th style="width:110px"></th></tr></thead><tbody>${units.map(unitRow).join("")}</tbody></table>`
@@ -1729,6 +1732,20 @@ async function addAppTo(cid, k, keep) {
   ($("#aaName").value ? $("#aaEmail") : $("#aaName")).focus();
 }
 
+// Delete next to Move…: the business in this one app only (its other apps stay)
+async function deleteAppAccount(key) {
+  const [prod, ext] = key.split("|"), a = S.accounts.find((x) => x.product === prod && x.ext_id === ext); if (!a) return;
+  const p = PRODUCTS[prod], units = unitsForAccount(a), nm = a.name || "this business";
+  const v = await ask({ title: `Delete ${nm} in ${p.label}?`, danger: true, ok: `Delete in ${p.label}`,
+    html: `<p style="margin-top:0">This deletes <b>${esc(nm)}</b> in Proview ${esc(p.label)} only: its ${esc(unitCount(prod, units))}, settings, data and licences there. Its other apps aren't changed. <b>It can't be undone.</b></p><p>Type <b>${esc(nm)}</b> to confirm.</p>`,
+    fields: [{ label: "Name", required: true }] });
+  if (!v) return;
+  if (v[0] !== String(nm).trim()) return toast("The name didn't match, so nothing was deleted.", true);
+  toast(`Deleting in ${p.label}…`);
+  try { await hub("delete_account", { product: prod, account: ext }); await loadAll(); render(); toast(`${nm} deleted in ${p.label}`); }
+  catch (e) { toast(e.message, true); }
+}
+
 async function deleteCustomer(id) {
   if (!(await ask({ title: "Delete business", message: "Delete this business card? (It has no app accounts.)", ok: "Delete", danger: true }))) return;
   const { error } = await sb.from("lic_customers").delete().eq("id", id);
@@ -1742,7 +1759,7 @@ document.addEventListener("click", (e) => {
   if (oa) { e.stopPropagation(); if (oa.closest("#listDlg")) $("#listDlg").close(); openInApp(oa.dataset.openapp); return; }
   const op = e.target.closest("[data-openpick]");
   if (op) { e.stopPropagation(); const [cid, k] = op.dataset.openpick.split("|"); showOpenPick(cid, k); return; }
-  const t = e.target.closest("[data-open],[data-back],[data-addlic],[data-prod],[data-edit],[data-quick],[data-savecust],[data-move],[data-link],[data-unlink],[data-split],[data-delcust],[data-selall],[data-pause],[data-resume],[data-delbiz],[data-addapp]");
+  const t = e.target.closest("[data-open],[data-back],[data-addlic],[data-prod],[data-edit],[data-quick],[data-savecust],[data-move],[data-link],[data-unlink],[data-split],[data-delcust],[data-selall],[data-pause],[data-resume],[data-delbiz],[data-addapp],[data-delacct]");
   if (!t) return;
   if (t.dataset.open) openDetail(t.dataset.open);
   else if (t.dataset.back) { S.detail = null; renderCustomers(); syncBizPick(); }
@@ -1760,6 +1777,7 @@ document.addEventListener("click", (e) => {
   else if (t.dataset.split) splitGrouped();
   else if (t.dataset.delcust) deleteCustomer(t.dataset.delcust);
   else if (t.dataset.addapp) { e.stopPropagation(); const [cid, k] = t.dataset.addapp.split("|"); addAppTo(cid, k); }
+  else if (t.dataset.delacct) deleteAppAccount(t.dataset.delacct);
   else if (t.dataset.pause) pauseBusiness(t.dataset.pause, true);
   else if (t.dataset.resume) pauseBusiness(t.dataset.resume, false);
   else if (t.dataset.delbiz) deleteBusiness(t.dataset.delbiz);
