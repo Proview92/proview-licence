@@ -438,14 +438,32 @@ html .app.collapsed .side :is(.side-foot,#pv-x)>*{width:30px!important;height:26
 .ov-biz .ov-bh h3,.ov-biz .ov-bh .muted{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .ov-biz .ov-bh .grow{min-width:0}
 .ov-apps{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:12px 18px 14px;border-top:1px solid var(--ov-line,#e4e2dc)}
-.ov-app{display:flex;flex-direction:column;gap:3px;min-width:0;padding:9px 10px;border:1px solid var(--ov-line,#e4e2dc);border-radius:9px;background:#fff;font:inherit;color:inherit;text-align:left;cursor:pointer}
-.ov-app:hover{background:#f8f7f4;border-color:#d6d3cb}
-.ov-app .an{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.ov-app .ad{font-size:12px;color:var(--ink2,#6b6a66);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ov-app{position:relative;display:flex;flex-direction:column;gap:3px;min-width:0;padding:9px 10px;border:1px solid var(--ov-line,#e4e2dc);border-radius:9px;background:#fff;font:inherit;color:inherit;text-align:left;cursor:default;margin:0;box-sizing:border-box}
+/* An active box (a linked app account) is a button: it opens that business in the app, in a new tab */
+button.ov-app{cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;transition:background .12s,border-color .12s,box-shadow .12s}
+button.ov-app:hover{background:#f8f7f4;border-color:#c9c6bd;box-shadow:0 1px 3px rgba(23,23,28,.08)}
+button.ov-app:focus-visible{outline:2px solid #4a6cd0;outline-offset:2px}
+button.ov-app:active{background:#f1efea}
+.ov-app .an{display:flex;align-items:center;gap:7px;min-width:0;font-size:13px;font-weight:600;white-space:nowrap}
+.ov-app .an .nm{min-width:0;overflow:hidden;text-overflow:ellipsis}
+.ov-app .ad{display:flex;align-items:center;gap:6px;min-width:0;font-size:12px;color:var(--ink2,#6b6a66);white-space:nowrap}
+.ov-app .ad .at{min-width:0;overflow:hidden;text-overflow:ellipsis}
+.ov-app .ad .ov-dot{width:8px;height:8px;margin:0 7px 0 6px}
+.ov-app .ad .ov-dot:not(.ok):not(.warn):not(.bad){visibility:hidden}
 .ov-app .ad.a{color:#b87400;font-weight:600}.ov-app .ad.r{color:#d92d20;font-weight:600}
-.ov-app.off{background:#faf9f7;border-style:dashed;cursor:default}
+/* the app's own logo (from its repo); the status dot sits on the licence line (green licensed, amber renewing/trial, red expired) */
+.ov-lg{position:relative;flex:none;width:20px;height:20px}
+.ov-lg img{display:block;width:20px;height:20px;border-radius:5px}
+.ov-go{position:absolute;top:6px;right:7px;font-size:12px;line-height:1;font-weight:600;color:#a3a29c;transition:color .12s}
+button.ov-app:hover .ov-go,button.ov-app:focus-visible .ov-go{color:#4a6cd0}
+button.ov-app .an{padding-right:10px}
+.ov-app.idle .ov-lg img{filter:grayscale(1);opacity:.45}
+.ov-app.off{background:#faf9f7;border-style:dashed}
 .ov-app.off .an{color:#b3b1aa;font-weight:500}.ov-app.off .ad{color:#c9c7c0}
-.ov-app.off .ov-dot{background:transparent;border:1px solid #d6d3cb}
+.ov-app.off .ov-lg img{filter:grayscale(1);opacity:.3}
+/* Narrow cards (phones): two columns of three, so names and dates fit and each box is a big tap target */
+.ov-biz{container-type:inline-size}
+@container (max-width:440px){.ov-apps{grid-template-columns:repeat(2,1fr);gap:8px;padding:12px 14px 14px}.ov-app{padding:10px 10px;min-height:56px}}
 .ov-biz{display:flex;flex-direction:column;overflow:hidden}
 .ov-bh{display:flex;align-items:flex-start;gap:10px;padding:16px 18px 12px}
 .pv-loc .ov-bh h3{font-size:17px;font-weight:700;margin:0 0 2px}
@@ -453,14 +471,6 @@ html .app.collapsed .side :is(.side-foot,#pv-x)>*{width:30px!important;height:26
 button.ov-loc:hover{background:#f8f7f4}
 .ov-bf{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 18px;border-top:1px solid var(--ov-line,#e4e2dc);margin-top:auto}
 .ov-bf .pv-acts{gap:6px;flex-wrap:nowrap}
-/* Customer card "Open ▾" quick menu (MASTER_OPEN_SPEC) */
-.pv-open{position:relative}
-.ov-biz:has(details.pv-open[open]){overflow:visible}
-.pv-open>summary{list-style:none;cursor:pointer;display:inline-flex;align-items:center}
-.pv-open>summary::-webkit-details-marker{display:none}
-.pv-open-m{position:absolute;right:0;bottom:calc(100% + 4px);z-index:30;min-width:190px;background:#fff;border:1px solid var(--line,#e5e7eb);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.12);padding:4px;display:flex;flex-direction:column}
-.pv-open-m button{all:unset;cursor:pointer;padding:8px 10px;border-radius:7px;font-size:13px;white-space:nowrap}
-.pv-open-m button:hover,.pv-open-m button:focus-visible{background:rgba(0,0,0,.05)}
 .ov-dot{width:9px;height:9px;border-radius:50%;flex:none;background:#c9c7c0}
 .ov-dot.ok{background:#12a150}.ov-dot.warn{background:#d48a00}.ov-dot.bad{background:#d92d20}
 .ov-chev{color:var(--ov-ink3,#8b8b95);font-size:20px;line-height:1}
@@ -707,7 +717,7 @@ html .side .nav .cnt[hidden]{display:none!important}
 <dialog id="ncDone" class="nc-done" aria-labelledby="ncDoneTitle">
   <div class="nd-head"><h2 class="nd-title" id="ncDoneTitle"></h2><button type="button" class="nd-x" id="ncDoneClose" aria-label="Close" title="Close">×</button></div>
   <div id="ncDoneBody"></div>
-  <div class="nd-foot"><button type="button" class="btn" id="ncStay">Stay here</button><button type="button" class="btn primary" id="ncOpen">Open customer</button></div>
+  <div class="nd-foot"><button type="button" class="btn" id="ncStay">Stay here</button><button type="button" class="btn primary" id="ncOpen">View licences</button></div>
 </dialog>
 
 <div id="toast"></div>
@@ -863,6 +873,8 @@ function renderSyncChips() {
 // sso-assert { action: "go", app, business: <lic_accounts.ext_id> } signs a biz claim (licence admins only);
 // the app's sso-login honours it only for its master and opens exactly that business, in a new tab.
 const OPENABLE = new Set(["signage", "bookings", "employee", "label", "qrmenu", "wifi"]);
+const LOGO_V = "20261112";   // bump with the files in apps/ (each app's own PV icon, copied from its repo)
+const appLogo = (k) => `apps/${k}.svg?v=${LOGO_V}`;
 const canOpen = (a) => !!a && !a.gone && OPENABLE.has(a.product) && a.ext_id != null && a.ext_id !== "";
 async function openInApp(key) {
   const [p, ...rest] = key.split("|"); const ext = rest.join("|");
@@ -880,12 +892,13 @@ async function openInApp(key) {
     toast(`Couldn't open ${PRODUCTS[p]?.label || p}: ${e.message}`, true);
   }
 }
-function openMenu(c, accts) {
-  const list = accts.filter(canOpen).sort((x, y) => PRODUCTS[x.product].label.localeCompare(PRODUCTS[y.product].label) || String(x.name).localeCompare(String(y.name)));
-  if (!list.length) return "";
-  const multi = (k) => list.filter((a) => a.product === k).length > 1;
-  return `<details class="pv-open"><summary class="btn sm">Open ▾</summary><div class="pv-open-m" role="menu">${list.map((a) =>
-    `<button type="button" role="menuitem" data-openapp="${esc(a.product + "|" + a.ext_id)}">Open in ${PRODUCTS[a.product].label}${multi(a.product) ? ` <span class="muted small">${esc(a.name || "")}</span>` : ""}</button>`).join("")}</div></details>`;
+// A customer with two or more accounts in one app: the box asks which one (each row opens in a new tab)
+function showOpenPick(cid, k) {
+  const c = S.customers.find((x) => x.id === cid); if (!c) return;
+  const list = accountsForCustomer(c).filter((a) => a.product === k && canOpen(a)).sort((x, y) => String(x.name).localeCompare(String(y.name)));
+  $("#listTitle").textContent = `Open ${c.name} in ${PRODUCTS[k].label}`;
+  $("#listBody").innerHTML = `<div class="ov-list">${list.map((a) => `<button type="button" class="ov-li" data-openapp="${esc(a.product + "|" + a.ext_id)}"><span class="ov-lg"><img src="${appLogo(k)}" alt=""></span><span class="grow"><b>${esc(a.name || "(unnamed)")}</b><span class="tiny" style="display:block">${esc(unitCount(k, unitsForAccount(a)))}</span></span><span class="ov-chev" aria-hidden="true">↗</span></button>`).join("")}</div>`;
+  $("#listDlg").showModal();
 }
 
 // ---------- customers view ----------
@@ -1005,20 +1018,28 @@ function custCard(c) {
   // Same six slots, same order, on every card: an app the customer doesn't have is a faint dashed slot
   const tile = (k) => {
     const units = sum.units.filter((u) => u.product === k), has = prods.includes(k) || units.length;
-    if (!has) return `<div class="ov-app off" title="No ${esc(PRODUCTS[k].label)}"><span class="an"><span class="ov-dot"></span>${PRODUCTS[k].label}</span><span class="ad">—</span></div>`;
+    const name = PRODUCTS[k].label, logo = `<span class="ov-lg"><img src="${appLogo(k)}" alt="" width="20" height="20"></span>`;
+    if (!has) return `<div class="ov-app off" title="No ${esc(name)}"><span class="an">${logo}<span class="nm">${name}</span></span><span class="ad"><span class="ov-dot"></span><span class="at">—</span></span></div>`;
     const bad = units.filter((u) => tone(u) === "r"), warn = units.filter((u) => tone(u) === "a");
     const t = bad.length ? "r" : warn.length ? "a" : units.length ? "g" : "n";
     const next = renewAt(units);
     const trial = units.length && units.every((u) => isTrial(u.license_type));
     const right = !units.length ? "none yet" : bad.length ? `${bad.length} unlicensed` : next === Infinity ? "Lifetime" : `${trial ? "Trial to" : "to"} ${shortDate(next)}`;
-    return `<button type="button" class="ov-app" data-open="${c.id}" title="${esc(PRODUCTS[k].label + " · " + unitCount(k, units) + " · " + right)}"><span class="an"><span class="ov-dot ${TONE_CLS[t]}"></span>${PRODUCTS[k].label}</span><span class="ad ${t === "r" || t === "a" ? t : ""}">${esc(right)}</span></button>`;
+    const body = `<span class="an">${logo}<span class="nm">${name}</span></span><span class="ad ${t === "r" || t === "a" ? t : ""}"><span class="ov-dot ${TONE_CLS[t]}"></span><span class="at">${esc(right)}</span></span>`;
+    const status = `${unitCount(k, units)} · ${right}`;
+    // Active = a linked, non-gone account the master can open (same rule as the customer page's "Open in <App>")
+    const open = accts.filter((a) => a.product === k && canOpen(a));
+    if (!open.length) return `<div class="ov-app idle" title="${esc(name + " · " + status)}">${body}</div>`;
+    const label = `Open ${c.name} in ${name}`;
+    const act = open.length === 1 ? `data-openapp="${esc(open[0].product + "|" + open[0].ext_id)}"` : `data-openpick="${esc(c.id + "|" + k)}"`;
+    return `<button type="button" class="ov-app" ${act} title="${esc(label + " (" + status + ")")}" aria-label="${esc(label + ". " + status)}">${body}<span class="ov-go" aria-hidden="true">↗</span></button>`;
   };
   const TILE_ORDER = ["signage", "bookings", "employee", "label", "qrmenu", "wifi"];
   return `<article class="card ov-biz" data-cust="${c.id}">
     <div class="ov-bh"><div class="grow"><h3 title="${esc(c.name)}">${esc(c.name)}</h3><div class="muted small">${esc(sub)}</div></div><span class="ov-pill ${pcls}">${ptxt}</span></div>
     <div class="ov-apps">${TILE_ORDER.map(tile).join("")}</div>
     <div class="ov-bf"><span class="muted small">${esc(custLicText(sum.units))}</span>
-      <span class="pv-acts">${sum.bad.length ? `<button type="button" class="btn sm" data-addlic="${c.id}">Add licence</button>` : ""}${openMenu(c, accts)}<button type="button" class="btn sm primary" data-open="${c.id}">Open customer</button></span></div>
+      <span class="pv-acts">${sum.bad.length ? `<button type="button" class="btn sm" data-addlic="${c.id}">Add licence</button>` : ""}<button type="button" class="btn sm primary" data-open="${c.id}">View licences</button></span></div>
   </article>`;
 }
 
@@ -1311,7 +1332,7 @@ async function ncSubmit(v, ui) {
   const done = $("#ncDone");
   const openIt = () => { setTab("customers"); openDetail(r.customer_id); };
   $("#ncStay").hidden = lic === "set";
-  $("#ncOpen").textContent = lic === "set" ? "Set licences" : "Open customer";
+  $("#ncOpen").textContent = lic === "set" ? "Set licences" : "View licences";
   $("#ncStay").onclick = $("#ncDoneClose").onclick = () => done.close();
   done.onclick = (ev) => { if (ev.target === done) done.close(); };
   $("#ncOpen").onclick = () => { done.close(); openIt(); };
@@ -1359,8 +1380,9 @@ async function deleteCustomer(id) {
 // ---------- events ----------
 document.addEventListener("click", (e) => {
   const oa = e.target.closest("[data-openapp]");
-  if (oa) { oa.closest("details")?.removeAttribute("open"); openInApp(oa.dataset.openapp); return; }
-  if (!e.target.closest("details.pv-open")) document.querySelectorAll("details.pv-open[open]").forEach((d) => d.removeAttribute("open"));
+  if (oa) { e.stopPropagation(); if (oa.closest("#listDlg")) $("#listDlg").close(); openInApp(oa.dataset.openapp); return; }
+  const op = e.target.closest("[data-openpick]");
+  if (op) { e.stopPropagation(); const [cid, k] = op.dataset.openpick.split("|"); showOpenPick(cid, k); return; }
   const t = e.target.closest("[data-open],[data-back],[data-addlic],[data-prod],[data-edit],[data-quick],[data-savecust],[data-move],[data-merge],[data-delcust],[data-selall]");
   if (!t) return;
   if (t.dataset.open) openDetail(t.dataset.open);
