@@ -600,6 +600,28 @@ html .side .nav .cnt[hidden]{display:none!important}
 #addAppDlg .aa-lic span{flex:1;text-align:left;font-size:14px}
 .appc-h .btn.dangerghost{border-color:#f3c7c3;color:#c0362c;background:#fff}
 .appc-h .btn.dangerghost:hover{background:#fdecea}
+.ov-tools{display:flex;gap:10px;align-items:center}
+.ov-tools .ov-search{flex:1}
+.vsw{display:inline-flex;border:1px solid var(--line);border-radius:10px;background:#fff;padding:3px;gap:2px;flex:none}
+.vsw button{display:inline-flex;align-items:center;gap:6px;border:0;background:none;padding:6px 10px;border-radius:7px;font:600 13px var(--font,inherit);color:var(--ink2,#6b6a66);cursor:pointer}
+.vsw button svg{width:16px;height:16px}
+.vsw button.on{background:var(--ink,#1c1b1a);color:#fff}
+.lv{padding:0;overflow:auto}
+.lv table{width:100%;border-collapse:collapse;min-width:900px}
+.lv th{font:600 12px var(--font,inherit);color:var(--ink2,#6b6a66);text-align:left;padding:10px 12px;background:#fbfaf8;border-bottom:1px solid var(--line);white-space:nowrap}
+.lv th.lv-h img{vertical-align:-4px;margin-right:6px;border-radius:4px}
+.lv td{padding:10px 12px;border-bottom:1px solid var(--line);font-size:13.5px;vertical-align:middle;white-space:nowrap}
+.lv tr:last-child td{border-bottom:0}
+.lv tbody tr:hover{background:#fbfaf8}
+.lv .lv-name{border:0;background:none;padding:0;font:650 14.5px var(--font,inherit);color:var(--ink);cursor:pointer;text-align:left}
+.lv .lv-name:hover{color:var(--brand)}
+.lv .lv-sub{font-size:12px;color:var(--ink2,#6b6a66);margin-top:2px}
+.lv .lv-app .ov-dot{display:inline-block;margin-right:6px;vertical-align:1px}
+.lv .lv-t.r{color:#d92d20;font-weight:600}.lv .lv-t.a{color:#b87400;font-weight:600}
+.lv .lv-app.off{background:#faf9f7}
+.lv .lv-add{border:0;background:none;color:var(--brand);font:500 20px/1 var(--font,inherit);cursor:pointer;padding:0 4px}
+.lv .lv-add:hover{transform:scale(1.15)}
+.lv .lv-go{text-align:right}
 </style>
 </head>
 <body>
@@ -654,7 +676,8 @@ html .side .nav .cnt[hidden]{display:none!important}
         </div>
         <div class="ov-stats" id="custStats"></div>
         <div class="pchips" id="pchips" role="group" aria-label="Filter by product"></div>
-        <div class="ov-tools"><input type="search" class="ov-search" id="q" placeholder="Search businesses or app accounts" aria-label="Search businesses or app accounts"></div>
+        <div class="ov-tools"><input type="search" class="ov-search" id="q" placeholder="Search businesses or app accounts" aria-label="Search businesses or app accounts">
+          <div class="vsw" role="group" aria-label="View"><button type="button" data-view-as="tiles" title="Tile view"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>Tiles</button><button type="button" data-view-as="list" title="List view"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13M3.5 6h.01M3.5 12h.01M3.5 18h.01"/></svg>List</button></div></div>
         <div class="ckey">
           <span><i class="sdot g"></i>Licensed</span>
           <span><i class="sdot a"></i>Renews within 30 days / trial</span>
@@ -1267,6 +1290,31 @@ function custDetail(c) {
 }
 const LINK_APPS = ["signage", "bookings", "employee", "label", "qrmenu", "wifi"];
 
+// Tiles / List (remembered in this browser)
+let VIEW_AS = (() => { try { return localStorage.getItem("pvl.viewAs") || "tiles"; } catch { return "tiles"; } })();
+function paintViewSwitch() { document.querySelectorAll("[data-view-as]").forEach((b) => { b.classList.toggle("on", b.dataset.viewAs === VIEW_AS); b.setAttribute("aria-pressed", String(b.dataset.viewAs === VIEW_AS)); }); }
+document.addEventListener("click", (e) => { const b = e.target.closest("[data-view-as]"); if (!b) return; VIEW_AS = b.dataset.viewAs; try { localStorage.setItem("pvl.viewAs", VIEW_AS); } catch {} renderCustomers(); });
+const LIST_APPS = ["signage", "bookings", "employee", "label", "qrmenu", "wifi"];
+function custTable(cs) {
+  const cell = (c, k) => {
+    const sum = custSummary(c), accts = accountsForCustomer(c), units = sum.units.filter((u) => u.product === k);
+    if (!accts.some((a) => a.product === k) && !units.length)
+      return `<td class="lv-app off"><button type="button" class="lv-add" data-addapp="${esc(c.id + "|" + k)}" title="Add ${esc(cardTitle(c))} to ${PRODUCTS[k].label}">+</button></td>`;
+    const bad = units.filter((u) => tone(u) === "r"), warn = units.filter((u) => tone(u) === "a");
+    const t = bad.length ? "r" : warn.length ? "a" : units.length ? "g" : "n";
+    const next = renewAt(units);
+    const txt = !units.length ? "none yet" : bad.length ? `${bad.length} unlicensed` : next === Infinity ? "Lifetime" : shortDate(next);
+    return `<td class="lv-app" title="${esc(PRODUCTS[k].label + " · " + unitCount(k, units) + " · " + txt)}"><span class="ov-dot ${TONE_CLS[t]}"></span><span class="lv-t ${t === "r" || t === "a" ? t : ""}">${esc(txt)}</span></td>`;
+  };
+  return `<div class="card lv"><table>
+    <thead><tr><th>Business</th>${LIST_APPS.map((k) => `<th class="lv-h"><img src="${appLogo(k)}" alt="" width="18" height="18">${PRODUCTS[k].label}</th>`).join("")}<th class="lv-s">Status</th><th></th></tr></thead>
+    <tbody>${cs.map((c) => { const sum = custSummary(c), [pcls, ptxt] = c.paused_at ? ["warn", "Paused"] : PILL[sum.worst];
+      return `<tr data-row="${c.id}"><td class="lv-n"><button type="button" class="lv-name" data-open="${c.id}">${esc(cardTitle(c))}</button><div class="lv-sub">${esc(custLicText(sum.units))}</div></td>
+        ${LIST_APPS.map((k) => cell(c, k)).join("")}
+        <td class="lv-s"><span class="ov-pill ${pcls}">${ptxt}</span></td>
+        <td class="lv-go"><button type="button" class="btn sm" data-open="${c.id}">View</button></td></tr>`; }).join("")}</tbody></table></div>`;
+}
+
 function renderCustomers() {
   renderChips(); renderStats();
   const c = S.detail && S.customers.find((x) => x.id === S.detail);
@@ -1278,7 +1326,8 @@ function renderCustomers() {
   const list = S.customers.filter((x) => matches(x, q, S.prod)).map((x) => ({ c: x, s: custSummary(x) }));
   // newest business first (last added at the top), then name
   list.sort((a, b) => (new Date(b.c.created_at || 0) - new Date(a.c.created_at || 0)) || a.c.name.localeCompare(b.c.name));
-  $("#custList").innerHTML = list.length ? `<div class="ov-grid">${list.map((x) => custCard(x.c)).join("")}</div>`
+  paintViewSwitch();
+  $("#custList").innerHTML = list.length ? (VIEW_AS === "list" ? custTable(list.map((x) => x.c)) : `<div class="ov-grid">${list.map((x) => custCard(x.c)).join("")}</div>`)
     : S.customers.length && q ? `<p class="muted" style="margin:0">No businesses or app accounts match “${esc($("#q").value.trim())}”.</p>`
     : `<div class="empty">${S.customers.length ? "No businesses match." : "No businesses yet. Press “Sync” to pull them in from the apps."}</div>`;
   const nOld = S.customers.reduce((t, x) => t + groupedFromBefore(x).reduce((n, g) => n + g.units.length - 1, 0), 0);
