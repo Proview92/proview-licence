@@ -915,10 +915,31 @@ function accountsForCustomer(c) { return S.accounts.filter((a) => a.customer_id 
 // ---------- linked locations (LOCATIONS_LINK_SPEC): the same grouping as licence-hub's linkedGroups ----------
 // A card is one Location, or a group of linked locations. Its location units remember the location they came from
 // (lic_units.origin_id; none = the card's own).
+// Signage (per TV) and Label (per handheld) have no location units: their locations come from where their TVs /
+// handhelds are (extra.location_id), as licence-hub's locationUnits.
+const DEVICE_KIND = { signage: "screen", label: "handheld" };
+let LOC_CACHE = null, LOC_SRC = null;
+function locUnits() {
+  if (LOC_SRC === S.units && LOC_CACHE) return LOC_CACHE;
+  const out = S.units.filter((u) => !u.gone && u.kind === "location"), by = new Map();
+  for (const u of S.units) {
+    const loc = u.extra?.location_id;
+    if (u.gone || !loc || DEVICE_KIND[u.product] !== u.kind) continue;
+    const key = `${u.product}|${u.account_ext_id}|${loc}`;
+    if (!by.has(key)) {
+      const acc = S.accounts.find((a) => a.product === u.product && a.ext_id === u.account_ext_id);
+      const nm = u.product === "signage" ? String(u.detail || "").split(" · ")[0] : String(u.detail || "");
+      by.set(key, { product: u.product, kind: "location", virtual: true, ext_id: String(loc), account_ext_id: u.account_ext_id, name: nm || acc?.name || "Location", origin_id: null, gone: false });
+    }
+    const v = by.get(key); if (!v.origin_id && u.origin_id) v.origin_id = u.origin_id;
+  }
+  LOC_SRC = S.units; LOC_CACHE = [...out, ...by.values()];
+  return LOC_CACHE;
+}
 function groupsOf(c) {
   const accts = accountsForCustomer(c), out = new Map();
-  for (const u of S.units) {
-    if (u.gone || u.kind !== "location" || !accts.some((a) => a.product === u.product && a.ext_id === u.account_ext_id)) continue;
+  for (const u of locUnits()) {
+    if (!accts.some((a) => a.product === u.product && a.ext_id === u.account_ext_id)) continue;
     const k = u.origin_id || c.id;
     if (!out.has(k)) out.set(k, { origin: k, name: S.origins.find((o) => o.id === k)?.name || c.name, units: [] });
     out.get(k).units.push(u);
@@ -931,7 +952,7 @@ function groupedFromBefore(c) {
   const out = [];
   for (const a of accountsForCustomer(c)) {
     const by = new Map();
-    for (const u of unitsForAccount(a)) if (u.kind === "location") { const k = u.origin_id || ""; by.set(k, [...(by.get(k) || []), u]); }
+    for (const u of locUnits()) if (u.product === a.product && u.account_ext_id === a.ext_id) { const k = u.origin_id || ""; by.set(k, [...(by.get(k) || []), u]); }
     for (const g of by.values()) if (g.length > 1) out.push({ a, units: g });
   }
   return out;

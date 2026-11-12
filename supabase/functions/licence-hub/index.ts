@@ -386,6 +386,32 @@ const byAge = (x: any, y: any) => String(x.extra?.created_at ?? "").localeCompar
 const norm = (s: unknown) => String(s ?? "").trim().toLowerCase().replace(/\s+/g, " ");
 const errText = (e: unknown) => String((e as Error)?.message ?? e);
 
+// Locations for Link / Unlink. Bookings, Employee, QR Menu and WiFi list a licence unit per location (kind 'location').
+// Signage (licensed per TV) and Label (per handheld) don't (owner, 12 Nov 2026), so their locations are read from where
+// their TVs / handhelds are (extra.location_id): one location unit per product + account + location, ext_id = the
+// location's id (what the app's 'unlink' takes), origin = the first origin among its TVs / handhelds. A Signage / Label
+// business with no TV / handheld has no location here: Link and Unlink move its whole account, as for one location.
+const DEVICE_KIND: Record<string, string> = { signage: "screen", label: "handheld" };
+export function locationUnits(units: any[], accounts: any[] = []) {
+  const out = units.filter((u) => !u.gone && u.kind === "location");
+  const by = new Map<string, any>();
+  for (const u of units) {
+    const loc = u.extra?.location_id;
+    if (u.gone || !loc || DEVICE_KIND[u.product] !== u.kind) continue;
+    const key = `${u.product}|${u.account_ext_id}|${loc}`;
+    if (!by.has(key)) {
+      const acc = accounts.find((a) => a.product === u.product && a.ext_id === u.account_ext_id);
+      const nm = u.product === "signage" ? String(u.detail ?? "").split(" · ")[0] : String(u.detail ?? "");
+      by.set(key, { product: u.product, kind: "location", virtual: true, ext_id: String(loc), account_ext_id: u.account_ext_id,
+                    name: nm || acc?.name || "Location", origin_id: null, gone: false, members: [] });
+    }
+    const v = by.get(key);
+    v.members.push(u.ext_id);
+    if (!v.origin_id && u.origin_id) v.origin_id = u.origin_id;
+  }
+  return [...out, ...by.values()];
+}
+
 // The linked locations of a card: its location units grouped by where they came from (null origin = the card's own).
 export function linkedGroups(card: any, accounts: any[], units: any[], origins: any[]) {
   const mine = accounts.filter((a) => a.customer_id === card.id && !a.gone);
@@ -439,9 +465,9 @@ export function splitPlan(customers: any[], accounts: any[], units: any[], only?
 async function loadLinkData(db: any) {
   const [c, a, u, o] = await Promise.all([
     db.from("lic_customers").select("*"), db.from("lic_accounts").select("*"),
-    db.from("lic_units").select("*").eq("kind", "location"), db.from("lic_link_origins").select("*")]);
+    db.from("lic_units").select("*").eq("gone", false), db.from("lic_link_origins").select("*")]);
   for (const r of [c, a, u, o]) if (r.error) throw r.error;
-  return { customers: c.data ?? [], accounts: a.data ?? [], units: u.data ?? [], origins: o.data ?? [] };
+  return { customers: c.data ?? [], accounts: a.data ?? [], units: locationUnits(u.data ?? [], a.data ?? []), origins: o.data ?? [] };
 }
 
 // every location unit of the card that has no origin yet belongs to the card's own location
@@ -450,7 +476,7 @@ async function ensureOrigin(db: any, card: any) {
     { onConflict: "id", ignoreDuplicates: true });
   const { data: accts } = await db.from("lic_accounts").select("product,ext_id").eq("customer_id", card.id).eq("gone", false);
   for (const a of accts ?? []) {
-    await db.from("lic_units").update({ origin_id: card.id }).eq("product", a.product).eq("account_ext_id", a.ext_id).eq("kind", "location").is("origin_id", null);
+    await db.from("lic_units").update({ origin_id: card.id }).eq("product", a.product).eq("account_ext_id", a.ext_id).is("origin_id", null);
   }
 }
 
@@ -547,8 +573,8 @@ async function unlinkUnits(db: any, apps: Record<string, App>, adminEmail: strin
     results[product] = { ok: true, label, unlinked: 0 };
     for (const it of mine) {
       try {
-        const { count } = await db.from("lic_units").select("ext_id", { count: "exact", head: true })
-          .eq("product", product).eq("account_ext_id", it.account).eq("kind", "location").eq("gone", false);
+        const { data: accUnits } = await db.from("lic_units").select("*").eq("product", product).eq("account_ext_id", it.account).eq("gone", false);
+        const count = locationUnits(accUnits ?? []).length;
         let acc: string;
         if ((count ?? 0) <= 1) {   // nothing to split in the app: the account itself moves
           await db.from("lic_accounts").update({ customer_id: newCard.id, link_checked: true }).eq("product", product).eq("ext_id", it.account);
@@ -561,6 +587,10 @@ async function unlinkUnits(db: any, apps: Record<string, App>, adminEmail: strin
           await db.from("lic_accounts").upsert({ product, ext_id: acc, name: it.name, contact_email: newCard.contact_email ?? null, customer_id: newCard.id,
             link_checked: true, gone: false, synced_at: new Date().toISOString() }, { onConflict: "product,ext_id" });
           await repoint(db, product, null, acc, r.renamed_units, String(it.ext_id));
+          if (DEVICE_KIND[product]) {   // Signage / Label: the location's TVs / handhelds move with it
+            await db.from("lic_units").update({ account_ext_id: acc }).eq("product", product).eq("extra->>location_id", String(it.ext_id));
+            if (!origin) await db.from("lic_units").update({ origin_id: null }).eq("product", product).eq("extra->>location_id", String(r.site ?? it.ext_id));
+          }
           if (!origin) await db.from("lic_units").update({ origin_id: null }).eq("product", product).eq("ext_id", String(r.site ?? it.ext_id));
           touched.add(product);
         }
