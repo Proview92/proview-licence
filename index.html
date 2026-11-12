@@ -278,6 +278,10 @@
   .pchip { height: auto; padding: 5px 12px; border: 1px solid var(--line); background: #fff; color: var(--ink2); font: 600 13px var(--font); border-radius: 999px; }
   .pchip:hover { background: #fbfaf8; }
   .pchip.on { background: var(--ink); color: #fff; border-color: var(--ink); }
+  .pchip { display: inline-flex; align-items: center; gap: 7px; }
+  .pchip .pdot { width: 7px; height: 7px; border-radius: 50%; background: #c9c7c0; flex: none; }
+  .pchip .pdot.ok { background: #12a150; } .pchip .pdot.bad { background: #d92d20; }
+  .pchip.on .pdot { box-shadow: 0 0 0 2px rgba(255,255,255,.85); }
   .csearch { height: 38px; border-radius: 9px; border: 1px solid var(--line); }
   .ghost { height: 38px; border-radius: 10px; border: 1px solid var(--line); color: var(--ink); font: 600 14px var(--font); }
   .ghost:hover { border-color: #cfccc4; background: #fbfaf8; }
@@ -865,11 +869,10 @@ function renderSyncChips() {
     return `<span class="chip ${r?.ok ? "ok" : "bad"}" title="${esc(r?.error || "")}"><span class="dot"></span>${p.label}${r?.ok ? (Number.isFinite(r.units) ? ` · ${unitCount(k, S.units.filter((u) => u.product === k && !u.gone))}` : "") : " · offline"}</span>`;
   }).join("") + `<span class="chip">Last synced ${fmtDT(s.at)}</span>`;
   // the Customers page opens with these as its summary tags, beside its buttons (as Proview Signage's pages)
-  $("#custChips").innerHTML = Object.entries(PRODUCTS).map(([k, p]) => {
-    const r = s.apps[k];
-    return `<span class="chip ${r?.ok ? "ok" : "bad"}" title="${esc(r?.error || (r?.ok ? "Synced" : ""))}"><span class="chip-dot"></span>${p.label}${r?.ok ? "" : " · offline"}</span>`;
-  }).join("") + `<span class="chip">Synced ${fmtDT(s.at)}</span>`;
+  // the app status dots now sit on the product filter chips below (renderChips); this keeps only the sync time
+  $("#custChips").innerHTML = `<span class="chip">Synced ${fmtDT(s.at)}</span>`;
   $("#custChips").classList.remove("hidden"); $("#custDesc").classList.add("hidden");
+  renderChips();
 }
 
 // ---------- open a customer's app account as the master (MASTER_OPEN_SPEC / MASTER_OPEN_PROTOCOL) ----------
@@ -972,8 +975,13 @@ function custSummary(c) {
 
 function renderChips() {
   const live = S.units.filter((u) => !u.gone);
-  const chip = (k, label) => `<button type="button" class="pchip ${S.prod === k ? "on" : ""}" data-prod="${k}" aria-pressed="${S.prod === k}">${label}</button>`;
-  $("#pchips").innerHTML = chip("", "All products") + Object.entries(PRODUCTS).map(([k, p]) => chip(k, `${p.label} ${live.filter((u) => u.product === k).length}`)).join("");
+  const chip = (k, label, dot) => `<button type="button" class="pchip ${S.prod === k ? "on" : ""}" data-prod="${k}" aria-pressed="${S.prod === k}"${dot ? ` title="${esc(dot[1])}"` : ""}>${dot ? `<i class="pdot ${dot[0]}"></i>` : ""}${label}</button>`;
+  // each app's chip carries its sync status: green = synced, red = couldn't reach it at the last sync
+  const st = (k) => { const r = S.lastSync?.apps?.[k]; return !r ? null : r.ok ? ["ok", "Synced"] : ["bad", r.error ? "Offline: " + r.error : "Offline"]; };
+  $("#pchips").innerHTML = chip("", "All products") + Object.entries(PRODUCTS).map(([k, p]) => {
+    const d = st(k);
+    return chip(k, `${p.label} ${live.filter((u) => u.product === k).length}${d && d[0] === "bad" ? " · offline" : ""}`, d);
+  }).join("");
 }
 
 function unitRow(u) {
@@ -1146,8 +1154,8 @@ function renderCustomers() {
   S.detail = null;
   const q = $("#q").value.trim().toLowerCase();
   const list = S.customers.filter((x) => matches(x, q, S.prod)).map((x) => ({ c: x, s: custSummary(x) }));
-  // problem cards first, then soonest renewal, then name
-  list.sort((a, b) => (a.s.worst === "r" ? 0 : 1) - (b.s.worst === "r" ? 0 : 1) || a.s.renew - b.s.renew || a.c.name.localeCompare(b.c.name));
+  // newest business first (last added at the top), then name
+  list.sort((a, b) => (new Date(b.c.created_at || 0) - new Date(a.c.created_at || 0)) || a.c.name.localeCompare(b.c.name));
   $("#custList").innerHTML = list.length ? `<div class="ov-grid">${list.map((x) => custCard(x.c)).join("")}</div>`
     : S.customers.length && q ? `<p class="muted" style="margin:0">No businesses or app accounts match “${esc($("#q").value.trim())}”.</p>`
     : `<div class="empty">${S.customers.length ? "No businesses match." : "No businesses yet. Press “Sync” to pull them in from the apps."}</div>`;
