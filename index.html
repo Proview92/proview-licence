@@ -756,19 +756,20 @@ function ask({ title, message = "", html = "", ok = "OK", danger = false, fields
 }
 
 const PRODUCTS = {
-  signage:  { label: "Signage",  unit: "Screen", units: "screens", app: "https://app.proviewsignage.co.uk",  trial: "trial7" },
+  signage:  { label: "Signage",  unit: "TV", units: "TVs", app: "https://app.proviewsignage.co.uk",  trial: "trial7" },
   bookings: { label: "Bookings", unit: "Business", units: "businesses",   app: "https://bookings.proviewcrm.co.uk", trial: "trial"  },
   employee: { label: "Employee", unit: "Staff member", units: "staff", app: "https://employee.proviewcrm.co.uk", trial: "trial3" },
   wifi:     { label: "WiFi",     unit: "Business", units: "businesses",   app: "https://wifi.proviewcrm.co.uk/admin", trial: "trial" },
   qrmenu:   { label: "QR Menu",  unit: "Business", units: "businesses",   app: "https://qrmenu.proviewcrm.co.uk", trial: "trial3" },
-  label:    { label: "Label",    unit: "Business", units: "businesses",   app: "https://label.proviewcrm.co.uk", trial: "trial" },
+  label:    { label: "Label",    unit: "Handheld", units: "handhelds",   app: "https://label.proviewcrm.co.uk", trial: "trial" },
 };
 // What each licence is for (PER_LOCATION_LICENCE_SPEC): every app licenses each location; Signage also each TV and
 // Employee each extra person over the package. Units synced before kinds existed read as their app's old kind.
-const KINDS = { signage: ["screen", "location"], bookings: ["location"], employee: ["location", "staff"], wifi: ["location"], qrmenu: ["location"], label: ["location"] };
-const DEFAULT_KIND = { signage: "screen", bookings: "location", employee: "staff", wifi: "location", qrmenu: "location", label: "location" };
-const KIND_LABEL = { location: "Business", screen: "TV", staff: "Staff add-on" };
-const KIND_WORD = { location: ["business", "businesses"], screen: ["TV", "TVs"], staff: ["staff add-on", "staff add-ons"] };
+// owner 12 Nov 2026: Signage licenses each TV only; Label each handheld only; WiFi and QR Menu each location only
+const KINDS = { signage: ["screen"], bookings: ["location"], employee: ["location", "staff"], wifi: ["location"], qrmenu: ["location"], label: ["handheld"] };
+const DEFAULT_KIND = { signage: "screen", bookings: "location", employee: "staff", wifi: "location", qrmenu: "location", label: "handheld" };
+const KIND_LABEL = { location: "Business", screen: "TV", staff: "Staff add-on", handheld: "Handheld" };
+const KIND_WORD = { location: ["business", "businesses"], screen: ["TV", "TVs"], staff: ["staff add-on", "staff add-ons"], handheld: ["handheld", "handhelds"] };
 const kindOf = (u) => u.kind || DEFAULT_KIND[u.product] || "location";
 const multiKind = (prod) => (KINDS[prod] || []).length > 1;
 // "3 TVs, 1 location" / "2 locations"

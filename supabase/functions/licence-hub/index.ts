@@ -22,16 +22,17 @@ const TYPES: Record<string, string[]> = {
   employee: ["trial3", "m1", "m3", "m6", "m12", "m24", "m36", "lifetime", "custom"],
   wifi: ["trial", "m1", "m3", "m6", "m12", "m24", "m36", "lifetime", "custom"],
   qrmenu: ["trial3", "m1", "m3", "m6", "m12", "m24", "m36", "lifetime", "custom"],
-  label: ["trial", "m1", "m3", "m6", "m12", "m24", "m36", "lifetime", "custom"], // per location (trial = set by hand)
+  label: ["trial", "m1", "m3", "m6", "m12", "m24", "m36", "lifetime", "custom"], // per handheld (trial = set by hand)
 };
 
 // What a unit is (PER_LOCATION_LICENCE_SPEC): every app licenses each location; Signage also each TV and Employee each
 // extra person over the package ("Staff add-on"). An app that sends no kind sends its old unit type, DEFAULT_KIND.
 const KINDS: Record<string, string[]> = {
-  signage: ["screen", "location"], employee: ["staff", "location"],
-  bookings: ["location"], wifi: ["location"], qrmenu: ["location"], label: ["location"],
+  // owner 12 Nov 2026: Signage licenses each TV only, Label each handheld only, WiFi and QR Menu each location only
+  signage: ["screen"], employee: ["staff", "location"],
+  bookings: ["location"], wifi: ["location"], qrmenu: ["location"], label: ["handheld"],
 };
-const DEFAULT_KIND: Record<string, string> = { signage: "screen", employee: "staff", bookings: "location", wifi: "location", qrmenu: "location", label: "location" };
+const DEFAULT_KIND: Record<string, string> = { signage: "screen", employee: "staff", bookings: "location", wifi: "location", qrmenu: "location", label: "handheld" };
 const kindOf = (product: string, k: unknown) => {
   const v = typeof k === "string" && k ? k : DEFAULT_KIND[product];
   return (KINDS[product] ?? []).includes(v) ? v : null;
@@ -58,7 +59,7 @@ const codeOf = (product: string) => Object.keys(REF_CODES).find((k) => REF_CODES
 //   pvs__loc__<site>__<plan>              Signage location      unit loc/<site>          (the unit id Signage lists)
 //   pve__<org>__<member>__<plan>          Employee staff add-on unit <org>/<member>
 //   pve__loc__<org>__<location>__<plan>   Employee location     unit loc/<org>/<location> (the unit id Employee lists)
-//   pvl__<site>__<plan>                   Label location        unit <site>   (pvl__loc__<site>__<plan> also accepted)
+//   pvl__<hl id>__<plan>                  Label handheld        unit <hl id> (Label migration 013)
 //   pvb / pvq / pvw __<id>__<plan>        Bookings / QR Menu / WiFi location (unchanged)
 // kind: "location" when the second part is "loc", else the app's default kind.
 export function parseRef(ref: string) {
@@ -363,7 +364,8 @@ export function trialCall(product: string, r: any, now = Date.now()): [string, R
     case "signage": case "employee": return r?.account_id ? ["trial", { account_id: String(r.account_id) }] : null;
     case "bookings": case "wifi": return set("trial");
     case "qrmenu": return set("trial3");
-    case "label": return set("trial", { expires: new Date(now + 3 * 86400e3).toISOString() });
+    // Label: the business gets a spare 3-day trial licence that its first paired handheld takes (Label migration 013)
+    case "label": return r?.account_id ? ["trial", { account_id: String(r.account_id), notes: TRIAL_NOTE }] : null;
   }
   return null;
 }
