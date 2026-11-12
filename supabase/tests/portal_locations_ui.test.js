@@ -1,4 +1,4 @@
-// Licence portal: Locations wording, linked-location cards, Link / Unlink / Split (LOCATIONS_LINK_SPEC). Headless Chrome with a
+// Licence portal: Businesses wording (was Locations), linked-business cards, Link / Unlink / Split (LOCATIONS_LINK_SPEC). Headless Chrome with a
 // mocked Supabase and licence-hub. Usage: node supabase/tests/portal_locations_ui.test.js (screenshots go to the temp folder).
 const puppeteer = require('/opt/npm-tools/node_modules/puppeteer-core');
 const http = require('http'), fs = require('fs'), path = require('path');
@@ -60,21 +60,23 @@ const PLAN = [{ customer_id: 'co', customer_name: 'Old Group', businesses: [{ pr
   const txt = (s) => page.evaluate((s) => document.querySelector(s)?.textContent.replace(/\s+/g, ' ').trim(), s);
   const okBtn = async () => { await page.evaluate(() => document.getElementById('askOk').click()); await wait(400); };
 
-  ok('sidebar and title say Locations', (await txt('a[data-tab="customers"]')) === 'Locations' && (await txt('#pageTitle')) === 'Locations');
-  ok('header picker: "All locations (3)" ' + (await txt('#hdr-biz option')), (await txt('#hdr-biz option')) === 'All locations (3)');
-  ok('New location button, search placeholder', (await txt('#newCustBtn')) === 'New location' && (await page.$eval('#q', (e) => e.placeholder)) === 'Search locations or app accounts');
+  ok('sidebar and title say Businesses', (await txt('a[data-tab="customers"]')) === 'Businesses' && (await txt('#pageTitle')) === 'Businesses');
+  ok('header picker: "All businesses (3)" ' + (await txt('#hdr-biz option')), (await txt('#hdr-biz option')) === 'All businesses (3)');
+  ok('New business button, search placeholder', (await txt('#newCustBtn')) === 'New business' && (await page.$eval('#q', (e) => e.placeholder)) === 'Search businesses or app accounts');
   const stats = await page.evaluate(() => [...document.querySelectorAll('#custStats .ov-stat .tiny')].map((x) => x.textContent));
-  ok('stat "Locations" (not Customers), "App accounts" kept ' + stats.join(','), stats[0] === 'Locations' && stats.includes('App accounts'));
+  ok('stat "Businesses" (not Customers), "App accounts" kept ' + stats.join(','), stats[0] === 'Businesses' && stats.includes('App accounts'));
+  const noLoc = () => page.evaluate(() => { const t = [document.body.innerText, ...[...document.querySelectorAll('[placeholder],[aria-label],[title]')].map((e) => [e.placeholder, e.getAttribute('aria-label'), e.title].join(' '))].join(' '); return (t.match(/.{0,30}\blocations?\b.{0,30}/gi) || []); });
+  const nl1 = await noLoc(); ok('list page: no visible "location" text ' + JSON.stringify(nl1), !nl1.length);
   const cardA = await page.evaluate(() => { const c = document.querySelector('[data-cust="ca"]'); return { h: c.querySelector('h3').textContent, sub: c.querySelector('.ov-bh .muted').textContent }; });
-  ok('linked card title "Cafe Alpha + Cafe Beta", "2 linked locations" under it ' + JSON.stringify(cardA), cardA.h === 'Cafe Alpha + Cafe Beta' && /^2 linked locations/.test(cardA.sub));
-  ok('a location on its own keeps its name', (await page.evaluate(() => document.querySelector('[data-cust="cg"] h3').textContent)) === 'Gamma Grill');
+  ok('linked card title "Cafe Alpha + Cafe Beta", "2 linked businesses" under it ' + JSON.stringify(cardA), cardA.h === 'Cafe Alpha + Cafe Beta' && /^2 linked businesses/.test(cardA.sub));
+  ok('a business on its own keeps its name', (await page.evaluate(() => document.querySelector('[data-cust="cg"] h3').textContent)) === 'Gamma Grill');
   const ban = await txt('#splitBanner');
-  ok('banner: "1 location is still grouped from before" ' + ban, /1 location is still grouped from before/.test(ban) && /Split them/.test(ban));
+  ok('banner: "1 business is still grouped from before" ' + ban, /1 business is still grouped from before/.test(ban) && /Split them/.test(ban));
   await page.screenshot({ path: require('path').join(require('os').tmpdir(), 'locations-1440.png') });
   // split: preview, then confirm
   await page.click('[data-split]'); await wait(500);
   const prev = await txt('#askMsg');
-  ok('split preview lists the business, what it keeps and the new card ' + prev.slice(0, 160), (await page.evaluate(() => document.getElementById('askDlg').open)) && /Old Group/.test(prev) && /keeps Old Group/.test(prev) && /New cards: Old Group Soho \(Signage\)/.test(prev));
+  ok('split preview lists the business, what it keeps and the new card ' + prev.slice(0, 160), (await txt('#askTitle')) === 'Split grouped businesses?' && !/location/i.test(prev) && (await page.evaluate(() => document.getElementById('askDlg').open)) && /Old Group/.test(prev) && /keeps Old Group/.test(prev) && /New cards: Old Group Soho \(Signage\)/.test(prev));
   ok('nothing split before confirming', !hubCalls.some((c) => c.action === 'split'));
   await page.screenshot({ path: require('path').join(require('os').tmpdir(), 'split-preview.png') });
   await okBtn(); await wait(300);
@@ -82,22 +84,23 @@ const PLAN = [{ customer_id: 'co', customer_name: 'Old Group', businesses: [{ pr
   // detail of the linked card
   await page.click('[data-cust="ca"] [data-open="ca"]'); await wait(300);
   const det = await txt('#custList');
-  ok('detail: "← All locations", "Link with another location…", no Merge ' , /← All locations/.test(det) && /Link with another location…/.test(det) && !/Merge/.test(det));
+  ok('detail: "← All businesses", "Link with another business…", no Merge ' , /← All businesses/.test(det) && /Link with another business…/.test(det) && !/Merge/.test(det));
+  const nl2 = await noLoc(); ok('business page: no visible "location" text ' + JSON.stringify(nl2), !nl2.length);
   const rows = await page.evaluate(() => [...document.querySelectorAll('[data-unlink]')].map((b) => b.dataset.unlink));
-  ok('linked locations listed, each with Unlink ' + JSON.stringify(rows), JSON.stringify(rows) === JSON.stringify(['ca|ca', 'ca|cb']) && /Linked locations/.test(det) && /Cafe Beta\s*Signage · Label/.test(det));
+  ok('linked businesses listed, each with Unlink ' + JSON.stringify(rows), JSON.stringify(rows) === JSON.stringify(['ca|ca', 'ca|cb']) && /Linked businesses/.test(det) && /2 businesses are linked in every app/.test(det) && /Cafe Beta\s*Signage · Label/.test(det));
   await page.screenshot({ path: require('path').join(require('os').tmpdir(), 'location-page.png') });
   await page.click('[data-unlink="ca|cb"]'); await wait(300);
-  ok('Unlink asks first: ' + (await txt('#askTitle')), (await txt('#askTitle')) === 'Unlink Cafe Beta?');
+  ok('Unlink asks first: ' + (await txt('#askTitle')), (await txt('#askTitle')) === 'Unlink Cafe Beta?' && /becomes a business on its own again/.test(await txt('#askMsg')));
   await okBtn();
   const ul = hubCalls.filter((c) => c.action === 'unlink').pop();
   ok('Unlink sends { customer, origin } ' + JSON.stringify(ul), ul && ul.customer === 'ca' && ul.origin === 'cb');
   // link: picker -> confirm -> hub link; partial result reported
   await page.click('[data-link="ca"]'); await wait(300);
   const pick = await page.evaluate(() => ({ head: document.getElementById('moveHead').textContent, ok: document.getElementById('moveOk').textContent, opts: [...document.querySelectorAll('#moveTo option')].map((o) => o.textContent) }));
-  ok('Link picker lists the other locations ' + JSON.stringify(pick), pick.head === 'Link with another location' && pick.ok === 'Next' && pick.opts.length === 2 && pick.opts.some((o) => /Gamma Grill/.test(o)) && !pick.opts.some((o) => /Cafe Alpha/.test(o)));
+  ok('Link picker lists the other businesses ' + JSON.stringify(pick), pick.head === 'Link with another business' && pick.ok === 'Next' && pick.opts.length === 2 && pick.opts.some((o) => /Gamma Grill/.test(o)) && !pick.opts.some((o) => /Cafe Alpha/.test(o)));
   await page.select('#moveTo', 'cg'); await page.evaluate(() => document.getElementById('moveDlg').close('ok')); await wait(300);
   const cm = await txt('#askMsg');
-  ok('Link confirm explains it (apps in common, owners and managers get both) ' + cm.slice(0, 120), /Cafe Alpha \+ Cafe Beta and Gamma Grill become one card/.test(cm) && /In Signage/.test(cm) && /Owners and managers of either location get both/.test(cm));
+  ok('Link confirm explains it (apps in common, owners and managers get both) ' + cm.slice(0, 120), /Cafe Alpha \+ Cafe Beta and Gamma Grill become one card/.test(cm) && /In Signage/.test(cm) && /Owners and managers of either business get both/.test(cm) && (await txt('#askTitle')) === 'Link these businesses?' && (await txt('#askOk')) === 'Link businesses');
   ok('nothing linked before confirming', !hubCalls.some((c) => c.action === 'link'));
   await okBtn(); await wait(500);
   const lk = hubCalls.filter((c) => c.action === 'link').pop();
