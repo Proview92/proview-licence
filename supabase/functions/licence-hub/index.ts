@@ -373,6 +373,264 @@ export function trialResult(action: string, a: any) {
   return { applied: /^trial/.test(String(a?.license_type ?? "")), expires_at: a?.expires_at ?? null, license_type: a?.license_type ?? null };
 }
 
+// ---------- linked locations (LOCATIONS_LINK_SPEC.md, contract: LOCATIONS_LINK_PROTOCOL.md) ----------
+// A card (lic_customers) is a Location. Linking card B into card A merges B's business into A's in every app where both
+// have one (hub_call 'link'), moves B's other app accounts to A, and removes B once it holds nothing. Unlinking moves one
+// linked location (all its location units, grouped by lic_units.origin_id) out into new businesses (hub_call 'unlink')
+// and a new card. Apps can't share a transaction: each app call is all or nothing, the portal is updated straight after
+// each call that worked, and a failed app is reported and left as it was, so pressing the button again finishes it.
+const LINK_ORDER = ["signage", "bookings", "employee", "label", "qrmenu", "wifi"];
+const byAge = (x: any, y: any) => String(x.extra?.created_at ?? "").localeCompare(String(y.extra?.created_at ?? "")) || String(x.ext_id).localeCompare(String(y.ext_id));
+const norm = (s: unknown) => String(s ?? "").trim().toLowerCase().replace(/\s+/g, " ");
+const errText = (e: unknown) => String((e as Error)?.message ?? e);
+
+// The linked locations of a card: its location units grouped by where they came from (null origin = the card's own).
+export function linkedGroups(card: any, accounts: any[], units: any[], origins: any[]) {
+  const mine = accounts.filter((a) => a.customer_id === card.id && !a.gone);
+  const locs = units.filter((u) => !u.gone && u.kind === "location" && mine.some((a) => a.product === u.product && a.ext_id === u.account_ext_id));
+  const groups = new Map<string, any>();
+  for (const u of locs) {
+    const key = u.origin_id ?? card.id;
+    if (!groups.has(key)) {
+      const o = origins.find((x) => x.id === key);
+      groups.set(key, { origin: key, name: o?.name ?? card.name, units: [] });
+    }
+    groups.get(key).units.push(u);
+  }
+  return [...groups.values()].sort((x, y) => (x.origin === card.id ? -1 : y.origin === card.id ? 1 : String(x.name).localeCompare(String(y.name))));
+}
+
+// Today's businesses with more than one location, before linking existed: each extra location becomes its own card.
+// The location named like its business (else the first by name) stays; the others leave. Locations of one card with the
+// same name in different apps go to the same new card (they are the same place).
+export function splitPlan(customers: any[], accounts: any[], units: any[], only?: string) {
+  const plan: any[] = [];
+  for (const c of customers) {
+    if (only && c.id !== only) continue;
+    const items: any[] = [];
+    for (const a of accounts.filter((x) => x.customer_id === c.id && !x.gone).sort((x, y) => LINK_ORDER.indexOf(x.product) - LINK_ORDER.indexOf(y.product) || byAge(x, y))) {
+      const locs = units.filter((u) => !u.gone && u.kind === "location" && u.product === a.product && u.account_ext_id === a.ext_id)
+        .sort((x, y) => String(x.name).localeCompare(String(y.name)) || String(x.ext_id).localeCompare(String(y.ext_id)));
+      // locations that came from a link are unlinked with Unlink; only locations grouped together before linking
+      // existed (same origin, usually none) are split
+      const byOrigin = new Map<string, any[]>();
+      for (const u of locs) { const k = u.origin_id ?? ""; byOrigin.set(k, [...(byOrigin.get(k) ?? []), u]); }
+      for (const grp of byOrigin.values()) {
+        if (grp.length < 2) continue;
+        const keep = grp.find((u) => norm(u.name) === norm(a.name)) ?? grp[0];
+        items.push({ product: a.product, account: a.ext_id, account_name: a.name, keep: { ext_id: keep.ext_id, name: keep.name },
+                     out: grp.filter((u) => u !== keep).map((u) => ({ ext_id: u.ext_id, name: u.name })) });
+      }
+    }
+    if (!items.length) continue;
+    const cards = new Map<string, any>();
+    for (const it of items) for (const o of it.out) {
+      const k = norm(o.name);
+      if (!cards.has(k)) cards.set(k, { name: o.name, units: [] });
+      cards.get(k).units.push({ product: it.product, account: it.account, ext_id: o.ext_id, name: o.name });
+    }
+    plan.push({ customer_id: c.id, customer_name: c.name, businesses: items, new_cards: [...cards.values()] });
+  }
+  return plan;
+}
+
+async function loadLinkData(db: any) {
+  const [c, a, u, o] = await Promise.all([
+    db.from("lic_customers").select("*"), db.from("lic_accounts").select("*"),
+    db.from("lic_units").select("*").eq("kind", "location"), db.from("lic_link_origins").select("*")]);
+  for (const r of [c, a, u, o]) if (r.error) throw r.error;
+  return { customers: c.data ?? [], accounts: a.data ?? [], units: u.data ?? [], origins: o.data ?? [] };
+}
+
+// every location unit of the card that has no origin yet belongs to the card's own location
+async function ensureOrigin(db: any, card: any) {
+  await db.from("lic_link_origins").upsert({ id: card.id, name: card.name, contact_email: card.contact_email ?? null, phone: card.phone ?? null },
+    { onConflict: "id", ignoreDuplicates: true });
+  const { data: accts } = await db.from("lic_accounts").select("product,ext_id").eq("customer_id", card.id).eq("gone", false);
+  for (const a of accts ?? []) {
+    await db.from("lic_units").update({ origin_id: card.id }).eq("product", a.product).eq("account_ext_id", a.ext_id).eq("kind", "location").is("origin_id", null);
+  }
+}
+
+// after an app moved units between accounts: re-point the portal's rows (unit ids that contain the account id change)
+async function repoint(db: any, product: string, fromAcc: string | null, toAcc: string, renamed: any[] = [], only?: string) {
+  if (fromAcc) await db.from("lic_units").update({ account_ext_id: toAcc }).eq("product", product).eq("account_ext_id", fromAcc);
+  if (only) await db.from("lic_units").update({ account_ext_id: toAcc }).eq("product", product).eq("ext_id", only);
+  for (const r of Array.isArray(renamed) ? renamed : []) {
+    const from = String(r?.from ?? ""), to = String(r?.to ?? "");
+    if (!from || !to || from === to) continue;
+    const { data: there } = await db.from("lic_units").select("ext_id").eq("product", product).eq("ext_id", to).maybeSingle();
+    if (there) await db.from("lic_units").update({ gone: true }).eq("product", product).eq("ext_id", from);
+    else await db.from("lic_units").update({ ext_id: to, account_ext_id: toAcc }).eq("product", product).eq("ext_id", from);
+    await db.from("lic_subscriptions").update({ unit_ext_id: to }).eq("product", product).eq("unit_ext_id", from);
+    await db.from("lic_payments").update({ unit_ext_id: to }).eq("product", product).eq("unit_ext_id", from);
+  }
+}
+
+async function linkCards(db: any, apps: Record<string, App>, adminEmail: string | null, aId: string, bId: string) {
+  if (!aId || !bId) return { status: 400, body: { error: "Choose the two locations to link." } };
+  if (aId === bId) return { status: 400, body: { error: "A location can't be linked with itself." } };
+  const { data: A } = await db.from("lic_customers").select("*").eq("id", aId).maybeSingle();
+  const { data: B } = await db.from("lic_customers").select("*").eq("id", bId).maybeSingle();
+  if (!A || !B) return { status: 400, body: { error: "Location not found. Press Sync and try again." } };
+  await ensureOrigin(db, A); await ensureOrigin(db, B);
+  const { data: all } = await db.from("lic_accounts").select("*").in("customer_id", [A.id, B.id]).eq("gone", false);
+  const results: Record<string, any> = {}, touched = new Set<string>();
+  for (const product of LINK_ORDER) {
+    const la = (all ?? []).filter((x: any) => x.product === product && x.customer_id === A.id).sort(byAge);
+    const lb = (all ?? []).filter((x: any) => x.product === product && x.customer_id === B.id).sort(byAge);
+    if (!la.length && !lb.length) continue;
+    const target = la[0] ?? lb[0];
+    const froms = [...la.slice(1), ...lb].filter((x: any) => x.ext_id !== target.ext_id);
+    const label = apps[product]?.label ?? product;
+    if (target.customer_id !== A.id) {   // only B has this app: its account just moves to A (nothing changes in the app)
+      await db.from("lic_accounts").update({ customer_id: A.id, link_checked: true }).eq("product", product).eq("ext_id", target.ext_id);
+    }
+    if (!froms.length) { results[product] = { ok: true, label, moved: target.customer_id !== A.id, linked: 0 }; continue; }
+    const app = apps[product];
+    if (!app) { results[product] = { ok: false, label, linked: 0, error: "This app isn't connected to the licence portal." }; continue; }
+    let n = 0;
+    for (const from of froms) {
+      try {
+        const r = await callApp(app, "link", { into: String(target.ext_id), from: String(from.ext_id) });
+        if (!r?.ok) throw new Error(r?.message ?? "The app didn't confirm the link.");
+        await repoint(db, product, String(from.ext_id), String(target.ext_id), r.renamed_units);
+        await db.from("lic_accounts").update({ gone: true, customer_id: A.id, link_checked: true }).eq("product", product).eq("ext_id", from.ext_id);
+        await db.from("lic_audit").insert({ admin_email: adminEmail, product, account_name: target.name, action: "linked locations",
+          after: { into: target.ext_id, from: from.ext_id, from_name: from.name, moved_sites: r.moved_sites ?? [], already: !!r.already } });
+        n++; touched.add(product);
+      } catch (e) {
+        const msg = errText(e);
+        results[product] = { ok: false, label, linked: n, error: msg };
+        await db.from("lic_audit").insert({ admin_email: adminEmail, product, account_name: from.name, action: "failed", error: `Link with ${target.name}: ${msg}` });
+        break;
+      }
+    }
+    results[product] ??= { ok: true, label, linked: n };
+  }
+  // card B goes once it holds nothing any more (a failed app keeps its account there, so Link can be pressed again)
+  const { data: left } = await db.from("lic_accounts").select("product").eq("customer_id", B.id).eq("gone", false);
+  let removed = false;
+  if (!left?.length) {
+    await db.from("lic_accounts").update({ customer_id: A.id }).eq("customer_id", B.id);
+    if (B.notes) await db.from("lic_customers").update({ notes: [A.notes, B.notes].filter(Boolean).join("\n") }).eq("id", A.id);
+    await db.from("lic_customers").delete().eq("id", B.id);
+    removed = true;
+  }
+  await db.from("lic_audit").insert({ admin_email: adminEmail, account_name: A.name, action: removed ? `linked with ${B.name}` : `partly linked with ${B.name}`,
+    after: { into: A.id, from: B.id, results } });
+  let sync: unknown = null;
+  if (touched.size) { try { sync = await syncApps(db, [...touched].map((p) => apps[p]).filter(Boolean)); } catch (e) { sync = { ok: false, error: errText(e) }; } }
+  const ok = Object.values(results).every((r: any) => r.ok);
+  return { status: 200, body: { ok, customer: A.id, removed_b: removed, results, sync } };
+}
+
+// Move location units (each { product, account, ext_id, name }) out of their businesses into one new card.
+// In an app where the unit is its business's only location, the whole account moves to the new card instead.
+async function unlinkUnits(db: any, apps: Record<string, App>, adminEmail: string | null, card: any, items: any[], newName: string, origin?: any) {
+  let newCard: any = null;
+  if (origin?.split_card_id) { const { data } = await db.from("lic_customers").select("*").eq("id", origin.split_card_id).maybeSingle(); newCard = data; }
+  if (!newCard) {
+    const { data, error } = await db.from("lic_customers").insert({ name: newName || "Unnamed", contact_email: origin?.contact_email ?? card.contact_email ?? null,
+      phone: origin?.phone ?? card.phone ?? null, notes: `Unlinked from ${card.name}` }).select("*").single();
+    if (error) throw error;
+    newCard = data;
+    if (origin?.id) await db.from("lic_link_origins").update({ split_card_id: newCard.id }).eq("id", origin.id);
+  }
+  const results: Record<string, any> = {}, touched = new Set<string>(), firstNew: Record<string, string> = {};
+  for (const product of LINK_ORDER) {
+    const mine = items.filter((x) => x.product === product);
+    if (!mine.length) continue;
+    const app = apps[product], label = app?.label ?? product;
+    results[product] = { ok: true, label, unlinked: 0 };
+    for (const it of mine) {
+      try {
+        const { count } = await db.from("lic_units").select("ext_id", { count: "exact", head: true })
+          .eq("product", product).eq("account_ext_id", it.account).eq("kind", "location").eq("gone", false);
+        let acc: string;
+        if ((count ?? 0) <= 1) {   // nothing to split in the app: the account itself moves
+          await db.from("lic_accounts").update({ customer_id: newCard.id, link_checked: true }).eq("product", product).eq("ext_id", it.account);
+          acc = String(it.account);
+        } else {
+          if (!app) throw new Error("This app isn't connected to the licence portal.");
+          const r = await callApp(app, "unlink", { account: String(it.account), site: String(it.ext_id) });
+          if (!r?.ok || !r.account) throw new Error(r?.message ?? "The app didn't say which business it made.");
+          acc = String(r.account);
+          await db.from("lic_accounts").upsert({ product, ext_id: acc, name: it.name, contact_email: newCard.contact_email ?? null, customer_id: newCard.id,
+            link_checked: true, gone: false, synced_at: new Date().toISOString() }, { onConflict: "product,ext_id" });
+          await repoint(db, product, null, acc, r.renamed_units, String(it.ext_id));
+          if (!origin) await db.from("lic_units").update({ origin_id: null }).eq("product", product).eq("ext_id", String(r.site ?? it.ext_id));
+          touched.add(product);
+        }
+        // two locations of one linked location in the same app: one business for them again
+        if (firstNew[product] && firstNew[product] !== acc && app) {
+          const l = await callApp(app, "link", { into: firstNew[product], from: acc });
+          await repoint(db, product, acc, firstNew[product], l.renamed_units);
+          await db.from("lic_accounts").update({ gone: true, customer_id: newCard.id }).eq("product", product).eq("ext_id", acc);
+        } else firstNew[product] = acc;
+        results[product].unlinked++;
+        await db.from("lic_audit").insert({ admin_email: adminEmail, product, unit_ext_id: String(it.ext_id), unit_name: it.name, account_name: card.name,
+          action: "unlinked location", after: { from: it.account, into: firstNew[product], card: newCard.id } });
+      } catch (e) {
+        const msg = errText(e);
+        results[product] = { ...results[product], ok: false, error: msg };
+        await db.from("lic_audit").insert({ admin_email: adminEmail, product, unit_ext_id: String(it.ext_id), unit_name: it.name, account_name: card.name,
+          action: "failed", error: `Unlink: ${msg}` });
+        break;
+      }
+    }
+  }
+  let sync: unknown = null;
+  if (touched.size) { try { sync = await syncApps(db, [...touched].map((p) => apps[p]).filter(Boolean)); } catch (e) { sync = { ok: false, error: errText(e) }; } }
+  return { ok: Object.values(results).every((r: any) => r.ok), customer: newCard.id, name: newCard.name, results, sync };
+}
+
+async function unlinkCard(db: any, apps: Record<string, App>, adminEmail: string | null, body: any) {
+  const d = await loadLinkData(db);
+  const card = d.customers.find((c: any) => c.id === body.customer);
+  if (!card) return { status: 400, body: { error: "Location not found. Press Sync and try again." } };
+  const groups = linkedGroups(card, d.accounts, d.units, d.origins);
+  let items: any[], name: string, origin: any = null;
+  if (body.origin) {
+    const g = groups.find((x) => x.origin === body.origin);
+    origin = d.origins.find((o: any) => o.id === body.origin) ?? null;
+    if (!g) {
+      // pressed again after it worked: the location is already on its own card
+      if (origin?.split_card_id && d.customers.some((c: any) => c.id === origin.split_card_id)) {
+        return { status: 200, body: { ok: true, already: true, customer: origin.split_card_id, results: {} } };
+      }
+      return { status: 400, body: { error: "That location isn't linked here any more. Press Sync and try again." } };
+    }
+    if (groups.length < 2) return { status: 400, body: { error: `${card.name} isn't linked with another location.` } };
+    items = g.units.map((u: any) => ({ product: u.product, account: u.account_ext_id, ext_id: u.ext_id, name: u.name }));
+    name = g.name;
+  } else {
+    const u = d.units.find((x: any) => x.product === body.app && x.ext_id === String(body.site ?? "") && !x.gone);
+    const a = u && d.accounts.find((x: any) => x.product === u.product && x.ext_id === u.account_ext_id && x.customer_id === card.id);
+    if (!u || !a) return { status: 400, body: { error: "That location isn't on this card. Press Sync and try again." } };
+    items = [{ product: u.product, account: u.account_ext_id, ext_id: u.ext_id, name: u.name }];
+    name = u.name;
+  }
+  const r = await unlinkUnits(db, apps, adminEmail, card, items, name, origin);
+  await db.from("lic_audit").insert({ admin_email: adminEmail, account_name: card.name, action: `unlinked ${name}`, after: { card: card.id, new_card: r.customer, results: r.results } });
+  return { status: 200, body: r };
+}
+
+async function splitCards(db: any, apps: Record<string, App>, adminEmail: string | null, only?: string) {
+  const d = await loadLinkData(db);
+  const plan = splitPlan(d.customers, d.accounts, d.units, only);
+  const out: any[] = [];
+  for (const p of plan) {
+    const card = d.customers.find((c: any) => c.id === p.customer_id);
+    for (const nc of p.new_cards) {
+      try { const r = await unlinkUnits(db, apps, adminEmail, card, nc.units, nc.name); out.push({ ...r, from: p.customer_id, from_name: p.customer_name, name: nc.name }); }
+      catch (e) { out.push({ from: p.customer_id, from_name: p.customer_name, name: nc.name, ok: false, error: errText(e) }); }
+    }
+  }
+  if (plan.length) await db.from("lic_audit").insert({ admin_email: adminEmail, action: "split grouped locations", after: { cards: out.map((x) => ({ from: x.from, name: x.name, ok: x.ok, to: x.customer ?? null, error: x.error })) } });
+  return { ok: out.every((x) => x.ok), split: out, planned: plan.length };
+}
+
 Deno.serve(async (req) => {
   const h = cors(req);
   if (req.method === "OPTIONS") return new Response("ok", { headers: h });
@@ -404,6 +662,17 @@ Deno.serve(async (req) => {
     const apps = await loadApps(db);
 
     if (action === "sync") return json(await syncApps(db, Object.values(apps)));
+
+    // Locations (LOCATIONS_LINK_SPEC): link two locations, unlink one, and the one-off split of businesses that already
+    // had several locations. Master only (checked above).
+    //   link   { customer_a, customer_b }        B is linked into A (A keeps its card)
+    //   unlink { customer, origin }              one linked location of the card, in every app
+    //          { customer, app, site }           one location unit of one app (as the split does)
+    //   split_preview { customer? }  -> { plan }  split { customer? } -> { ok, split: [...] }
+    if (action === "link") { const r = await linkCards(db, apps, adminEmail, String(body.customer_a ?? ""), String(body.customer_b ?? "")); return json(r.body, r.status); }
+    if (action === "unlink") { const r = await unlinkCard(db, apps, adminEmail, body); return json(r.body, r.status); }
+    if (action === "split_preview") { const d = await loadLinkData(db); return json({ ok: true, plan: splitPlan(d.customers, d.accounts, d.units, body.customer || undefined) }); }
+    if (action === "split") return json(await splitCards(db, apps, adminEmail, body.customer || undefined));
 
     // New customer: create the business, a same-name location and the owner's login in each ticked app, through
     // each app's hub_call 'add_business' (the app's own master Add business; token-authorised). Apps can't share a

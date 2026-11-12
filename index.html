@@ -366,7 +366,7 @@ html .wordmark span,html .wordmark span.x.x{background:linear-gradient(90deg,#FB
 .side .nav{gap:0}
 .side .nav>*{flex-shrink:0}
 .side .nav a{line-height:22px}
-/* Customers page head: heading, buttons and spacing as Proview Signage's page head */
+/* Locations page head: heading, buttons and spacing as Proview Signage's page head */
 .ctop{margin-bottom:22px}
 .ctop h1{line-height:1.45}
 .ctop .ghost{display:inline-flex;align-items:center;justify-content:center;gap:7px}
@@ -434,7 +434,7 @@ html .app.collapsed .side :is(.side-foot,#pv-x)>*{width:30px!important;height:26
 @media (hover:none) and (pointer:coarse){.pv-loc input.ov-search{font-size:16px}}
 /* business cards */
 .ov-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:18px;align-items:stretch}
-/* Customer cards: the same six app slots on every card, so every card is the same size */
+/* Location cards: the same six app slots on every card, so every card is the same size */
 .ov-biz .ov-bh h3,.ov-biz .ov-bh .muted{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .ov-biz .ov-bh .grow{min-width:0}
 .ov-apps{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:12px 18px 14px;border-top:1px solid var(--ov-line,#e4e2dc)}
@@ -483,7 +483,7 @@ button.ov-li:hover{background:#f8f7f4}
 .ov-li b{font-weight:700}
 .ov-empty-card{grid-column:1/-1}
 @media (max-width:700px){.ov-grid{grid-template-columns:1fr}.ov-stats{grid-template-columns:repeat(3,1fr);gap:8px}.pv-loc .ov-stat{padding:10px 10px}.ov-stat .tiny{font-size:11px}.ov-v{font-size:21px}}
-/* this app's colours for the Customers page (= Signage's values) */
+/* this app's colours for the Locations page (= Signage's values) */
 body{--ov-panel:var(--card);--ov-line:var(--line);--ov-ink:var(--ink);--ov-ink2:var(--ink2);--ov-ink3:var(--muted)}
 .pv-loc .pchips{margin:0 0 12px}
 /* summary tags in the page head (Signage .head-chips / .chip, 1906cd5); the separate sync row is only for the other pages */
@@ -501,7 +501,7 @@ body:has(section[data-view=customers]:not(.hidden)) #syncChips{display:none}
 html .top .top-me .top-out{background:#d92d20;border-color:#d92d20;color:#fff}
 html .top .top-me .top-out:hover{background:#b42318;border-color:#b42318;color:#fff}
 html .side .nav .cnt[hidden]{display:none!important}
-/* New customer = the shared "Add business" pop-up (pv-addbiz.js, the same file as the six apps). Its "<business> added"
+/* New location = the shared "Add business" pop-up (pv-addbiz.js, the same file as the six apps). Its "<business> added"
    pop-up below copies Proview WiFi's (public/admin.css .modal, .ab-done, .ab-login, .abz-ok / .abz-warn) */
 #toast{z-index:200}
 .nc-done{border:0;border-radius:18px;padding:24px;width:min(560px,calc(100vw - 28px));max-height:calc(100% - 36px);overflow:auto;box-shadow:0 30px 80px rgba(0,0,0,.3);background:#fff;color:#17171c;font:15px/1.45 var(--font);-webkit-font-smoothing:antialiased}
@@ -548,7 +548,7 @@ html .side .nav .cnt[hidden]{display:none!important}
     <div class="brand"><div class="pvlogo" role="img" aria-label="PROVIEW"></div><span class="wordmark">PROVIEW<span>LICENCES</span></span></div>
     <nav class="nav">
       <div class="nav-sep">Licences</div>
-      <a data-tab="customers" class="active" href="#customers"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21h18M5 21V7l7-4 7 4v14M9 9h1M9 13h1M9 17h1M14 9h1M14 13h1M14 17h1"/></svg><span>Customers</span></a>
+      <a data-tab="customers" class="active" href="#customers"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21h18M5 21V7l7-4 7 4v14M9 9h1M9 13h1M9 17h1M14 9h1M14 13h1M14 17h1"/></svg><span>Locations</span></a>
       <a data-tab="expiring" href="#expiring"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg><span>Expiring</span></a>
       <a data-tab="paylog" href="#paylog"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 2h12v20l-3-2-3 2-3-2-3 2z"/><path d="M9 7h6M9 11h6M9 15h4"/></svg><span data-long="Recent payments" data-short="Payments">Recent payments</span></a>
       <a data-tab="payfail" href="#payfail"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 7v6M12 16.5v.5"/></svg><span data-long="Failed payments" data-short="Failed">Failed payments</span><span class="cnt" id="failCnt" hidden></span></a>
@@ -563,8 +563,8 @@ html .side .nav .cnt[hidden]{display:none!important}
   <div class="main-col">
     <header class="top">
       <button class="icon-btn menu-btn" id="menuBtn" aria-label="Open menu" title="Menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
-      <h2 id="pageTitle">Customers</h2>
-      <div class="hdr-pick"><label class="sr" for="hdr-biz">Business</label><select id="hdr-biz" aria-label="Choose business"><option value="">All businesses</option></select></div>
+      <h2 id="pageTitle">Locations</h2>
+      <div class="hdr-pick"><label class="sr" for="hdr-biz">Location</label><select id="hdr-biz" aria-label="Choose location"><option value="">All locations</option></select></div>
       <div class="sp"></div>
       <span id="hdrTray"></span>
       <div class="top-me">
@@ -580,22 +580,23 @@ html .side .nav .cnt[hidden]{display:none!important}
       <div id="custTop">
         <!-- Proview Signage's Locations page layout (LOCATIONS_PAGE_STANDARD): the title is only in the top bar -->
         <div class="pv-ph">
-          <p class="muted" id="custDesc">Every customer with their app accounts and licences. Open one to change its licences.</p>
+          <p class="muted" id="custDesc">Every location with its app accounts and licences. Open one to change its licences or link it with another location.</p>
           <div class="head-chips hidden" id="custChips"></div>
           <div class="pv-acts">
             <button class="btn" id="syncBtn" title="Pull the latest from all the apps"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-3-6.7L21 8M21 3v5h-5"/></svg><span>Sync</span></button>
-            <button class="btn primary" id="newCustBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>New customer</button>
+            <button class="btn primary" id="newCustBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>New location</button>
           </div>
         </div>
         <div class="ov-stats" id="custStats"></div>
         <div class="pchips" id="pchips" role="group" aria-label="Filter by product"></div>
-        <div class="ov-tools"><input type="search" class="ov-search" id="q" placeholder="Search customers, accounts or locations" aria-label="Search customers, accounts or locations"></div>
+        <div class="ov-tools"><input type="search" class="ov-search" id="q" placeholder="Search locations or app accounts" aria-label="Search locations or app accounts"></div>
         <div class="ckey">
           <span><i class="sdot g"></i>Licensed</span>
           <span><i class="sdot a"></i>Renews within 30 days / trial</span>
           <span><i class="sdot r"></i>Expired or no licence</span>
         </div>
       </div>
+      <div id="splitBanner"></div>
       <div id="custList"></div>
       <div class="bulk hidden" id="bulkBar">
         <strong id="bulkCount">0 selected</strong>
@@ -676,15 +677,15 @@ html .side .nav .cnt[hidden]{display:none!important}
 <!-- MOVE ACCOUNT DIALOG -->
 <dialog id="moveDlg">
   <form method="dialog">
-    <div class="dh">Move account to another customer</div>
+    <div class="dh" id="moveHead">Move account to another location</div>
     <div class="db">
       <div class="small" id="moveWhat"></div>
-      <label for="moveTo">Customer</label>
+      <label for="moveTo">Location</label>
       <select id="moveTo"></select>
     </div>
     <div class="df">
       <button class="btn" value="cancel">Cancel</button>
-      <button class="btn primary" value="ok">Move</button>
+      <button class="btn primary" value="ok" id="moveOk">Move</button>
     </div>
   </form>
 </dialog>
@@ -733,11 +734,12 @@ const sb = createClient(HUB_URL, HUB_KEY, { auth: { persistSession: true, autoRe
 
 // In-page replacement for confirm()/prompt(). Resolves to null if cancelled, otherwise to the
 // entered field values (an empty array when there are no fields).
-function ask({ title, message = "", ok = "OK", danger = false, fields = [] }) {
+function ask({ title, message = "", html = "", ok = "OK", danger = false, fields = [], cancel = true }) {
   return new Promise((resolve) => {
     const d = document.getElementById("askDlg");
     document.getElementById("askTitle").textContent = title;
-    document.getElementById("askMsg").textContent = message;
+    if (html) document.getElementById("askMsg").innerHTML = html; else document.getElementById("askMsg").textContent = message;
+    d.querySelector('button[value="cancel"]').hidden = !cancel;
     document.getElementById("askFields").innerHTML = fields.map((f, i) =>
       `<label for="askF${i}">${esc(f.label)}</label><input id="askF${i}" type="${f.type || "text"}" ${f.required ? "required" : ""} placeholder="${esc(f.placeholder || "")}">`).join("");
     const b = document.getElementById("askOk");
@@ -810,7 +812,7 @@ function status(u) {
 }
 
 // ---------- data ----------
-let S = { customers: [], accounts: [], units: [], audit: [], email: "" , detail: null, prod: "", sel: new Map(), lastSync: null };
+let S = { customers: [], accounts: [], units: [], origins: [], audit: [], email: "" , detail: null, prod: "", sel: new Map(), lastSync: null };
 
 async function hub(action, extra = {}) {
   const { data, error } = await sb.functions.invoke("licence-hub", { body: { action, ...extra } });
@@ -823,13 +825,14 @@ async function hub(action, extra = {}) {
 }
 
 async function loadAll() {
-  const [c, a, u] = await Promise.all([
+  const [c, a, u, o] = await Promise.all([
     sb.from("lic_customers").select("*").order("name"),
     sb.from("lic_accounts").select("*"),
     sb.from("lic_units").select("*"),
+    sb.from("lic_link_origins").select("*"),
   ]);
   for (const r of [c, a, u]) if (r.error) throw r.error;
-  S.customers = c.data; S.accounts = a.data; S.units = u.data;
+  S.customers = c.data; S.accounts = a.data; S.units = u.data; S.origins = o.error ? [] : o.data;   // (no table yet = nothing linked)
   render();
 }
 
@@ -849,7 +852,7 @@ async function doSync(quiet = false) {
     const bad = Object.entries(r.apps).filter(([, v]) => !v.ok);
     if (bad.length) toast("Could not reach: " + bad.map(([k, v]) => `${PRODUCTS[k].label} (${v.error})`).join(", "), true);
     else if (!quiet) toast("Synced with all three apps");
-    if (r.customers_created) toast(`${r.customers_created} new customer record(s) created from the apps`);
+    if (r.customers_created) toast(`${r.customers_created} new location card(s) created from the apps`);
     await loadAll();
   } catch (e) { S.syncErr = e.message; toast("Sync failed: " + e.message, true); }
   finally { btn.disabled = false; btn.querySelector("span").textContent = "Sync"; S.syncing = false; paintDot(); paintHeader(); }
@@ -905,12 +908,37 @@ function showOpenPick(cid, k) {
 function unitsForAccount(a) { return S.units.filter((u) => u.product === a.product && u.account_ext_id === a.ext_id && !u.gone); }
 function accountsForCustomer(c) { return S.accounts.filter((a) => a.customer_id === c.id && !a.gone); }
 
+// ---------- linked locations (LOCATIONS_LINK_SPEC): the same grouping as licence-hub's linkedGroups ----------
+// A card is one Location, or a group of linked locations. Its location units remember the location they came from
+// (lic_units.origin_id; none = the card's own).
+function groupsOf(c) {
+  const accts = accountsForCustomer(c), out = new Map();
+  for (const u of S.units) {
+    if (u.gone || u.kind !== "location" || !accts.some((a) => a.product === u.product && a.ext_id === u.account_ext_id)) continue;
+    const k = u.origin_id || c.id;
+    if (!out.has(k)) out.set(k, { origin: k, name: S.origins.find((o) => o.id === k)?.name || c.name, units: [] });
+    out.get(k).units.push(u);
+  }
+  return [...out.values()].sort((x, y) => (x.origin === c.id ? -1 : y.origin === c.id ? 1 : String(x.name).localeCompare(String(y.name))));
+}
+const cardTitle = (c) => { const g = groupsOf(c); return g.length > 1 ? g.map((x) => x.name).join(" + ") : c.name; };
+// Businesses that already had several locations before linking existed (same rule as licence-hub's splitPlan)
+function groupedFromBefore(c) {
+  const out = [];
+  for (const a of accountsForCustomer(c)) {
+    const by = new Map();
+    for (const u of unitsForAccount(a)) if (u.kind === "location") { const k = u.origin_id || ""; by.set(k, [...(by.get(k) || []), u]); }
+    for (const g of by.values()) if (g.length > 1) out.push({ a, units: g });
+  }
+  return out;
+}
+
 function matches(c, q, prod) {
   const accts = accountsForCustomer(c);
   if (prod && !accts.some((a) => a.product === prod)) return false;
   if (!q) return true;
   const units = accts.flatMap(unitsForAccount);
-  const hay = [c.name, c.contact_email, c.phone, c.notes, ...accts.flatMap((a) => [a.name, a.contact_email]), ...units.flatMap((u) => [u.name, u.detail])]
+  const hay = [c.name, cardTitle(c), c.contact_email, c.phone, c.notes, ...accts.flatMap((a) => [a.name, a.contact_email]), ...units.flatMap((u) => [u.name, u.detail])]
     .filter(Boolean).join(" ").toLowerCase();
   return q.split(/\s+/).every((w) => hay.includes(w));
 }
@@ -1030,13 +1058,14 @@ function custCard(c) {
     // Active = a linked, non-gone account the master can open (same rule as the customer page's "Open in <App>")
     const open = accts.filter((a) => a.product === k && canOpen(a));
     if (!open.length) return `<div class="ov-app idle" title="${esc(name + " · " + status)}">${body}</div>`;
-    const label = `Open ${c.name} in ${name}`;
+    const label = `Open ${cardTitle(c)} in ${name}`;
     const act = open.length === 1 ? `data-openapp="${esc(open[0].product + "|" + open[0].ext_id)}"` : `data-openpick="${esc(c.id + "|" + k)}"`;
     return `<button type="button" class="ov-app" ${act} title="${esc(label + " (" + status + ")")}" aria-label="${esc(label + ". " + status)}">${body}<span class="ov-go" aria-hidden="true">↗</span></button>`;
   };
   const TILE_ORDER = ["signage", "bookings", "employee", "label", "qrmenu", "wifi"];
+  const nLinked = groupsOf(c).length, title = cardTitle(c);
   return `<article class="card ov-biz" data-cust="${c.id}">
-    <div class="ov-bh"><div class="grow"><h3 title="${esc(c.name)}">${esc(c.name)}</h3><div class="muted small">${esc(sub)}</div></div><span class="ov-pill ${pcls}">${ptxt}</span></div>
+    <div class="ov-bh"><div class="grow"><h3 title="${esc(title)}">${esc(title)}</h3><div class="muted small">${esc(nLinked > 1 ? `${nLinked} linked locations · ${sub}` : sub)}</div></div><span class="ov-pill ${pcls}">${ptxt}</span></div>
     <div class="ov-apps">${TILE_ORDER.map(tile).join("")}</div>
     <div class="ov-bf"><span class="muted small">${esc(custLicText(sum.units))}</span>
       <span class="pv-acts">${sum.bad.length ? `<button type="button" class="btn sm" data-addlic="${c.id}">Add licence</button>` : ""}<button type="button" class="btn sm primary" data-open="${c.id}">View licences</button></span></div>
@@ -1051,7 +1080,7 @@ function renderStats() {
   const by = (t) => units.filter((u) => tone(u) === t).length;
   const stat = (k, v, list, cls) => `<button type="button" class="card ov-stat${cls ? " " + cls : ""}" data-list="${list}" title="Show the list"><div class="tiny">${k}</div><div class="ov-v">${v}</div></button>`;
   const g = by("g"), a = by("a"), r = by("r");
-  $("#custStats").innerHTML = stat("Customers", custs.length, "cust") + stat("App accounts", accts.length, "acct") + stat("Licences", units.length, "units")
+  $("#custStats").innerHTML = stat("Locations", custs.length, "cust") + stat("App accounts", accts.length, "acct") + stat("Licences", units.length, "units")
     + stat("Licensed", g, "g", g ? "ok" : "") + stat("Renewing soon", a, "a", a ? "warn" : "") + stat("Licences need attention", r, "r", r ? "bad" : "");
 }
 function showList(k) {
@@ -1062,8 +1091,8 @@ function showList(k) {
   const unitLi = (u) => { const s = status(u), a = acc(u), c = cust(a);
     return `<button type="button" class="ov-li" data-edit="${esc(u.product + "|" + u.ext_id)}"><span class="ov-dot ${TONE_CLS[tone(u)]}"></span><span class="grow"><b>${esc(u.name || "(unnamed)")}</b><span class="tiny" style="display:block">${esc([PRODUCTS[u.product]?.label, KIND_LABEL[kindOf(u)], c?.name || a?.name].filter(Boolean).join(" · "))}</span></span><span class="ov-pill ${s.cls === "none" ? "bad" : s.cls}">${esc(s.label)}</span>${chev}</button>`; };
   let title, items, empty;
-  if (k === "cust") { title = "Customers"; empty = "No customers yet.";
-    items = S.customers.filter((c) => matches(c, "", S.prod)).map((c) => { const sum = custSummary(c); return `<button type="button" class="ov-li" data-open="${c.id}"><span class="ov-dot ${TONE_CLS[sum.worst]}"></span><span class="grow"><b>${esc(c.name)}</b><span class="tiny" style="display:block">${esc([c.contact_email, `${sum.units.length} licence${sum.units.length === 1 ? "" : "s"}`].filter(Boolean).join(" · "))}</span></span><span class="ov-pill ${PILL[sum.worst][0]}">${PILL[sum.worst][1]}</span>${chev}</button>`; }); }
+  if (k === "cust") { title = "Locations"; empty = "No locations yet.";
+    items = S.customers.filter((c) => matches(c, "", S.prod)).map((c) => { const sum = custSummary(c); return `<button type="button" class="ov-li" data-open="${c.id}"><span class="ov-dot ${TONE_CLS[sum.worst]}"></span><span class="grow"><b>${esc(cardTitle(c))}</b><span class="tiny" style="display:block">${esc([c.contact_email, `${sum.units.length} licence${sum.units.length === 1 ? "" : "s"}`].filter(Boolean).join(" · "))}</span></span><span class="ov-pill ${PILL[sum.worst][0]}">${PILL[sum.worst][1]}</span>${chev}</button>`; }); }
   else if (k === "acct") { title = "App accounts"; empty = "No app accounts yet. Press Sync to pull them in.";
     items = S.accounts.filter((a) => !a.gone && (!S.prod || a.product === S.prod)).sort((x, y) => String(x.name).localeCompare(String(y.name))).map((a) => { const c = cust(a), au = unitsForAccount(a);
       return `<button type="button" class="ov-li" data-open="${a.customer_id || ""}"><span class="ov-dot"></span><span class="grow"><b>${esc(a.name || "(unnamed)")}</b><span class="tiny" style="display:block">${esc([PRODUCTS[a.product]?.label, c?.name].filter(Boolean).join(" · "))}</span></span><span class="muted small">${esc(unitCount(a.product, au))}</span>${chev}</button>`; }); }
@@ -1082,22 +1111,28 @@ function custDetail(c) {
   const accts = accountsForCustomer(c);
   const sum = custSummary(c);
   const pill = sum.worst === "r" ? `<span class="spill r">Action needed</span>` : sum.worst === "a" ? `<span class="spill a">Renewing soon</span>` : sum.units.length ? `<span class="spill g">All OK</span>` : "";
-  return `<a class="dback" data-back="1">← All customers</a>
+  const groups = groupsOf(c), before = groupedFromBefore(c);
+  const linked = groups.length > 1 ? `<div class="acct mt"><div class="ah"><span class="pn">Linked locations</span><span class="small">${groups.length} locations share one business in every app they both have. Owners and managers switch between them in each app.</span></div>
+      <table><tbody>${groups.map((g) => `<tr><td><b>${esc(g.name)}</b><div class="small">${esc([...new Set(g.units.map((u) => PRODUCTS[u.product]?.label))].join(" · "))}</div></td>
+        <td style="text-align:right"><button class="btn sm" data-unlink="${esc(c.id + "|" + g.origin)}">Unlink</button></td></tr>`).join("")}</tbody></table></div>` : "";
+  const old = before.length ? `<div class="empty mt" style="text-align:left">${before.map((x) => `${esc(PRODUCTS[x.a.product].label)}: ${esc(x.a.name)} has ${x.units.length} locations from before (${esc(x.units.map((u) => u.name).join(", "))}).`).join("<br>")} Use “Split them” on the Locations page to give each its own card.</div>` : "";
+  return `<a class="dback" data-back="1">← All locations</a>
   <div class="cust open" data-cust="${c.id}">
-    <div class="head" style="cursor:default"><div><div class="name" style="font-size:20px">${esc(c.name)}</div><div class="meta">${esc(c.contact_email || "no email")}${c.phone ? " · " + esc(c.phone) : ""}</div>${c.owner_email ? `<div class="meta">Owner login: ${esc([c.owner_name, c.owner_email, c.owner_mobile].filter(Boolean).join(" · "))}</div>` : ""}</div><div class="sp"></div>${pill}</div>
+    <div class="head" style="cursor:default"><div><div class="name" style="font-size:20px">${esc(cardTitle(c))}</div>${groups.length > 1 ? `<div class="meta">${groups.length} linked locations</div>` : ""}<div class="meta">${esc(c.contact_email || "no email")}${c.phone ? " · " + esc(c.phone) : ""}</div>${c.owner_email ? `<div class="meta">Owner login: ${esc([c.owner_name, c.owner_email, c.owner_mobile].filter(Boolean).join(" · "))}</div>` : ""}</div><div class="sp"></div>${pill}</div>
     <div class="body">
       <div class="details">
-        <div><label>Customer name</label><input type="text" data-f="name" value="${esc(c.name)}"></div>
+        <div><label>${groups.length > 1 ? "Card name" : "Location name"}</label><input type="text" data-f="name" value="${esc(c.name)}"></div>
         <div><label>Contact email</label><input type="email" data-f="contact_email" value="${esc(c.contact_email || "")}"></div>
         <div><label>Phone</label><input type="text" data-f="phone" value="${esc(c.phone || "")}"></div>
         <div style="grid-column:1/-1"><label>Notes</label><textarea data-f="notes" rows="2">${esc(c.notes || "")}</textarea></div>
       </div>
       <div class="row mt">
         <button class="btn primary sm" data-savecust="${c.id}">Save details</button>
-        <button class="btn sm" data-merge="${c.id}">Merge into another customer…</button>
-        ${accts.length ? "" : `<button class="btn sm danger" data-delcust="${c.id}">Delete customer</button>`}
+        <button class="btn sm" data-link="${c.id}">Link with another location…</button>
+        ${accts.length ? "" : `<button class="btn sm danger" data-delcust="${c.id}">Delete location</button>`}
       </div>
-      ${accts.map(accountBlock).join("") || `<div class="empty mt">No app accounts linked. Use “Move…” on an account under another customer to link it here.</div>`}
+      ${linked}${old}
+      ${accts.map(accountBlock).join("") || `<div class="empty mt">No app accounts here. Use “Move…” on an account under another location to bring it here.</div>`}
     </div>
   </div>`;
 }
@@ -1106,6 +1141,7 @@ function renderCustomers() {
   renderChips(); renderStats();
   const c = S.detail && S.customers.find((x) => x.id === S.detail);
   $("#custTop").classList.toggle("hidden", !!c);
+  if (c) $("#splitBanner").innerHTML = "";
   if (c) { $("#custList").innerHTML = custDetail(c); renderBulk(); return; }
   S.detail = null;
   const q = $("#q").value.trim().toLowerCase();
@@ -1113,8 +1149,12 @@ function renderCustomers() {
   // problem cards first, then soonest renewal, then name
   list.sort((a, b) => (a.s.worst === "r" ? 0 : 1) - (b.s.worst === "r" ? 0 : 1) || a.s.renew - b.s.renew || a.c.name.localeCompare(b.c.name));
   $("#custList").innerHTML = list.length ? `<div class="ov-grid">${list.map((x) => custCard(x.c)).join("")}</div>`
-    : S.customers.length && q ? `<p class="muted" style="margin:0">No businesses or locations match “${esc($("#q").value.trim())}”.</p>`
-    : `<div class="empty">${S.customers.length ? "No customers match." : "No customers yet. Press “Sync” to pull them in from the apps."}</div>`;
+    : S.customers.length && q ? `<p class="muted" style="margin:0">No locations or app accounts match “${esc($("#q").value.trim())}”.</p>`
+    : `<div class="empty">${S.customers.length ? "No locations match." : "No locations yet. Press “Sync” to pull them in from the apps."}</div>`;
+  const nOld = S.customers.reduce((t, x) => t + groupedFromBefore(x).reduce((n, g) => n + g.units.length - 1, 0), 0);
+  $("#splitBanner").innerHTML = nOld ? `<div class="card row" style="margin:0 0 14px;padding:12px 14px;gap:12px;flex-wrap:wrap;align-items:center;background:var(--warnl,#fff8e6);border-color:#f0d08a">
+      <span style="flex:1;min-width:220px"><b>${nOld} location${nOld === 1 ? " is" : "s are"} still grouped from before.</b> Before linking existed, some businesses had several locations in one app. Split them so each location has its own card, then link the ones that belong together.</span>
+      <button type="button" class="btn sm primary" data-split="1">Split them…</button></div>` : "";
   renderBulk();
 }
 function openDetail(id) { S.detail = id; renderCustomers(); syncBizPick(); window.scrollTo({ top: 0 }); }
@@ -1130,7 +1170,7 @@ function renderExpiring() {
     .sort((a, b) => a.s.days - b.s.days);
   const acc = (u) => S.accounts.find((a) => a.product === u.product && a.ext_id === u.account_ext_id);
   const cust = (a) => a && S.customers.find((c) => c.id === a.customer_id);
-  $("#expList").innerHTML = rows.length ? `<div class="acct" style="margin:0"><table><thead><tr><th>Customer</th><th>Product</th><th>What</th><th>Status</th><th></th></tr></thead><tbody>${
+  $("#expList").innerHTML = rows.length ? `<div class="acct" style="margin:0"><table><thead><tr><th>Location</th><th>Product</th><th>What</th><th>Status</th><th></th></tr></thead><tbody>${
     rows.map(({ u, s }) => { const a = acc(u), c = cust(a), key = u.product + "|" + u.ext_id;
       return `<tr><td><div>${esc(c?.name || a?.name || "?")}</div><div class="small">${esc(c?.contact_email || "")}</div></td>
         <td><span class="ptag">${PRODUCTS[u.product].label}</span></td>
@@ -1257,14 +1297,14 @@ const SIGNIN_HOST = SIGNIN_URL.replace(/^https?:\/\//, "").replace(/\/$/, "");
 const NC_SECTIONS = [
   { key: "apps", legend: "Add the business in", req: true, all: { title: "Select all", sub: "Every Proview app" },
     checks: NC_APPS.map((k) => ({ value: k, title: PRODUCTS[k].label })) },
-];   // the customer's contact email and phone are the owner's email and mobile (change them later on the customer's page)
+];   // the location's contact email and phone are the owner's email and mobile (change them later on the location's page)
 const ncRand = (n) => { const a = "abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789"; return [...crypto.getRandomValues(new Uint32Array(n))].map((x) => a[x % a.length]).join(""); };
 const ncWhen = (iso) => new Date(iso).toLocaleString("en-GB", { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
 function newCustomer() {
-  const ui = window.pvAddBiz({ title: "New customer", pwPlaceholder: "At least 8 characters", sections: NC_SECTIONS,
-    hint: "Adds the customer, its owner’s Proview login and the business in each ticked app.", onSubmit: ncSubmit });
+  const ui = window.pvAddBiz({ title: "New location", pwPlaceholder: "At least 8 characters", sections: NC_SECTIONS,
+    hint: "Adds the location, its owner’s Proview login and a business with this one location in each ticked app.", onSubmit: ncSubmit });
   // the primary button says what will happen ("Add customer" with a password; the shared file's "Add and send invite" for an invite)
-  const go = ui.el.querySelector("#pvAbGo"), sync = () => { go.textContent = ui.el.querySelector('input[name="pvAbSi"]:checked')?.value === "pw" ? "Add customer" : "Add and send invite"; };
+  const go = ui.el.querySelector("#pvAbGo"), sync = () => { go.textContent = ui.el.querySelector('input[name="pvAbSi"]:checked')?.value === "pw" ? "Add location" : "Add and send invite"; };
   ui.el.addEventListener("change", (e) => { if (e.target.name === "pvAbSi") sync(); });
   sync();
 }
@@ -1275,7 +1315,7 @@ function ncRow(k, r, e, lic) {
   if (r.ok) {
     const trial = lic !== "trial" ? "" : r.trial?.applied ? ` On a 3-day trial until ${esc(ncWhen(r.trial.expires_at))}.`
       : r.trial ? " It already had a licence, so no trial was added."
-      : ` <span class="nd-warn">The trial couldn’t be started${r.trial_error ? ` (${esc(r.trial_error)})` : ""}: set a licence on the customer’s page.</span>`;
+      : ` <span class="nd-warn">The trial couldn’t be started${r.trial_error ? ` (${esc(r.trial_error)})` : ""}: set a licence on the location’s page.</span>`;
     return `<li class="ok" data-res="${k}"><span class="mk" aria-label="Done">✓</span><span class="tx"><b>${esc(name)}</b><small>${r.existing
       ? `Business added. ${esc(e)} already had a ${esc(name)} login, so they kept their password.`
       : `Business added, with ${esc(e)} as its Owner / Admin.`}${trial}</small></span></li>`;
@@ -1315,14 +1355,14 @@ async function ncSubmit(v, ui) {
   };
   const COPY = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
   let signIn;
-  if (r?.existing) signIn = `<p>${esc(e)} already had a Proview login, so they were made the owner of this customer and keep the password they already use.${invite ? " No invite was needed." : " The password you typed was not applied."}</p>`;
-  else if (invite && mailErr) signIn = `<p class="abz-warn">The customer was added, but the invite email couldn’t be sent (${esc(mailErr.message || String(mailErr))}). They can use “Forgot password?” at ${esc(SIGNIN_HOST)} with ${esc(e)}.</p>`;
+  if (r?.existing) signIn = `<p>${esc(e)} already had a Proview login, so they were made the owner of this location and keep the password they already use.${invite ? " No invite was needed." : " The password you typed was not applied."}</p>`;
+  else if (invite && mailErr) signIn = `<p class="abz-warn">The location was added, but the invite email couldn’t be sent (${esc(mailErr.message || String(mailErr))}). They can use “Forgot password?” at ${esc(SIGNIN_HOST)} with ${esc(e)}.</p>`;
   else if (invite) signIn = `<p class="abz-ok">Invite sent to <b>${esc(e)}</b>. They open the email link and choose their own password, then open their apps from ${esc(SIGNIN_HOST)}.</p>`;
   else signIn = `<p class="nd-muted">The owner can sign in now. No email was sent, so pass these on yourself:</p>
        <div class="ab-login"><div><span>Sign in at</span><b>${esc(SIGNIN_HOST)}</b></div><div><span>Email</span><b>${esc(e)}</b></div><div><span>Password</span><b>${esc(pw)}</b></div></div>
        <button class="btn nd-copy" type="button" id="ncCopy">${COPY}Copy login details</button>`;
   const licLine = lic === "trial" ? `<p class="nd-muted nd-lic">Each app below starts its own 3-day trial: full access for 3 days, then it locks.</p>`
-    : lic === "set" ? `<p class="nd-muted nd-lic">Next, set their licences on the customer’s page (open behind this pop-up).</p>`
+    : lic === "set" ? `<p class="nd-muted nd-lic">Next, set its licences on the location’s page (open behind this pop-up).</p>`
     : `<p class="nd-muted nd-lic">No licence yet: they buy one when they sign in.</p>`;
   $("#ncDoneTitle").textContent = `${biz} added`;
   $("#ncDoneBody").innerHTML = signIn + licLine + `<div class="nd-cap">Apps</div><ul class="nc-res" id="ncRes"></ul>`;
@@ -1342,11 +1382,13 @@ async function ncSubmit(v, ui) {
   if (lic === "set") { await loadAll().catch(() => {}); if (S.customers.some((c) => c.id === r.customer_id)) openIt(); ran.then(() => { if (S.detail === r.customer_id) openDetail(r.customer_id); }); }
   return true;
 }
-function pickCustomer(title, excludeId) {
+function pickCustomer(title, excludeId, head = "Move account to another location", okText = "Move") {
   return new Promise((res) => {
     const dlg = $("#moveDlg");
+    $("#moveHead").textContent = head; $("#moveOk").textContent = okText;
     $("#moveWhat").textContent = title;
-    $("#moveTo").innerHTML = S.customers.filter((c) => c.id !== excludeId).map((c) => `<option value="${c.id}">${esc(c.name)}${c.contact_email ? " · " + esc(c.contact_email) : ""}</option>`).join("");
+    $("#moveTo").innerHTML = S.customers.filter((c) => c.id !== excludeId).sort((x, y) => cardTitle(x).localeCompare(cardTitle(y)))
+      .map((c) => `<option value="${c.id}">${esc(cardTitle(c))}${c.contact_email ? " · " + esc(c.contact_email) : ""}</option>`).join("");
     dlg.returnValue = "";
     dlg.onclose = () => res(dlg.returnValue === "ok" ? $("#moveTo").value : null);
     dlg.showModal();
@@ -1360,18 +1402,68 @@ async function moveAccount(key) {
   if (error) return toast(error.message, true);
   a.customer_id = to; S.detail = to; toast("Account moved"); render();
 }
-async function mergeCustomer(id) {
+// ---------- link / unlink / split (LOCATIONS_LINK_SPEC; licence-hub does the work in every app) ----------
+const appList = (c) => [...new Set(accountsForCustomer(c).map((a) => PRODUCTS[a.product]?.label).filter(Boolean))];
+function resultHtml(results) {
+  const rows = Object.entries(results || {}).map(([k, r]) => `<li><b>${esc(PRODUCTS[k]?.label || k)}</b>: ${r.ok
+    ? (r.linked ? "linked" : r.unlinked ? "unlinked" : r.moved ? "moved to this card (only one had it)" : "nothing to do")
+    : `<span style="color:var(--bad)">not done: ${esc(r.error || "failed")}</span>`}</li>`);
+  return rows.length ? `<ul style="margin:6px 0 0;padding-left:18px">${rows.join("")}</ul>` : "";
+}
+async function linkLocation(id) {
   const c = S.customers.find((x) => x.id === id);
-  const to = await pickCustomer(`Move everything from "${c.name}" into…`, id); if (!to) return;
-  const { error } = await sb.from("lic_accounts").update({ customer_id: to }).eq("customer_id", id);
-  if (error) return toast(error.message, true);
-  const keep = S.customers.find((x) => x.id === to);
-  if (c.notes) await sb.from("lic_customers").update({ notes: [keep.notes, c.notes].filter(Boolean).join("\n") }).eq("id", to);
-  await sb.from("lic_customers").delete().eq("id", id);
-  S.detail = to; toast(`Merged into ${keep.name}`); await loadAll();
+  const to = await pickCustomer(`Link “${cardTitle(c)}” with…`, id, "Link with another location", "Next"); if (!to) return;
+  const b = S.customers.find((x) => x.id === to);
+  const both = appList(c).filter((x) => appList(b).includes(x));
+  const go = await ask({ title: "Link these locations?", ok: "Link locations", html: `<p style="margin:0 0 8px"><b>${esc(cardTitle(c))}</b> and <b>${esc(cardTitle(b))}</b> become one card.</p>
+    <ul style="margin:0;padding-left:18px">
+      <li>${both.length ? `In ${esc(both.join(", "))}, ${esc(cardTitle(b))}’s business moves into ${esc(cardTitle(c))}’s, with its devices, data, people and licences.` : "They have no app in common, so nothing changes in the apps."}</li>
+      <li>Owners and managers of either location get both, and switch between them in each app.</li>
+      <li>Licences don’t change. Unlink puts a location back on its own.</li></ul>` });
+  if (!go) return;
+  toast("Linking…");
+  try {
+    const r = await hub("link", { customer_a: id, customer_b: to });
+    await loadAll(); S.detail = id; renderCustomers(); syncBizPick();
+    if (r.ok) toast(`Linked: ${cardTitle(S.customers.find((x) => x.id === id) || c)}`);
+    else await ask({ title: "Linked in some apps only", cancel: false, html: `<p style="margin:0">These apps didn’t link. ${esc(cardTitle(b))} keeps its card for them; press Link again to finish.</p>${resultHtml(r.results)}` });
+  } catch (e) { toast("Link failed: " + e.message, true); }
+}
+async function unlinkLocation(key) {
+  const [id, origin] = key.split("|");
+  const c = S.customers.find((x) => x.id === id); const g = groupsOf(c).find((x) => x.origin === origin); if (!g) return;
+  const go = await ask({ title: `Unlink ${g.name}?`, ok: "Unlink", html: `<p style="margin:0 0 8px"><b>${esc(g.name)}</b> becomes a location on its own again, with its own card.</p>
+    <ul style="margin:0;padding-left:18px"><li>In ${esc([...new Set(g.units.map((u) => PRODUCTS[u.product]?.label))].join(", "))} it moves into a new business of its own, with its data, devices and licence.</li>
+    <li>The people who can see it are copied to it; ${esc(c.name)} keeps them too.</li></ul>` });
+  if (!go) return;
+  toast("Unlinking…");
+  try {
+    const r = await hub("unlink", { customer: id, origin });
+    await loadAll(); renderCustomers();
+    if (r.ok) toast(r.already ? `${g.name} was already on its own` : `Unlinked ${g.name}`);
+    else await ask({ title: "Unlinked in some apps only", cancel: false, html: `<p style="margin:0">Press Unlink again to finish.</p>${resultHtml(r.results)}` });
+  } catch (e) { toast("Unlink failed: " + e.message, true); }
+}
+async function splitGrouped() {
+  let plan;
+  try { plan = (await hub("split_preview")).plan || []; } catch (e) { return toast(e.message, true); }
+  if (!plan.length) { toast("Nothing to split (press Sync if you expected some)"); return; }
+  const html = plan.map((p) => `<div style="margin:0 0 10px"><b>${esc(p.customer_name)}</b><ul style="margin:4px 0 0;padding-left:18px">${p.businesses.map((b) =>
+      `<li>${esc(PRODUCTS[b.product]?.label || b.product)} · ${esc(b.account_name)}: keeps <b>${esc(b.keep.name)}</b>; ${b.out.map((o) => `<b>${esc(o.name)}</b>`).join(", ")} leave${b.out.length === 1 ? "s" : ""}</li>`).join("")}</ul>
+      <div class="small">New cards: ${p.new_cards.map((n) => `${esc(n.name)} (${esc([...new Set(n.units.map((u) => PRODUCTS[u.product]?.label))].join(", "))})`).join("; ")}</div></div>`).join("");
+  const go = await ask({ title: "Split grouped locations?", ok: "Split them", html: `<p style="margin:0 0 10px">Each location below moves into a business of its own in its app, with its data, devices and licence, and gets its own card. People who can see it are copied.</p>${html}` });
+  if (!go) return;
+  toast("Splitting…");
+  try {
+    const r = await hub("split");
+    await loadAll(); renderCustomers();
+    const bad = (r.split || []).filter((x) => !x.ok);
+    if (!bad.length) toast(`Split: ${(r.split || []).length} new location card${(r.split || []).length === 1 ? "" : "s"}`);
+    else await ask({ title: "Some locations weren’t split", cancel: false, html: bad.map((x) => `<p style="margin:0 0 6px"><b>${esc(x.name)}</b>${x.error ? ": " + esc(x.error) : ""}</p>${resultHtml(x.results)}`).join("") + "<p class=\"small\">Press Split them again to finish.</p>" });
+  } catch (e) { toast("Split failed: " + e.message, true); }
 }
 async function deleteCustomer(id) {
-  if (!(await ask({ title: "Delete customer", message: "Delete this customer record? (It has no linked app accounts.)", ok: "Delete", danger: true }))) return;
+  if (!(await ask({ title: "Delete location", message: "Delete this location card? (It has no app accounts.)", ok: "Delete", danger: true }))) return;
   const { error } = await sb.from("lic_customers").delete().eq("id", id);
   if (error) return toast(error.message, true);
   S.customers = S.customers.filter((c) => c.id !== id); renderCustomers();
@@ -1383,7 +1475,7 @@ document.addEventListener("click", (e) => {
   if (oa) { e.stopPropagation(); if (oa.closest("#listDlg")) $("#listDlg").close(); openInApp(oa.dataset.openapp); return; }
   const op = e.target.closest("[data-openpick]");
   if (op) { e.stopPropagation(); const [cid, k] = op.dataset.openpick.split("|"); showOpenPick(cid, k); return; }
-  const t = e.target.closest("[data-open],[data-back],[data-addlic],[data-prod],[data-edit],[data-quick],[data-savecust],[data-move],[data-merge],[data-delcust],[data-selall]");
+  const t = e.target.closest("[data-open],[data-back],[data-addlic],[data-prod],[data-edit],[data-quick],[data-savecust],[data-move],[data-link],[data-unlink],[data-split],[data-delcust],[data-selall]");
   if (!t) return;
   if (t.dataset.open) openDetail(t.dataset.open);
   else if (t.dataset.back) { S.detail = null; renderCustomers(); syncBizPick(); }
@@ -1396,7 +1488,9 @@ document.addEventListener("click", (e) => {
   else if (t.dataset.quick) { const u = findUnit(t.dataset.quick); t.disabled = true; applyChanges([{ product: u.product, unit: u.ext_id, type: "m12", extend: true }]); }
   else if (t.dataset.savecust) saveCustomer(t.dataset.savecust);
   else if (t.dataset.move) moveAccount(t.dataset.move);
-  else if (t.dataset.merge) mergeCustomer(t.dataset.merge);
+  else if (t.dataset.link) linkLocation(t.dataset.link);
+  else if (t.dataset.unlink) unlinkLocation(t.dataset.unlink);
+  else if (t.dataset.split) splitGrouped();
   else if (t.dataset.delcust) deleteCustomer(t.dataset.delcust);
   else if (t.dataset.selall) {
     const [p, ...rest] = t.dataset.selall.split("|"); const ext = rest.join("|");
@@ -1411,7 +1505,7 @@ document.addEventListener("change", (e) => {
 $("#q").oninput = renderCustomers;
 $("#expWindow").onchange = renderExpiring; $("#expIncl").onchange = renderExpiring; $("#expTrials").onchange = renderExpiring;
 $("#syncBtn").onclick = () => doSync(); $("#newCustBtn").onclick = newCustomer;
-const TITLES = { customers: "Customers", expiring: "Expiring", activity: "Activity", payments: "Payment settings", paylog: "Recent payments", payfail: "Failed payments" };
+const TITLES = { customers: "Locations", expiring: "Expiring", activity: "Activity", payments: "Payment settings", paylog: "Recent payments", payfail: "Failed payments" };
 function setTab(tab) {
   $$(".side .nav a[data-tab]").forEach((x) => x.classList.toggle("active", x.dataset.tab === tab));
   $$("[data-view]").forEach((v) => v.classList.toggle("hidden", v.dataset.view !== tab));
@@ -1483,7 +1577,7 @@ function renderPayLists() {
   const total = paid.filter((r) => r.applied).reduce((t, r) => t + (r.amount || 0), 0);
   if ($("#payLogView")) $("#payLogView").innerHTML = `<div class="acct" style="margin:0">${head("Recent online payments", paid.length ? `${paid.length} payment(s) · ${esc(gbp(total))} applied · monthly renewals are added automatically` : "")}
     ${payTable(paid, st.enabled && st.has_key ? "No online payments yet." : "Online payments are off. Turn them on in Payment settings.")}</div>`;
-  if ($("#payFailView")) $("#payFailView").innerHTML = `<div class="acct" style="margin:0">${head("Failed payments", "Declined cards, checkouts the customer didn’t finish, failed monthly renewals, and payments that couldn’t be added to a licence, with Stripe’s reason. Once the customer pays successfully, the failure clears by itself.")}
+  if ($("#payFailView")) $("#payFailView").innerHTML = `<div class="acct" style="margin:0">${head("Failed payments", "Declined cards, checkouts the owner didn’t finish, failed monthly renewals, and payments that couldn’t be added to a licence, with Stripe’s reason. Once the customer pays successfully, the failure clears by itself.")}
     ${payTable(failed, "No failed payments.", true)}</div>`;
   $$("[data-paycheck]").forEach((b) => b.onclick = async () => {
     b.disabled = true;
@@ -1516,7 +1610,7 @@ function renderPayments() {
     <div class="pad12">
       ${st.last_error ? `<div class="msg err" style="margin:0 0 10px">Last check: ${esc(st.last_error)}</div>` : ""}
       <div class="row" style="gap:12px;align-items:flex-end">
-        <label class="row" style="gap:6px;font-weight:600"><input type="checkbox" id="payOn" ${st.enabled ? "checked" : ""}> Offer online payment to customers</label>
+        <label class="row" style="gap:6px;font-weight:600"><input type="checkbox" id="payOn" ${st.enabled ? "checked" : ""}> Offer online payment to owners</label>
         <div style="flex:1;min-width:240px"><div class="small" style="margin-bottom:3px">Stripe restricted key ${st.has_key ? `(saved: ${esc(st.key_hint)})` : ""}</div>
           <input type="password" id="payKey" autocomplete="off" style="width:100%" placeholder="${st.has_key ? "Leave blank to keep the saved key" : "rk_live_…"}"></div>
         <button class="btn primary" id="paySaveKey">Save</button>
@@ -1524,7 +1618,7 @@ function renderPayments() {
       <ol class="pay-steps mt">
         <li>In Stripe → Developers → API keys → <b>Create restricted key</b>, give it <b>Read</b> access to <b>Checkout Sessions</b>, <b>Invoices</b> and <b>PaymentIntents</b> only, and paste it above.</li>
         <li>In Stripe → <b>Payment Links</b>, create one link per product, licence and plan (e.g. “Proview Bookings – location – 12 months”, “Proview Signage – TV – 12 months”). Paste each link and its price below.</li>
-        <li>Customers see “Buy / renew online” in their app. Every 5 minutes this portal checks Stripe and applies paid licences automatically; they appear in Activity.</li>
+        <li>Owners see “Buy / renew online” in their app. Every 5 minutes this portal checks Stripe and applies paid licences automatically; they appear in Activity.</li>
       </ol>
     </div>
   </div>
@@ -1575,14 +1669,13 @@ function renderPayments() {
 }
 
 // ---------- header bar (same as Proview Signage: HEADER_REFERENCE.md) ----------
-// Dropdown: this portal has no locations, it works per business (customer), so the slot lists
-// "All businesses (N)" then each business; picking one opens that business's page.
+// Dropdown: "All locations (N)" then each location (card); picking one opens that location's page.
 function fillBizPick() {
   const s = $("#hdr-biz"); if (!s) return;
-  const list = S.customers.slice().sort((a, b) => a.name.localeCompare(b.name));
-  const dup = (c) => list.filter((x) => x.name.toLowerCase() === c.name.toLowerCase()).length > 1;
-  s.innerHTML = `<option value="">All businesses (${list.length})</option>` +
-    list.map((c) => { const t = dup(c) && c.contact_email ? `${c.name} · ${c.contact_email}` : c.name; return `<option value="${c.id}" title="${esc(t)}">${esc(t)}</option>`; }).join("");
+  const list = S.customers.slice().sort((a, b) => cardTitle(a).localeCompare(cardTitle(b)));
+  const dup = (c) => list.filter((x) => cardTitle(x).toLowerCase() === cardTitle(c).toLowerCase()).length > 1;
+  s.innerHTML = `<option value="">All locations (${list.length})</option>` +
+    list.map((c) => { const t = dup(c) && c.contact_email ? `${cardTitle(c)} · ${c.contact_email}` : cardTitle(c); return `<option value="${c.id}" title="${esc(t)}">${esc(t)}</option>`; }).join("");
   syncBizPick();
 }
 function syncBizPick() {
@@ -1693,7 +1786,7 @@ function openNotes() {
   const bg = document.createElement("div"); bg.className = "hub-bg";
   bg.innerHTML = `<div class="hub-panel narrow" role="dialog" aria-label="Notes"><div class="hub-ph"><h3>Notes</h3><button class="hub-x" aria-label="Close">${window.PVHub.svg("x")}</button></div><div class="hub-list">${rows.length
     ? rows.map((r, i) => `<div class="hub-item" data-i="${i}" style="cursor:pointer"><span class="ii">${window.PVHub.svg("chat", 17)}</span><div class="it"><b>${esc(r.title)}</b><div class="is" style="white-space:pre-wrap">${esc(r.sub.length > 240 ? r.sub.slice(0, 240) + "…" : r.sub)}</div></div></div>`).join("")
-    : `<div class="hub-note">No notes yet. Add notes on a customer’s page (Notes), or when you change a licence.</div>`}</div></div>`;
+    : `<div class="hub-note">No notes yet. Add notes on a location’s page (Notes), or when you change a licence.</div>`}</div></div>`;
   const close = () => { bg.remove(); document.removeEventListener("keydown", esc_, true); };
   const esc_ = (e) => { if (e.key === "Escape") { e.stopPropagation(); close(); } };
   bg.addEventListener("mousedown", (e) => { if (e.target === bg) close(); });
