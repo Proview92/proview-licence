@@ -721,6 +721,9 @@ html .side .nav .cnt[hidden]{display:none!important}
       <input type="text" id="aaName" autocomplete="off">
       <label for="aaEmail">Owner’s email</label>
       <input type="email" id="aaEmail" autocomplete="off">
+      <label for="aaMobile">Owner’s mobile <span class="small">(optional)</span></label>
+      <input type="tel" id="aaMobile" autocomplete="off">
+      <div class="small" id="aaFrom" style="margin-top:4px"></div>
       <div class="small" style="margin-top:4px">They open the app from their Proview dashboard with the login they already use. If they don’t have one in this app yet, it’s made for them.</div>
       <label style="margin-top:12px">Licence</label>
       <div class="aa-lic">
@@ -1674,24 +1677,33 @@ async function deleteBusiness(id) {
 }
 
 // The + on a greyed-out app: add this business to that app (licence hub create_business for one app)
-function addAppTo(cid, k) {
+async function addAppTo(cid, k, keep) {
   const c = S.customers.find((x) => x.id === cid); if (!c) return;
+  // the owner already signed up (saved on the card, their Proview login, or the email its apps report): filled in, editable
+  let def = { name: c.owner_name, email: c.owner_email || c.contact_email, mobile: c.owner_mobile };
+  if (!keep) { try { const { data } = await sb.rpc("lic_owner_defaults", { p_customer: cid }); if (data) def = { ...def, ...Object.fromEntries(Object.entries(data).filter(([, v]) => v)) }; } catch {} }
   const name = PRODUCTS[k].label, d = $("#addAppDlg");
   $("#aaTitle").textContent = `Add ${cardTitle(c)} to ${name}`;
   $("#aaIntro").textContent = `Sets up ${c.name} in Proview ${name}, with a location of the same name and this owner.`;
-  $("#aaName").value = c.owner_name || "";
-  $("#aaEmail").value = c.owner_email || c.contact_email || "";
+  if (!keep) {
+    $("#aaName").value = def.name || "";
+    $("#aaEmail").value = def.email || "";
+    $("#aaMobile").value = def.mobile || "";
+    $("#aaFrom").textContent = def.name || def.email ? "Filled in from the owner already signed up. Change anything you need to." : "";
+  }
   d.querySelector('input[name="aaLic"][value="trial"]').checked = true;
   $("#aaGo").textContent = `Add to ${name}`;
   d.returnValue = "";
   d.onclose = async () => {
     if (d.returnValue !== "ok") return;
-    const owner = $("#aaName").value.trim(), email = $("#aaEmail").value.trim().toLowerCase(), lic = d.querySelector('input[name="aaLic"]:checked').value;
-    if (owner.length < 2 || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { toast("Enter the owner’s name and a valid email", true); return addAppTo(cid, k); }
+    const owner = $("#aaName").value.trim(), email = $("#aaEmail").value.trim().toLowerCase(), mobile = $("#aaMobile").value.trim() || null, lic = d.querySelector('input[name="aaLic"]:checked').value;
+    if (owner.length < 2 || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { toast("Enter the owner’s name and a valid email", true); return addAppTo(cid, k, true); }
     toast(`Adding ${c.name} to ${name}…`);
     try {
-      const out = await hub("create_business", { customer_id: cid, apps: [k], business: c.name, name: owner, email, mobile: null,
-        password: ncRand(24), contact_email: c.contact_email || email, licence: lic === "set" ? "none" : lic, invite: false });
+      const out = await hub("create_business", { customer_id: cid, apps: [k], business: c.name, name: owner, email,
+        password: ncRand(24), contact_email: c.contact_email || email, licence: lic === "set" ? "none" : lic, invite: false, mobile });
+      // remember the owner on the card, so the next app is filled in the same
+      await sb.from("lic_customers").update({ owner_name: owner, owner_email: email, owner_mobile: mobile ?? c.owner_mobile ?? null }).eq("id", cid);
       const r = out.results?.[k];
       await loadAll(); render();
       if (!r?.ok) return toast(`Not added to ${name}: ${r?.error || "no answer"}`, true);
