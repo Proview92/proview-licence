@@ -663,6 +663,83 @@ async function splitCards(db: any, apps: Record<string, App>, adminEmail: string
   return { ok: out.every((x) => x.ok), split: out, planned: plan.length };
 }
 
+// ---------- pause / resume / delete a business (owner, 12 Nov 2026) ----------
+// Pause: every app account of the card is suspended in its app (hub_call 'suspend': its people and devices are locked
+// out) and the card remembers when (lic_customers.paused_at). Resume: unsuspended again, and licence time is frozen:
+// every licence that was still running when it was paused gets its end date moved on by the paused time (set 'custom').
+// Delete: each app deletes its business and everything in it (hub_call 'delete_account'); once every app has, the
+// card and its rows here go. An app that fails is reported and left as it was, so the button can be pressed again.
+async function pauseCard(db: any, apps: Record<string, App>, adminEmail: string | null, id: string, on: boolean) {
+  const { data: card } = await db.from("lic_customers").select("*").eq("id", id).maybeSingle();
+  if (!card) return { status: 400, body: { error: "Business not found. Press Sync and try again." } };
+  const { data: accts } = await db.from("lic_accounts").select("*").eq("customer_id", id).eq("gone", false);
+  const results: Record<string, any> = {};
+  for (const a of accts ?? []) {
+    const app = apps[a.product];
+    const key = `${a.product}|${a.ext_id}`;
+    if (!app) { results[key] = { ok: false, product: a.product, name: a.name, error: "This app isn't connected to the licence portal." }; continue; }
+    try { await callApp(app, "suspend", { account_id: String(a.ext_id), suspended: on }); results[key] = { ok: true, product: a.product, name: a.name }; }
+    catch (e) { results[key] = { ok: false, product: a.product, name: a.name, error: errText(e) }; }
+    await db.from("lic_accounts").update({ extra: { ...(a.extra ?? {}), suspended: on } }).eq("product", a.product).eq("ext_id", a.ext_id);
+  }
+  let moved = 0, moveErrors: string[] = [];
+  if (on) {
+    if (!card.paused_at) await db.from("lic_customers").update({ paused_at: new Date().toISOString() }).eq("id", id);
+  } else if (card.paused_at) {
+    const pausedAt = Date.parse(card.paused_at), delta = Date.now() - pausedAt;
+    const days = Math.round(delta / 86400e3);
+    for (const a of accts ?? []) {
+      const { data: units } = await db.from("lic_units").select("*").eq("product", a.product).eq("account_ext_id", a.ext_id).eq("gone", false);
+      for (const u of units ?? []) {
+        if (!u.license_type || u.license_type === "lifetime" || !u.expires_at || Date.parse(u.expires_at) <= pausedAt || delta < 60e3) continue;
+        const app = apps[u.product];
+        if (!app) continue;
+        const expires = new Date(Date.parse(u.expires_at) + delta).toISOString();
+        try {
+          const after = await callApp(app, "set", { unit: String(u.ext_id), kind: u.kind, type: "custom", extend: false, expires,
+            notes: `Paused ${days} day${days === 1 ? "" : "s"}: end date moved on (was ${String(u.expires_at).slice(0, 10)}, ${u.license_type})` });
+          await db.from("lic_units").update({ license_type: after.license_type, starts_at: after.starts_at, expires_at: after.expires_at, notes: after.notes,
+            synced_at: new Date().toISOString() }).eq("product", u.product).eq("ext_id", u.ext_id);
+          moved++;
+        } catch (e) { moveErrors.push(`${u.name}: ${errText(e)}`); }
+      }
+    }
+    await db.from("lic_customers").update({ paused_at: null }).eq("id", id);
+  }
+  const ok = Object.values(results).every((r: any) => r.ok) && !moveErrors.length;
+  await db.from("lic_audit").insert({ admin_email: adminEmail, account_name: card.name, action: on ? "paused business" : "resumed business",
+    after: { results, licences_moved: moved, errors: moveErrors }, error: ok ? null : "Some apps didn't change; press the button again" });
+  return { status: 200, body: { ok, paused: on, results, licences_moved: moved, errors: moveErrors } };
+}
+
+async function deleteCard(db: any, apps: Record<string, App>, adminEmail: string | null, id: string, confirm: string) {
+  const { data: card } = await db.from("lic_customers").select("*").eq("id", id).maybeSingle();
+  if (!card) return { status: 200, body: { ok: true, already: true } };
+  if (String(confirm ?? "").trim() !== String(card.name).trim()) return { status: 400, body: { error: "Type the business name exactly to delete it." } };
+  const { data: accts } = await db.from("lic_accounts").select("*").eq("customer_id", id);
+  const results: Record<string, any> = {};
+  for (const a of accts ?? []) {
+    const key = `${a.product}|${a.ext_id}`;
+    if (a.gone) { results[key] = { ok: true, product: a.product, name: a.name, skipped: true }; continue; }
+    const app = apps[a.product];
+    if (!app) { results[key] = { ok: false, product: a.product, name: a.name, error: "This app isn't connected to the licence portal." }; continue; }
+    try {
+      await callApp(app, "delete_account", { account_id: String(a.ext_id) });
+      await db.from("lic_units").delete().eq("product", a.product).eq("account_ext_id", a.ext_id);
+      await db.from("lic_accounts").delete().eq("product", a.product).eq("ext_id", a.ext_id);
+      results[key] = { ok: true, product: a.product, name: a.name };
+    } catch (e) { results[key] = { ok: false, product: a.product, name: a.name, error: errText(e) }; }
+  }
+  const ok = Object.values(results).every((r: any) => r.ok);
+  if (ok) {
+    await db.from("lic_accounts").delete().eq("customer_id", id);
+    await db.from("lic_customers").delete().eq("id", id);
+  }
+  await db.from("lic_audit").insert({ admin_email: adminEmail, account_name: card.name, action: ok ? "deleted business" : "partly deleted business",
+    after: { results }, error: ok ? null : "Some apps didn't delete; press Delete again" });
+  return { status: 200, body: { ok, deleted: ok, results } };
+}
+
 Deno.serve(async (req) => {
   const h = cors(req);
   if (req.method === "OPTIONS") return new Response("ok", { headers: h });
@@ -701,6 +778,8 @@ Deno.serve(async (req) => {
     //   unlink { customer, origin }              one linked location of the card, in every app
     //          { customer, app, site }           one location unit of one app (as the split does)
     //   split_preview { customer? }  -> { plan }  split { customer? } -> { ok, split: [...] }
+    if (action === "pause" || action === "resume") { const r = await pauseCard(db, apps, adminEmail, String(body.customer ?? ""), action === "pause"); return json(r.body, r.status); }
+    if (action === "delete_business") { const r = await deleteCard(db, apps, adminEmail, String(body.customer ?? ""), String(body.confirm ?? "")); return json(r.body, r.status); }
     if (action === "link") { const r = await linkCards(db, apps, adminEmail, String(body.customer_a ?? ""), String(body.customer_b ?? "")); return json(r.body, r.status); }
     if (action === "unlink") { const r = await unlinkCard(db, apps, adminEmail, body); return json(r.body, r.status); }
     if (action === "split_preview") { const d = await loadLinkData(db); return json({ ok: true, plan: splitPlan(d.customers, d.accounts, d.units, body.customer || undefined) }); }

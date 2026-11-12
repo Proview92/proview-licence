@@ -539,6 +539,46 @@ html .side .nav .cnt[hidden]{display:none!important}
 .nc-done .nd-foot [hidden]{display:none}
 .nc-done .nc-res .btn{flex:none;height:32px;padding:0 11px;font-size:13px;border-radius:8px}
 .nc-done .nd-foot{display:flex;justify-content:flex-end;gap:8px;margin-top:18px;flex-wrap:wrap}
+
+/* ---- business page (tidy layout, 12 Nov 2026) ---- */
+.bd{display:flex;flex-direction:column;gap:14px;max-width:1100px}
+.bd-head{padding:18px 20px;display:flex;flex-wrap:wrap;gap:12px 18px;align-items:flex-start}
+.bd-head .grow{min-width:240px}
+.bd-title{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.bd-title h2{margin:0;font-size:22px;line-height:28px;font-weight:650;letter-spacing:-.01em}
+.bd-sub{margin-top:4px;font-size:13px;color:var(--ink2,#6b6a66)}
+.bd-acts{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.bd-acts .btn.warn{border-color:#f0d08a;color:#8a5a00;background:#fff8e6}
+.bd-acts .btn.go{border-color:#bfe3cc;color:#0f7a3d;background:#eefaf2}
+.bd-acts .btn.dangerghost{border-color:#f3c7c3;color:#c0362c;background:#fff}
+.bd-acts .btn.dangerghost:hover{background:#fdecea}
+.bd-paused{padding:12px 16px;border-radius:12px;border:1px solid #f0d08a;background:#fff8e6;color:#6b4a00;font-size:14px}
+.bd-det{padding:0}
+.bd-det>summary{list-style:none;cursor:pointer;padding:14px 20px;font-weight:600;display:flex;align-items:center;gap:8px}
+.bd-det>summary::-webkit-details-marker{display:none}
+.bd-det>summary::before{content:"\203A";display:inline-block;transition:transform .15s;color:var(--ink2,#6b6a66);font-size:18px;line-height:1}
+.bd-det[open]>summary::before{transform:rotate(90deg)}
+.bd-det .body2{padding:0 20px 18px}
+.appc{padding:0;overflow:hidden}
+.appc-h{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--line)}
+.appc-h img{width:30px;height:30px;border-radius:8px;flex:none}
+.appc-h .grow{min-width:0}
+.appc-t{font-weight:650;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.appc-t .muted{font-weight:500}
+.appc-h .tiny{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.appc table{width:100%;border-collapse:collapse}
+.appc th{font:600 12px var(--font,inherit);color:var(--ink2,#6b6a66);text-align:left;padding:8px 12px;background:#fbfaf8;border-bottom:1px solid var(--line)}
+.appc td{padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:middle;font-size:14px}
+.appc tr:last-child td{border-bottom:0}
+.appc td.cb,.appc th.cb{width:34px;padding-right:0}
+.appc .un{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:360px}
+.appc .um{font-size:12.5px;color:var(--ink2,#6b6a66);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:360px}
+.appc .note{cursor:help;margin-left:4px}
+.appc .acts{text-align:right;white-space:nowrap}
+.appc .acts .btn{margin-left:4px}
+.appc .none{padding:12px 16px;font-size:13px;color:var(--ink2,#6b6a66)}
+.linkbtn{background:none;border:0;padding:0;color:var(--brand);font:600 12px var(--font,inherit);cursor:pointer}
+@media (max-width:700px){.appc .hide-sm{display:none}.appc .un,.appc .um{max-width:180px}}
 </style>
 </head>
 <body>
@@ -1007,37 +1047,33 @@ function renderChips() {
 }
 
 function unitRow(u) {
-  const s = status(u), p = PRODUCTS[u.product];
+  const s = status(u);
   const key = u.product + "|" + u.ext_id;
-  const extra = (u.product === "signage" || u.product === "wifi" || u.product === "qrmenu") && u.extra?.last_seen ? `<div class="small">${u.product === "wifi" ? "Last guest" : u.product === "qrmenu" ? "Last saved" : "Last seen"} ${fmtDT(u.extra.last_seen)}</div>` : "";
-  const arch = u.extra?.archived ? ` <span class="pill none">archived</span>` : "";
+  const seen = (u.product === "signage" || u.product === "wifi" || u.product === "qrmenu") && u.extra?.last_seen
+    ? `${u.product === "wifi" ? "Last guest" : u.product === "qrmenu" ? "Last saved" : "Last seen"} ${fmtDT(u.extra.last_seen)}` : "";
+  const meta = [u.detail, seen, u.extra?.archived ? "archived" : ""].filter(Boolean).join(" · ");
   return `<tr>
-    <td class="cb"><input type="checkbox" data-sel="${esc(key)}" ${S.sel.has(key) ? "checked" : ""}></td>
-    <td><div>${multiKind(u.product) ? `<span class="pill none" title="What this licence is for">${KIND_LABEL[kindOf(u)]}</span> ` : ""}${esc(u.name || "(unnamed)")}${arch}</div><div class="small">${esc(u.detail || "")}</div>${extra}</td>
-    <td class="hide-sm small">${esc(PLAN_LABEL[u.license_type] || u.license_type || "—")}${u.notes ? `<div title="${esc(u.notes)}">📝 ${esc(u.notes.slice(0, 40))}${u.notes.length > 40 ? "…" : ""}</div>` : ""}</td>
+    <td class="cb"><input type="checkbox" data-sel="${esc(key)}" ${S.sel.has(key) ? "checked" : ""} aria-label="Select ${esc(u.name || "")}"></td>
+    <td><div class="un">${multiKind(u.product) ? `<span class="pill none" title="What this licence is for">${KIND_LABEL[kindOf(u)]}</span> ` : ""}${esc(u.name || "(unnamed)")}</div>${meta ? `<div class="um" title="${esc(meta)}">${esc(meta)}</div>` : ""}</td>
+    <td class="hide-sm">${esc(PLAN_LABEL[u.license_type] || u.license_type || "—")}${u.notes ? `<span class="note" title="${esc(u.notes)}">📝</span>` : ""}</td>
     <td><span class="pill ${s.cls}">${esc(s.label)}</span></td>
-    <td style="text-align:right;white-space:nowrap">
-      ${u.license_type === "lifetime" ? "" : `<button class="btn sm" data-quick="${esc(key)}" title="Add 12 months">+12m</button>`}
-      <button class="btn sm" data-edit="${esc(key)}">Change…</button>
-    </td></tr>`;
+    <td class="acts">${u.license_type === "lifetime" ? "" : `<button class="btn sm" data-quick="${esc(key)}" title="Add 12 months">+12m</button>`}<button class="btn sm" data-edit="${esc(key)}">Change…</button></td></tr>`;
 }
 
 function accountBlock(a) {
   const p = PRODUCTS[a.product];
-  const units = unitsForAccount(a);
-  return `<div class="acct">
-    <div class="ah">
-      <span class="ptag">${p.label}</span>
-      <span class="pn">${esc(a.name || "(unnamed)")}</span>
-      <span class="small">${esc(a.contact_email || "")}${a.extra?.self_signup ? " · signed up online" : ""}${a.extra?.suspended ? " · <b style='color:var(--bad)'>suspended</b>" : ""}</span>
-      <span class="sp"></span>
-      <button class="btn sm" data-selall="${esc(a.product + "|" + a.ext_id)}">Select all</button>
-      <button class="btn sm" data-move="${esc(a.product + "|" + a.ext_id)}">Move…</button>
-      ${canOpen(a) ? `<button type="button" class="btn sm primary" data-openapp="${esc(a.product + "|" + a.ext_id)}" title="Open ${esc(a.name || "this business")} in Proview ${p.label}, signed in as Proview">Open in ${p.label} ↗</button>` : ""}
+  const units = unitsForAccount(a), key = a.product + "|" + a.ext_id;
+  const sub = [unitCount(a.product, units), a.contact_email, a.extra?.self_signup ? "signed up online" : ""].filter(Boolean).join(" · ");
+  return `<section class="card appc">
+    <div class="appc-h">
+      <img src="${appLogo(a.product)}" alt="">
+      <div class="grow"><div class="appc-t">${p.label} <span class="muted">· ${esc(a.name || "(unnamed)")}</span></div><div class="tiny" title="${esc(sub)}">${esc(sub)}</div></div>
+      <button class="btn sm" data-move="${esc(key)}" title="Move this app account to another business">Move…</button>
+      ${canOpen(a) ? `<button type="button" class="btn sm primary" data-openapp="${esc(key)}" title="Open ${esc(a.name || "this business")} in Proview ${p.label}, signed in as Proview">Open ↗</button>` : ""}
     </div>
-    ${units.length ? `<table><thead><tr><th class="cb"></th><th>${multiKind(a.product) ? "Licence" : p.unit}</th><th class="hide-sm">Plan</th><th>Status</th><th></th></tr></thead><tbody>${units.map(unitRow).join("")}</tbody></table>`
-      : `<div class="small" style="padding:10px 12px">No ${multiKind(a.product) ? "licences" : p.units} yet.</div>`}
-  </div>`;
+    ${units.length ? `<table><thead><tr><th class="cb"><button type="button" class="linkbtn" data-selall="${esc(key)}" title="Select every licence here">All</button></th><th>${multiKind(a.product) ? "Licence" : p.unit}</th><th class="hide-sm" style="width:20%">Plan</th><th style="width:20%">Status</th><th style="width:190px"></th></tr></thead><tbody>${units.map(unitRow).join("")}</tbody></table>`
+      : `<div class="none">No ${multiKind(a.product) ? "licences" : p.units} yet.</div>`}
+  </section>`;
 }
 
 function productLine(prod, units) {
@@ -1069,7 +1105,7 @@ function custCard(c) {
   const accts = accountsForCustomer(c);
   const sum = custSummary(c);
   const prods = Object.keys(PRODUCTS).filter((k) => accts.some((a) => a.product === k));
-  const [pcls, ptxt] = PILL[sum.worst];
+  const [pcls, ptxt] = c.paused_at ? ["warn", "Paused"] : PILL[sum.worst];
   const licensed = sum.units.length - sum.bad.length, soon = sum.units.filter((u) => tone(u) === "a").length;
   const sub = !sum.units.length ? (prods.length ? prods.map((k) => PRODUCTS[k].label).join(" · ") : "No products linked yet")
     : [sum.bad.length ? `${licensed} of ${sum.units.length} licensed` : `${sum.units.length} licence${sum.units.length === 1 ? "" : "s"}`, soon ? `${soon} renewing soon` : ""].filter(Boolean).join(" · ");
@@ -1138,34 +1174,42 @@ $("#listDlg").addEventListener("click", (e) => { if (e.target.closest("[data-ope
 document.addEventListener("click", (e) => { const b = e.target.closest("#custStats [data-list]"); if (b) showList(b.dataset.list); });
 
 function custDetail(c) {
-  const accts = accountsForCustomer(c);
+  const accts = accountsForCustomer(c).sort((x, y) => LINK_APPS.indexOf(x.product) - LINK_APPS.indexOf(y.product));
   const sum = custSummary(c);
-  const pill = sum.worst === "r" ? `<span class="spill r">Action needed</span>` : sum.worst === "a" ? `<span class="spill a">Renewing soon</span>` : sum.units.length ? `<span class="spill g">All OK</span>` : "";
+  const paused = !!c.paused_at;
+  const pill = paused ? `<span class="ov-pill warn">Paused</span>` : sum.worst === "r" ? `<span class="ov-pill bad">Action needed</span>` : sum.worst === "a" ? `<span class="ov-pill warn">Renewing soon</span>` : sum.units.length ? `<span class="ov-pill ok">All good</span>` : "";
   const groups = groupsOf(c), before = groupedFromBefore(c);
-  const linked = groups.length > 1 ? `<div class="acct mt"><div class="ah"><span class="pn">Linked businesses</span><span class="small">${groups.length} businesses are linked in every app they both have. Owners and managers switch between them in each app.</span></div>
-      <table><tbody>${groups.map((g) => `<tr><td><b>${esc(g.name)}</b><div class="small">${esc([...new Set(g.units.map((u) => PRODUCTS[u.product]?.label))].join(" · "))}</div></td>
-        <td style="text-align:right"><button class="btn sm" data-unlink="${esc(c.id + "|" + g.origin)}">Unlink</button></td></tr>`).join("")}</tbody></table></div>` : "";
-  const old = before.length ? `<div class="empty mt" style="text-align:left">${before.map((x) => `${esc(PRODUCTS[x.a.product].label)}: ${esc(x.a.name)} has ${x.units.length} businesses from before (${esc(x.units.map((u) => u.name).join(", "))}).`).join("<br>")} Use “Split them” on the Businesses page to give each its own card.</div>` : "";
+  const linked = groups.length > 1 ? `<section class="card appc"><div class="appc-h"><div class="grow"><div class="appc-t">Linked businesses</div><div class="tiny">${groups.length} businesses are linked in every app they both have. Owners and managers switch between them in each app.</div></div></div>
+      <table><tbody>${groups.map((g) => `<tr><td><div class="un">${esc(g.name)}</div><div class="um">${esc([...new Set(g.units.map((u) => PRODUCTS[u.product]?.label))].join(" · "))}</div></td>
+        <td class="acts"><button class="btn sm" data-unlink="${esc(c.id + "|" + g.origin)}">Unlink</button></td></tr>`).join("")}</tbody></table></section>` : "";
+  const old = before.length ? `<div class="bd-paused">${before.map((x) => `${esc(PRODUCTS[x.a.product].label)}: ${esc(x.a.name)} has ${x.units.length} businesses from before (${esc(x.units.map((u) => u.name).join(", "))}).`).join("<br>")} Use “Split them” on the Businesses page to give each its own card.</div>` : "";
+  const sub = [c.contact_email || "No contact email", c.phone, c.owner_email ? "Owner login: " + [c.owner_name, c.owner_email].filter(Boolean).join(" ") : ""].filter(Boolean).join(" · ");
   return `<a class="dback" data-back="1">← All businesses</a>
-  <div class="cust open" data-cust="${c.id}">
-    <div class="head" style="cursor:default"><div><div class="name" style="font-size:20px">${esc(cardTitle(c))}</div>${groups.length > 1 ? `<div class="meta">${groups.length} linked businesses</div>` : ""}<div class="meta">${esc(c.contact_email || "no email")}${c.phone ? " · " + esc(c.phone) : ""}</div>${c.owner_email ? `<div class="meta">Owner login: ${esc([c.owner_name, c.owner_email, c.owner_mobile].filter(Boolean).join(" · "))}</div>` : ""}</div><div class="sp"></div>${pill}</div>
-    <div class="body">
+  <div class="bd" data-cust="${c.id}">
+    <header class="card bd-head">
+      <div class="grow"><div class="bd-title"><h2>${esc(cardTitle(c))}</h2>${pill}</div><div class="bd-sub">${esc(sub)}</div></div>
+      <div class="bd-acts">
+        ${accts.length ? (paused ? `<button class="btn sm go" data-resume="${c.id}">Resume business</button>` : `<button class="btn sm warn" data-pause="${c.id}">Pause business</button>`) : ""}
+        <button class="btn sm" data-link="${c.id}">Link…</button>
+        <button class="btn sm dangerghost" data-delbiz="${c.id}">Delete business</button>
+      </div>
+    </header>
+    ${paused ? `<div class="bd-paused"><b>Paused since ${esc(fmtDT(c.paused_at))}.</b> Everyone is locked out of its apps and its TVs and handhelds have stopped. Licence time is frozen: on Resume every running licence gets the paused days back.</div>` : ""}
+    ${old}
+    <details class="card bd-det"><summary>Business details</summary><div class="body2">
       <div class="details">
         <div><label>${groups.length > 1 ? "Card name" : "Business name"}</label><input type="text" data-f="name" value="${esc(c.name)}"></div>
         <div><label>Contact email</label><input type="email" data-f="contact_email" value="${esc(c.contact_email || "")}"></div>
         <div><label>Phone</label><input type="text" data-f="phone" value="${esc(c.phone || "")}"></div>
         <div style="grid-column:1/-1"><label>Notes</label><textarea data-f="notes" rows="2">${esc(c.notes || "")}</textarea></div>
       </div>
-      <div class="row mt">
-        <button class="btn primary sm" data-savecust="${c.id}">Save details</button>
-        <button class="btn sm" data-link="${c.id}">Link with another business…</button>
-        ${accts.length ? "" : `<button class="btn sm danger" data-delcust="${c.id}">Delete business</button>`}
-      </div>
-      ${linked}${old}
-      ${accts.map(accountBlock).join("") || `<div class="empty mt">No app accounts here. Use “Move…” on an account under another business to bring it here.</div>`}
-    </div>
+      <div class="row mt"><button class="btn primary sm" data-savecust="${c.id}">Save details</button></div>
+    </div></details>
+    ${linked}
+    ${accts.map(accountBlock).join("") || `<div class="card bd-paused" style="background:#fff;border-color:var(--line);color:inherit">No app accounts here. Use “Move…” on an account under another business to bring it here.</div>`}
   </div>`;
 }
+const LINK_APPS = ["signage", "bookings", "employee", "label", "qrmenu", "wifi"];
 
 function renderCustomers() {
   renderChips(); renderStats();
@@ -1492,6 +1536,41 @@ async function splitGrouped() {
     else await ask({ title: "Some businesses weren’t split", cancel: false, html: bad.map((x) => `<p style="margin:0 0 6px"><b>${esc(x.name)}</b>${x.error ? ": " + esc(x.error) : ""}</p>${resultHtml(x.results)}`).join("") + "<p class=\"small\">Press Split them again to finish.</p>" });
   } catch (e) { toast("Split failed: " + e.message, true); }
 }
+// Pause / Resume / Delete a whole business in every app (licence-hub pause / resume / delete_business)
+const appsOf = (c) => [...new Set(accountsForCustomer(c).map((a) => PRODUCTS[a.product]?.label).filter(Boolean))].join(", ") || "no apps";
+function failedApps(r) { return Object.values(r?.results || {}).filter((x) => !x.ok).map((x) => `${PRODUCTS[x.product]?.label || x.product}: ${x.error}`); }
+async function pauseBusiness(id, on) {
+  const c = S.customers.find((x) => x.id === id); if (!c) return;
+  const ok = await ask(on
+    ? { title: `Pause ${c.name}?`, html: `<p style="margin-top:0">Everyone is locked out of <b>${esc(c.name)}</b> in ${esc(appsOf(c))}. TVs and handhelds stop, and online booking and the guest WiFi page are off.</p><p>Licence time is frozen: when you resume it, every licence that was still running gets the paused days back. Nothing is deleted.</p>`, ok: "Pause business" }
+    : { title: `Resume ${c.name}?`, html: `<p style="margin-top:0">${esc(c.name)} works again in ${esc(appsOf(c))}, and every licence that was running when it was paused gets the paused time added to its end date.</p>`, ok: "Resume business" });
+  if (!ok) return;
+  toast(on ? "Pausing in every app…" : "Resuming in every app…");
+  try {
+    const r = await hub(on ? "pause" : "resume", { customer: id });
+    const bad = failedApps(r).concat(r.errors || []);
+    await loadAll(); renderCustomers();
+    if (bad.length) toast(`Not finished: ${bad.join("; ")}. Press the button again.`, true);
+    else toast(on ? `${c.name} is paused` : `${c.name} is running again${r.licences_moved ? ` · ${r.licences_moved} licence end date${r.licences_moved === 1 ? "" : "s"} moved on` : ""}`);
+  } catch (e) { toast(e.message, true); }
+}
+async function deleteBusiness(id) {
+  const c = S.customers.find((x) => x.id === id); if (!c) return;
+  const n = accountsForCustomer(c).length;
+  const v = await ask({ title: `Delete ${c.name} completely?`, danger: true, ok: "Delete for ever",
+    html: `<p style="margin-top:0">${n ? `This deletes <b>${esc(c.name)}</b> in ${esc(appsOf(c))}: its locations, TVs, handhelds, staff, bookings, menus, guests, content and licences. <b>It can't be undone.</b>` : "This removes the business card. It has no app accounts."}</p><p>Type <b>${esc(c.name)}</b> to confirm.</p>`,
+    fields: [{ label: "Business name", required: true }] });
+  if (!v) return;
+  if (v[0] !== String(c.name).trim()) return toast("The name didn't match, so nothing was deleted.", true);
+  toast("Deleting in every app…");
+  try {
+    const r = await hub("delete_business", { customer: id, confirm: v[0] });
+    await loadAll();
+    if (r.ok) { S.detail = null; renderCustomers(); syncBizPick?.(); toast(`${c.name} deleted`); }
+    else { renderCustomers(); toast(`Not finished: ${failedApps(r).join("; ")}. Press Delete again.`, true); }
+  } catch (e) { toast(e.message, true); }
+}
+
 async function deleteCustomer(id) {
   if (!(await ask({ title: "Delete business", message: "Delete this business card? (It has no app accounts.)", ok: "Delete", danger: true }))) return;
   const { error } = await sb.from("lic_customers").delete().eq("id", id);
@@ -1505,7 +1584,7 @@ document.addEventListener("click", (e) => {
   if (oa) { e.stopPropagation(); if (oa.closest("#listDlg")) $("#listDlg").close(); openInApp(oa.dataset.openapp); return; }
   const op = e.target.closest("[data-openpick]");
   if (op) { e.stopPropagation(); const [cid, k] = op.dataset.openpick.split("|"); showOpenPick(cid, k); return; }
-  const t = e.target.closest("[data-open],[data-back],[data-addlic],[data-prod],[data-edit],[data-quick],[data-savecust],[data-move],[data-link],[data-unlink],[data-split],[data-delcust],[data-selall]");
+  const t = e.target.closest("[data-open],[data-back],[data-addlic],[data-prod],[data-edit],[data-quick],[data-savecust],[data-move],[data-link],[data-unlink],[data-split],[data-delcust],[data-selall],[data-pause],[data-resume],[data-delbiz]");
   if (!t) return;
   if (t.dataset.open) openDetail(t.dataset.open);
   else if (t.dataset.back) { S.detail = null; renderCustomers(); syncBizPick(); }
@@ -1522,6 +1601,9 @@ document.addEventListener("click", (e) => {
   else if (t.dataset.unlink) unlinkLocation(t.dataset.unlink);
   else if (t.dataset.split) splitGrouped();
   else if (t.dataset.delcust) deleteCustomer(t.dataset.delcust);
+  else if (t.dataset.pause) pauseBusiness(t.dataset.pause, true);
+  else if (t.dataset.resume) pauseBusiness(t.dataset.resume, false);
+  else if (t.dataset.delbiz) deleteBusiness(t.dataset.delbiz);
   else if (t.dataset.selall) {
     const [p, ...rest] = t.dataset.selall.split("|"); const ext = rest.join("|");
     S.units.filter((u) => u.product === p && u.account_ext_id === ext && !u.gone).forEach((u) => S.sel.set(u.product + "|" + u.ext_id, u));
