@@ -579,6 +579,8 @@ html .side .nav .cnt[hidden]{display:none!important}
 .appc .none{padding:12px 16px;font-size:13px;color:var(--ink2,#6b6a66)}
 .linkbtn{background:none;border:0;padding:0;color:var(--brand);font:600 12px var(--font,inherit);cursor:pointer}
 @media (max-width:700px){.appc .hide-sm{display:none}.appc .un,.appc .um{max-width:180px}}
+#licDlg .licend{background:#f8f7f4;border:1px solid var(--line);border-radius:10px;padding:10px 12px 12px;margin-bottom:6px}
+#licDlg .licend input[type=date]{font-size:17px;font-weight:600}
 </style>
 </head>
 <body>
@@ -698,14 +700,14 @@ html .side .nav .cnt[hidden]{display:none!important}
   <form method="dialog" id="licForm">
     <div class="dh" id="licTitle">Licence</div>
     <div class="db">
-      <div class="small" id="licCurrent"></div>
-      <label for="licPlan">Licence</label>
-      <select id="licPlan"></select>
-      <div id="licDateWrap" class="hidden">
-        <label for="licDate">Expiry date</label>
+      <div class="licend">
+        <label for="licDate">End date</label>
         <input type="date" id="licDate">
+        <div class="small" id="licCurrent"></div>
       </div>
-      <label class="row" style="gap:6px;color:var(--ink);font-size:13px"><input type="checkbox" id="licExtend" checked style="width:auto"> Add to current expiry (if still active)</label>
+      <label for="licPlan">Plan</label>
+      <select id="licPlan"></select>
+      <label class="row" id="licExtendRow" style="gap:6px;color:var(--ink);font-size:13px"><input type="checkbox" id="licExtend" checked style="width:auto"> Add to the current end date (if still active)</label>
       <label for="licNotes">Notes (optional)</label>
       <input type="text" id="licNotes" placeholder="e.g. Paid by invoice 1043">
     </div>
@@ -1289,33 +1291,57 @@ async function applyChanges(items) {
   } catch (e) { toast(e.message, true); return false; }
 }
 
+// End date at the top, editable: typing a date saves it as the end date (custom); picking a plan fills the date in.
+const ymdOf = (d) => { const t = new Date(d); return `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, "0")}-${String(t.getDate()).padStart(2, "0")}`; };
+function licPreview(u, plan, extend) {
+  if (!plan || plan === "custom") return null;
+  if (plan === "lifetime") return "";
+  const now = Date.now(), cur = u.expires_at ? Date.parse(u.expires_at) : 0;
+  const d = new Date(extend && u.license_type !== "lifetime" && cur > now ? cur : now);
+  const m = { m1: 1, m3: 3, m6: 6, m12: 12, m24: 24, m36: 36 }[plan];
+  if (m) d.setMonth(d.getMonth() + m); else d.setDate(d.getDate() + ({ trial7: 7, trial3: 3, trial: 3 }[plan] || 0));
+  return ymdOf(d);
+}
+function licSync() {
+  const u = findUnit($("#licDlg").dataset.key); if (!u) return;
+  const v = $("#licPlan").value, pv = licPreview(u, v, $("#licExtend").checked);
+  $("#licExtendRow").classList.toggle("hidden", !/^m\d+$/.test(v) || !(u.expires_at && Date.parse(u.expires_at) > Date.now()));
+  if (pv !== null) { $("#licDate").value = pv; $("#licDate").placeholder = ""; }
+  $("#licDate").title = v === "lifetime" ? "Lifetime: no end date" : "";
+}
 function openLicence(key) {
   const u = findUnit(key); if (!u) return;
   const p = PRODUCTS[u.product];
   $("#licTitle").textContent = `${p.label} · ${KIND_LABEL[kindOf(u)]} · ${u.name || KIND_LABEL[kindOf(u)]}`;
-  $("#licCurrent").textContent = "Now: " + status(u).label + (u.license_type ? ` (${PLAN_LABEL[u.license_type] || u.license_type})` : "");
-  $("#licPlan").innerHTML = planOptions(u.product);
-  $("#licDate").value = u.expires_at ? u.expires_at.slice(0, 10) : "";
+  $("#licCurrent").textContent = "Now: " + status(u).label + (u.license_type ? ` · ${PLAN_LABEL[u.license_type] || u.license_type}` : "") + (u.license_type === "lifetime" ? " · no end date" : "");
+  $("#licPlan").innerHTML = `<option value="">Keep the plan · use the end date above</option>` + planOptions(u.product);
+  $("#licPlan").value = "";
+  $("#licDate").value = u.expires_at && u.license_type !== "lifetime" ? ymdOf(u.expires_at) : "";
+  $("#licDate").dataset.orig = $("#licDate").value;
   $("#licNotes").value = "";
   $("#licExtend").checked = true;
-  $("#licDateWrap").classList.add("hidden");
   $("#licRemove").classList.toggle("hidden", !u.license_type);
   const dlg = $("#licDlg");
   dlg.returnValue = "";
   dlg.dataset.key = key;
+  licSync();
   dlg.showModal();
 }
-$("#licPlan").onchange = () => {
-  const v = $("#licPlan").value;
-  $("#licDateWrap").classList.toggle("hidden", v !== "custom");
-  $("#licExtend").closest("label").classList.toggle("hidden", v === "custom" || v === "lifetime");
-};
+$("#licPlan").onchange = licSync;
+$("#licExtend").onchange = licSync;
+// typing a date means "end on this date": back to Keep the plan (saved as a custom end date)
+$("#licDate").addEventListener("input", () => { if ($("#licPlan").value !== "custom") $("#licPlan").value = ""; licSync(); });
 $("#licDlg").addEventListener("close", async () => {
   const dlg = $("#licDlg"); if (dlg.returnValue !== "save") return;
-  const u = findUnit(dlg.dataset.key); const type = $("#licPlan").value;
-  if (type === "custom" && !$("#licDate").value) return toast("Choose an expiry date", true);
-  await applyChanges([{ product: u.product, kind: kindOf(u), unit: u.ext_id, type, extend: $("#licExtend").checked,
-    expires: type === "custom" ? new Date($("#licDate").value + "T23:59:00").toISOString() : null, notes: $("#licNotes").value || null }]);
+  const u = findUnit(dlg.dataset.key); let type = $("#licPlan").value; const date = $("#licDate").value;
+  if (!type) {   // keep the plan: the end date typed above
+    if (!date) return toast("Choose an end date, or pick a plan", true);
+    if (date === $("#licDate").dataset.orig && !$("#licNotes").value) return toast("Nothing changed");
+    type = "custom";
+  }
+  if (type === "custom" && !date) return toast("Choose an end date", true);
+  await applyChanges([{ product: u.product, kind: kindOf(u), unit: u.ext_id, type, extend: /^m\d+$/.test(type) && $("#licExtend").checked,
+    expires: type === "custom" ? new Date(date + "T23:59:00").toISOString() : null, notes: $("#licNotes").value || null }]);
 });
 $("#licRemove").onclick = async () => {
   const dlg = $("#licDlg"); const u = findUnit(dlg.dataset.key);
