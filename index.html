@@ -588,6 +588,15 @@ html .side .nav .cnt[hidden]{display:none!important}
 #licDlg .dp button:hover{background:var(--brand-soft,#eef2fb);color:var(--brand)}
 #licDlg .dps{font-size:18px;color:var(--ink2,#6b6a66)}
 #licDlg .dpw{margin-left:8px;font-size:13px;color:var(--ink2,#6b6a66)}
+.ov-app.off{position:relative}
+.ov-add{position:absolute;top:8px;right:8px;width:26px;height:26px;border-radius:50%;border:1px solid var(--brand);background:#fff;color:var(--brand);font:600 16px/1 var(--font,inherit);cursor:pointer;display:grid;place-items:center;padding:0}
+.ov-add:hover{background:var(--brand);color:#fff}
+#addAppDlg .aa-lic{display:grid;gap:8px;margin-top:6px}
+#addAppDlg .aa-lic label{display:flex;gap:8px;align-items:flex-start;border:1px solid var(--line);border-radius:10px;padding:10px 12px;cursor:pointer;font-weight:500;color:var(--ink)}
+#addAppDlg .aa-lic label:has(input:checked){border-color:var(--brand);background:var(--brand-soft,#eef2fb)}
+#addAppDlg .aa-lic small{display:block;color:var(--ink2,#6b6a66);font-weight:400}
+#addAppDlg .aa-lic input[type=radio]{width:auto;height:auto;margin:3px 0 0;flex:none}
+#addAppDlg .aa-lic span{flex:1;text-align:left;font-size:14px}
 </style>
 </head>
 <body>
@@ -700,6 +709,28 @@ html .side .nav .cnt[hidden]{display:none!important}
 <dialog id="listDlg" class="ov-dlg">
   <div class="dh"><span id="listTitle">List</span><button type="button" class="icon-btn" id="listClose" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div>
   <div class="db" id="listBody"></div>
+</dialog>
+
+<!-- ADD AN APP TO A BUSINESS (the + on a greyed-out app) -->
+<dialog id="addAppDlg">
+  <form method="dialog" id="addAppForm">
+    <div class="dh" id="aaTitle">Add to app</div>
+    <div class="db">
+      <p class="small" id="aaIntro" style="margin-top:0"></p>
+      <label for="aaName">Owner’s name</label>
+      <input type="text" id="aaName" autocomplete="off">
+      <label for="aaEmail">Owner’s email</label>
+      <input type="email" id="aaEmail" autocomplete="off">
+      <div class="small" style="margin-top:4px">They open the app from their Proview dashboard with the login they already use. If they don’t have one in this app yet, it’s made for them.</div>
+      <label style="margin-top:12px">Licence</label>
+      <div class="aa-lic">
+        <label><input type="radio" name="aaLic" value="trial" checked><span>3-day trial<small>Full access for 3 days, then it locks.</small></span></label>
+        <label><input type="radio" name="aaLic" value="set"><span>Set it now<small>Opens the licence straight after, to choose the end date.</small></span></label>
+        <label><input type="radio" name="aaLic" value="none"><span>No licence<small>They buy one when they sign in.</small></span></label>
+      </div>
+    </div>
+    <div class="df"><span style="flex:1"></span><button class="btn" value="cancel" formnovalidate>Cancel</button><button class="btn primary" value="ok" id="aaGo">Add</button></div>
+  </form>
 </dialog>
 
 <!-- LICENCE DIALOG -->
@@ -1130,7 +1161,7 @@ function custCard(c) {
   const tile = (k) => {
     const units = sum.units.filter((u) => u.product === k), has = prods.includes(k) || units.length;
     const name = PRODUCTS[k].label, logo = `<span class="ov-lg"><img src="${appLogo(k)}" alt="" width="20" height="20"></span>`;
-    if (!has) return `<div class="ov-app off" title="No ${esc(name)}"><span class="an">${logo}<span class="nm">${name}</span></span><span class="ad"><span class="ov-dot"></span><span class="at">—</span></span></div>`;
+    if (!has) return `<div class="ov-app off" title="No ${esc(name)}"><span class="an">${logo}<span class="nm">${name}</span></span><span class="ad"><span class="ov-dot"></span><span class="at">—</span></span><button type="button" class="ov-add" data-addapp="${esc(c.id + "|" + k)}" title="Add ${esc(cardTitle(c))} to ${esc(name)}" aria-label="Add to ${esc(name)}">+</button></div>`;
     const bad = units.filter((u) => tone(u) === "r"), warn = units.filter((u) => tone(u) === "a");
     const t = bad.length ? "r" : warn.length ? "a" : units.length ? "g" : "n";
     const next = renewAt(units);
@@ -1642,6 +1673,41 @@ async function deleteBusiness(id) {
   } catch (e) { toast(e.message, true); }
 }
 
+// The + on a greyed-out app: add this business to that app (licence hub create_business for one app)
+function addAppTo(cid, k) {
+  const c = S.customers.find((x) => x.id === cid); if (!c) return;
+  const name = PRODUCTS[k].label, d = $("#addAppDlg");
+  $("#aaTitle").textContent = `Add ${cardTitle(c)} to ${name}`;
+  $("#aaIntro").textContent = `Sets up ${c.name} in Proview ${name}, with a location of the same name and this owner.`;
+  $("#aaName").value = c.owner_name || "";
+  $("#aaEmail").value = c.owner_email || c.contact_email || "";
+  d.querySelector('input[name="aaLic"][value="trial"]').checked = true;
+  $("#aaGo").textContent = `Add to ${name}`;
+  d.returnValue = "";
+  d.onclose = async () => {
+    if (d.returnValue !== "ok") return;
+    const owner = $("#aaName").value.trim(), email = $("#aaEmail").value.trim().toLowerCase(), lic = d.querySelector('input[name="aaLic"]:checked').value;
+    if (owner.length < 2 || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { toast("Enter the owner’s name and a valid email", true); return addAppTo(cid, k); }
+    toast(`Adding ${c.name} to ${name}…`);
+    try {
+      const out = await hub("create_business", { customer_id: cid, apps: [k], business: c.name, name: owner, email, mobile: null,
+        password: ncRand(24), contact_email: c.contact_email || email, licence: lic === "set" ? "none" : lic, invite: false });
+      const r = out.results?.[k];
+      await loadAll(); render();
+      if (!r?.ok) return toast(`Not added to ${name}: ${r?.error || "no answer"}`, true);
+      toast(`${c.name} added to ${name}` + (lic === "trial" ? (r.trial?.applied ? " on a 3-day trial" : r.trial_error ? ` (trial not started: ${r.trial_error})` : "") : ""));
+      if (lic === "set") {
+        openDetail(cid);
+        const u = S.units.find((x) => x.product === k && !x.gone && x.account_ext_id === r.account_id);
+        if (u) openLicence(u.product + "|" + u.ext_id);
+        else toast(`${name} is licensed per ${PRODUCTS[k].unit.toLowerCase()}: set the licence on each one once it’s added in the app.`);
+      }
+    } catch (e) { toast(e.message, true); }
+  };
+  d.showModal();
+  ($("#aaName").value ? $("#aaEmail") : $("#aaName")).focus();
+}
+
 async function deleteCustomer(id) {
   if (!(await ask({ title: "Delete business", message: "Delete this business card? (It has no app accounts.)", ok: "Delete", danger: true }))) return;
   const { error } = await sb.from("lic_customers").delete().eq("id", id);
@@ -1655,7 +1721,7 @@ document.addEventListener("click", (e) => {
   if (oa) { e.stopPropagation(); if (oa.closest("#listDlg")) $("#listDlg").close(); openInApp(oa.dataset.openapp); return; }
   const op = e.target.closest("[data-openpick]");
   if (op) { e.stopPropagation(); const [cid, k] = op.dataset.openpick.split("|"); showOpenPick(cid, k); return; }
-  const t = e.target.closest("[data-open],[data-back],[data-addlic],[data-prod],[data-edit],[data-quick],[data-savecust],[data-move],[data-link],[data-unlink],[data-split],[data-delcust],[data-selall],[data-pause],[data-resume],[data-delbiz]");
+  const t = e.target.closest("[data-open],[data-back],[data-addlic],[data-prod],[data-edit],[data-quick],[data-savecust],[data-move],[data-link],[data-unlink],[data-split],[data-delcust],[data-selall],[data-pause],[data-resume],[data-delbiz],[data-addapp]");
   if (!t) return;
   if (t.dataset.open) openDetail(t.dataset.open);
   else if (t.dataset.back) { S.detail = null; renderCustomers(); syncBizPick(); }
@@ -1672,6 +1738,7 @@ document.addEventListener("click", (e) => {
   else if (t.dataset.unlink) unlinkLocation(t.dataset.unlink);
   else if (t.dataset.split) splitGrouped();
   else if (t.dataset.delcust) deleteCustomer(t.dataset.delcust);
+  else if (t.dataset.addapp) { e.stopPropagation(); const [cid, k] = t.dataset.addapp.split("|"); addAppTo(cid, k); }
   else if (t.dataset.pause) pauseBusiness(t.dataset.pause, true);
   else if (t.dataset.resume) pauseBusiness(t.dataset.resume, false);
   else if (t.dataset.delbiz) deleteBusiness(t.dataset.delbiz);
