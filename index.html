@@ -1057,7 +1057,7 @@ function unitRow(u) {
     <td><div class="un">${multiKind(u.product) ? `<span class="pill none" title="What this licence is for">${KIND_LABEL[kindOf(u)]}</span> ` : ""}${esc(u.name || "(unnamed)")}</div>${meta ? `<div class="um" title="${esc(meta)}">${esc(meta)}</div>` : ""}</td>
     <td class="hide-sm">${esc(PLAN_LABEL[u.license_type] || u.license_type || "—")}${u.notes ? `<span class="note" title="${esc(u.notes)}">📝</span>` : ""}</td>
     <td><span class="pill ${s.cls}">${esc(s.label)}</span></td>
-    <td class="acts">${u.license_type === "lifetime" ? "" : `<button class="btn sm" data-quick="${esc(key)}" title="Add 12 months">+12m</button>`}<button class="btn sm" data-edit="${esc(key)}">Change…</button></td></tr>`;
+    <td class="acts"><button class="btn sm" data-edit="${esc(key)}">Change…</button></td></tr>`;
 }
 
 function accountBlock(a) {
@@ -1071,7 +1071,7 @@ function accountBlock(a) {
       <button class="btn sm" data-move="${esc(key)}" title="Move this app account to another business">Move…</button>
       ${canOpen(a) ? `<button type="button" class="btn sm primary" data-openapp="${esc(key)}" title="Open ${esc(a.name || "this business")} in Proview ${p.label}, signed in as Proview">Open ↗</button>` : ""}
     </div>
-    ${units.length ? `<table><thead><tr><th class="cb"><button type="button" class="linkbtn" data-selall="${esc(key)}" title="Select every licence here">All</button></th><th>${multiKind(a.product) ? "Licence" : p.unit}</th><th class="hide-sm" style="width:20%">Plan</th><th style="width:20%">Status</th><th style="width:190px"></th></tr></thead><tbody>${units.map(unitRow).join("")}</tbody></table>`
+    ${units.length ? `<table><thead><tr><th class="cb"><button type="button" class="linkbtn" data-selall="${esc(key)}" title="Select every licence here">All</button></th><th>${multiKind(a.product) ? "Licence" : p.unit}</th><th class="hide-sm" style="width:20%">Plan</th><th style="width:20%">Status</th><th style="width:110px"></th></tr></thead><tbody>${units.map(unitRow).join("")}</tbody></table>`
       : `<div class="none">No ${multiKind(a.product) ? "licences" : p.units} yet.</div>`}
   </section>`;
 }
