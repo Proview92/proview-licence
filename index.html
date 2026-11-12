@@ -1681,7 +1681,8 @@ async function addAppTo(cid, k, keep) {
   const c = S.customers.find((x) => x.id === cid); if (!c) return;
   // the owner already signed up (saved on the card, their Proview login, or the email its apps report): filled in, editable
   let def = { name: c.owner_name, email: c.owner_email || c.contact_email, mobile: c.owner_mobile };
-  if (!keep) { try { const { data } = await sb.rpc("lic_owner_defaults", { p_customer: cid }); if (data) def = { ...def, ...Object.fromEntries(Object.entries(data).filter(([, v]) => v)) }; } catch {} }
+  // the business's owner (the same for every app); only looked up when the card has none saved yet
+  if (!keep && !(c.owner_name && c.owner_email)) { try { const { data } = await sb.rpc("lic_owner_defaults", { p_customer: cid }); if (data) def = { ...Object.fromEntries(Object.entries(data).filter(([, v]) => v)), ...Object.fromEntries(Object.entries(def).filter(([, v]) => v)) }; } catch {} }
   const name = PRODUCTS[k].label, d = $("#addAppDlg");
   $("#aaTitle").textContent = `Add ${cardTitle(c)} to ${name}`;
   $("#aaIntro").textContent = `Sets up ${c.name} in Proview ${name}, with a location of the same name and this owner.`;
@@ -1689,7 +1690,7 @@ async function addAppTo(cid, k, keep) {
     $("#aaName").value = def.name || "";
     $("#aaEmail").value = def.email || "";
     $("#aaMobile").value = def.mobile || "";
-    $("#aaFrom").textContent = def.name || def.email ? "Filled in from the owner already signed up. Change anything you need to." : "";
+    $("#aaFrom").textContent = def.name || def.email ? `The owner of ${c.name}. Change it here only if this app needs a different owner.` : "";
   }
   d.querySelector('input[name="aaLic"][value="trial"]').checked = true;
   $("#aaGo").textContent = `Add to ${name}`;
@@ -1702,8 +1703,8 @@ async function addAppTo(cid, k, keep) {
     try {
       const out = await hub("create_business", { customer_id: cid, apps: [k], business: c.name, name: owner, email,
         password: ncRand(24), contact_email: c.contact_email || email, licence: lic === "set" ? "none" : lic, invite: false, mobile });
-      // remember the owner on the card, so the next app is filled in the same
-      await sb.from("lic_customers").update({ owner_name: owner, owner_email: email, owner_mobile: mobile ?? c.owner_mobile ?? null }).eq("id", cid);
+      // the business's owner: saved on the card only when it has none yet (a different owner typed for one app stays with that app)
+      if (!c.owner_name || !c.owner_email) await sb.from("lic_customers").update({ owner_name: c.owner_name || owner, owner_email: c.owner_email || email, owner_mobile: c.owner_mobile || mobile }).eq("id", cid);
       const r = out.results?.[k];
       await loadAll(); render();
       if (!r?.ok) return toast(`Not added to ${name}: ${r?.error || "no answer"}`, true);
