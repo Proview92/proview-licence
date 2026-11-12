@@ -580,7 +580,14 @@ html .side .nav .cnt[hidden]{display:none!important}
 .linkbtn{background:none;border:0;padding:0;color:var(--brand);font:600 12px var(--font,inherit);cursor:pointer}
 @media (max-width:700px){.appc .hide-sm{display:none}.appc .un,.appc .um{max-width:180px}}
 #licDlg .licend{background:#f8f7f4;border:1px solid var(--line);border-radius:10px;padding:10px 12px 12px;margin-bottom:6px}
-#licDlg .licend input[type=date]{font-size:17px;font-weight:600}
+#licDlg .dpick{display:flex;align-items:center;gap:6px;margin-top:4px}
+#licDlg .dp{display:flex;flex-direction:column;align-items:center;width:58px}
+#licDlg .dp.dpy{width:78px}
+#licDlg .dp input{width:100%;text-align:center;font-size:18px;font-weight:650;padding:6px 4px;height:40px}
+#licDlg .dp button{width:100%;height:22px;border:1px solid var(--line);background:#fff;border-radius:6px;font-size:10px;line-height:1;cursor:pointer;color:var(--ink2,#6b6a66)}
+#licDlg .dp button:hover{background:var(--brand-soft,#eef2fb);color:var(--brand)}
+#licDlg .dps{font-size:18px;color:var(--ink2,#6b6a66)}
+#licDlg .dpw{margin-left:8px;font-size:13px;color:var(--ink2,#6b6a66)}
 </style>
 </head>
 <body>
@@ -701,8 +708,16 @@ html .side .nav .cnt[hidden]{display:none!important}
     <div class="dh" id="licTitle">Licence</div>
     <div class="db">
       <div class="licend">
-        <label for="licDate">End date</label>
-        <input type="date" id="licDate">
+        <label for="dpD">End date</label>
+        <input type="hidden" id="licDate">
+        <div class="dpick" id="dpick">
+          <div class="dp"><button type="button" data-dp="d" data-n="1" aria-label="Next day">▲</button><input id="dpD" inputmode="numeric" maxlength="2" aria-label="Day"><button type="button" data-dp="d" data-n="-1" aria-label="Previous day">▼</button></div>
+          <span class="dps">/</span>
+          <div class="dp"><button type="button" data-dp="m" data-n="1" aria-label="Next month">▲</button><input id="dpM" inputmode="numeric" maxlength="2" aria-label="Month"><button type="button" data-dp="m" data-n="-1" aria-label="Previous month">▼</button></div>
+          <span class="dps">/</span>
+          <div class="dp dpy"><button type="button" data-dp="y" data-n="1" aria-label="Next year">▲</button><input id="dpY" inputmode="numeric" maxlength="4" aria-label="Year"><button type="button" data-dp="y" data-n="-1" aria-label="Previous year">▼</button></div>
+          <span class="dpw" id="dpW"></span>
+        </div>
         <div class="small" id="licCurrent"></div>
       </div>
       <label for="licPlan">Plan</label>
@@ -1302,21 +1317,51 @@ function licPreview(u, plan, extend) {
   if (m) d.setMonth(d.getMonth() + m); else d.setDate(d.getDate() + ({ trial7: 7, trial3: 3, trial: 3 }[plan] || 0));
   return ymdOf(d);
 }
-function licSync() {
+// The end date: day / month / year, each typed or stepped with ▲▼. Lifetime reads 31/12/2099 here (and only here).
+const LIFETIME_YMD = "2099-12-31";
+const DP = { get() { const v = $("#licDate").value; return v ? new Date(v + "T12:00:00") : null; } };
+function dpSet(d, fromUser) {
+  if (!d || isNaN(d)) return;
+  if (d.getFullYear() > 2099) d = new Date(LIFETIME_YMD + "T12:00:00");
+  $("#licDate").value = ymdOf(d);
+  $("#dpD").value = String(d.getDate()).padStart(2, "0"); $("#dpM").value = String(d.getMonth() + 1).padStart(2, "0"); $("#dpY").value = d.getFullYear();
+  $("#dpW").textContent = $("#licDate").value === LIFETIME_YMD ? "Lifetime" : d.toLocaleDateString("en-GB", { weekday: "short" });
+  if (fromUser) { if ($("#licPlan").value !== "custom") $("#licPlan").value = ""; licSync(true); }
+}
+function dpStep(part, n) {
+  const d = DP.get() || new Date();
+  if (part === "d") d.setDate(d.getDate() + n);
+  else if (part === "m") { const day = d.getDate(); d.setDate(1); d.setMonth(d.getMonth() + n); d.setDate(Math.min(day, new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate())); }
+  else { const day = d.getDate(), mo = d.getMonth(); d.setDate(1); d.setFullYear(d.getFullYear() + n); d.setDate(Math.min(day, new Date(d.getFullYear(), mo + 1, 0).getDate())); }
+  dpSet(d, true);
+}
+function dpTyped() {
+  const dd = +$("#dpD").value, mm = +$("#dpM").value, yy = +$("#dpY").value;
+  if (!dd || !mm || !(yy >= 2000)) return;
+  const d = new Date(yy, mm - 1, Math.min(dd, new Date(yy, mm, 0).getDate()), 12);
+  dpSet(d, true);
+}
+document.addEventListener("click", (e) => { const b = e.target.closest("#dpick [data-dp]"); if (b) { e.preventDefault(); dpStep(b.dataset.dp, +b.dataset.n); } });
+for (const id of ["dpD", "dpM", "dpY"]) {
+  $("#" + id).addEventListener("change", dpTyped);
+  $("#" + id).addEventListener("keydown", (e) => { if (e.key === "ArrowUp" || e.key === "ArrowDown") { e.preventDefault(); dpStep({ dpD: "d", dpM: "m", dpY: "y" }[id], e.key === "ArrowUp" ? 1 : -1); } });
+}
+function licSync(fromDate) {
   const u = findUnit($("#licDlg").dataset.key); if (!u) return;
   const v = $("#licPlan").value, pv = licPreview(u, v, $("#licExtend").checked);
   $("#licExtendRow").classList.toggle("hidden", !/^m\d+$/.test(v) || !(u.expires_at && Date.parse(u.expires_at) > Date.now()));
-  if (pv !== null) { $("#licDate").value = pv; $("#licDate").placeholder = ""; }
-  $("#licDate").title = v === "lifetime" ? "Lifetime: no end date" : "";
+  if (pv !== null && !fromDate) dpSet(new Date((pv || LIFETIME_YMD) + "T12:00:00"));
 }
 function openLicence(key) {
   const u = findUnit(key); if (!u) return;
   const p = PRODUCTS[u.product];
   $("#licTitle").textContent = `${p.label} · ${KIND_LABEL[kindOf(u)]} · ${u.name || KIND_LABEL[kindOf(u)]}`;
-  $("#licCurrent").textContent = "Now: " + status(u).label + (u.license_type ? ` · ${PLAN_LABEL[u.license_type] || u.license_type}` : "") + (u.license_type === "lifetime" ? " · no end date" : "");
+  $("#licCurrent").textContent = "Now: " + status(u).label + (u.license_type ? ` · ${PLAN_LABEL[u.license_type] || u.license_type}` : "");
   $("#licPlan").innerHTML = `<option value="">Keep the plan · use the end date above</option>` + planOptions(u.product);
   $("#licPlan").value = "";
-  $("#licDate").value = u.expires_at && u.license_type !== "lifetime" ? ymdOf(u.expires_at) : "";
+  $("#licDate").value = ""; ["dpD", "dpM", "dpY"].forEach((i) => ($("#" + i).value = "")); $("#dpW").textContent = "";
+  if (u.license_type === "lifetime") dpSet(new Date(LIFETIME_YMD + "T12:00:00"));
+  else if (u.expires_at) dpSet(new Date(u.expires_at));
   $("#licDate").dataset.orig = $("#licDate").value;
   $("#licNotes").value = "";
   $("#licExtend").checked = true;
@@ -1327,17 +1372,17 @@ function openLicence(key) {
   licSync();
   dlg.showModal();
 }
-$("#licPlan").onchange = licSync;
-$("#licExtend").onchange = licSync;
+$("#licPlan").onchange = () => licSync();
+$("#licExtend").onchange = () => licSync();
 // typing a date means "end on this date": back to Keep the plan (saved as a custom end date)
-$("#licDate").addEventListener("input", () => { if ($("#licPlan").value !== "custom") $("#licPlan").value = ""; licSync(); });
+
 $("#licDlg").addEventListener("close", async () => {
   const dlg = $("#licDlg"); if (dlg.returnValue !== "save") return;
   const u = findUnit(dlg.dataset.key); let type = $("#licPlan").value; const date = $("#licDate").value;
   if (!type) {   // keep the plan: the end date typed above
     if (!date) return toast("Choose an end date, or pick a plan", true);
     if (date === $("#licDate").dataset.orig && !$("#licNotes").value) return toast("Nothing changed");
-    type = "custom";
+    type = date === LIFETIME_YMD ? "lifetime" : "custom";   // 31/12/2099 = lifetime
   }
   if (type === "custom" && !date) return toast("Choose an end date", true);
   await applyChanges([{ product: u.product, kind: kindOf(u), unit: u.ext_id, type, extend: /^m\d+$/.test(type) && $("#licExtend").checked,
