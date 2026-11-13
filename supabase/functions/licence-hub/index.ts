@@ -24,6 +24,7 @@ const TYPES: Record<string, string[]> = {
   qrmenu: ["trial3", "m1", "m3", "m6", "m12", "m24", "m36", "lifetime", "custom"],
   label: ["trial", "m1", "m3", "m6", "m12", "m24", "m36", "lifetime", "custom"], // per handheld (trial = set by hand)
   team: ["trial", "m1", "m3", "m6", "m12", "m24", "m36", "lifetime", "custom"],  // Proview Team: as Bookings
+  reservations: ["trial", "m1", "m3", "m6", "m12", "m24", "m36", "lifetime", "custom"],  // Proview Reservations: as Bookings
 };
 
 // What a unit is (PER_LOCATION_LICENCE_SPEC): every app licenses each location; Signage also each TV and Employee each
@@ -31,9 +32,9 @@ const TYPES: Record<string, string[]> = {
 const KINDS: Record<string, string[]> = {
   // owner 12 Nov 2026: Signage licenses each TV only, Label each handheld only, WiFi and QR Menu each location only
   signage: ["screen"], employee: ["staff", "location"],
-  bookings: ["location"], wifi: ["location"], qrmenu: ["location"], label: ["handheld"], team: ["location"],
+  bookings: ["location"], wifi: ["location"], qrmenu: ["location"], label: ["handheld"], team: ["location"], reservations: ["location"],
 };
-const DEFAULT_KIND: Record<string, string> = { signage: "screen", employee: "staff", bookings: "location", wifi: "location", qrmenu: "location", label: "handheld", team: "location" };
+const DEFAULT_KIND: Record<string, string> = { signage: "screen", employee: "staff", bookings: "location", wifi: "location", qrmenu: "location", label: "handheld", team: "location", reservations: "location" };
 const kindOf = (product: string, k: unknown) => {
   const v = typeof k === "string" && k ? k : DEFAULT_KIND[product];
   return (KINDS[product] ?? []).includes(v) ? v : null;
@@ -53,7 +54,7 @@ async function callApp(app: App, action: string, args: Record<string, unknown> =
 }
 
 const PAY_PLANS = ["m1", "m3", "m6", "m12", "m24", "m36", "lifetime"];
-const REF_CODES: Record<string, string> = { pvs: "signage", pvb: "bookings", pve: "employee", pvw: "wifi", pvq: "qrmenu", pvl: "label", pvt: "team" };
+const REF_CODES: Record<string, string> = { pvs: "signage", pvb: "bookings", pve: "employee", pvw: "wifi", pvq: "qrmenu", pvl: "label", pvt: "team", pvr: "reservations" };
 const codeOf = (product: string) => Object.keys(REF_CODES).find((k) => REF_CODES[k] === product);
 // Stripe client_reference_id (/home/claude/HUB_UNITS.md): the unit is the middle parts joined with "/", as before.
 //   pvs__<screen>__<plan>                 Signage TV            unit <screen>
@@ -363,7 +364,7 @@ export function trialCall(product: string, r: any, now = Date.now()): [string, R
     site ? ["set", { unit: site, kind: "location", type, extend: false, expires: null, notes: TRIAL_NOTE, ...extra }] as [string, Record<string, unknown>] : null;
   switch (product) {
     case "signage": case "employee": return r?.account_id ? ["trial", { account_id: String(r.account_id) }] : null;
-    case "bookings": case "wifi": case "team": return set("trial");
+    case "bookings": case "wifi": case "team": case "reservations": return set("trial");
     case "qrmenu": return set("trial3");
     // Label: the business gets a spare 3-day trial licence that its first paired handheld takes (Label migration 013)
     case "label": return r?.account_id ? ["trial", { account_id: String(r.account_id), notes: TRIAL_NOTE }] : null;
@@ -382,7 +383,7 @@ export function trialResult(action: string, a: any) {
 // linked location (all its location units, grouped by lic_units.origin_id) out into new businesses (hub_call 'unlink')
 // and a new card. Apps can't share a transaction: each app call is all or nothing, the portal is updated straight after
 // each call that worked, and a failed app is reported and left as it was, so pressing the button again finishes it.
-const LINK_ORDER = ["signage", "bookings", "employee", "team", "label", "qrmenu", "wifi"];
+const LINK_ORDER = ["signage", "bookings", "reservations", "employee", "team", "label", "qrmenu", "wifi"];
 const byAge = (x: any, y: any) => String(x.extra?.created_at ?? "").localeCompare(String(y.extra?.created_at ?? "")) || String(x.ext_id).localeCompare(String(y.ext_id));
 const norm = (s: unknown) => String(s ?? "").trim().toLowerCase().replace(/\s+/g, " ");
 const errText = (e: unknown) => String((e as Error)?.message ?? e);

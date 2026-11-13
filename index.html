@@ -881,12 +881,13 @@ const PRODUCTS = {
   qrmenu:   { label: "QR Menu",  unit: "Business", units: "businesses",   app: "https://qrmenu.proviewcrm.co.uk", trial: "trial3" },
   label:    { label: "Label",    unit: "Handheld", units: "handhelds",   app: "https://label.proviewcrm.co.uk", trial: "trial" },
   team:     { label: "Team",     unit: "Business", units: "businesses",   app: "https://team.proviewcrm.co.uk", trial: "trial" },
+  reservations: { label: "Reservations", unit: "Business", units: "businesses", app: "https://reservations.proviewcrm.co.uk", trial: "trial" },
 };
 // What each licence is for (PER_LOCATION_LICENCE_SPEC): every app licenses each location; Signage also each TV and
 // Employee each extra person over the package. Units synced before kinds existed read as their app's old kind.
 // owner 12 Nov 2026: Signage licenses each TV only; Label each handheld only; WiFi and QR Menu each location only
-const KINDS = { signage: ["screen"], bookings: ["location"], employee: ["location", "staff"], wifi: ["location"], qrmenu: ["location"], label: ["handheld"], team: ["location"] };
-const DEFAULT_KIND = { signage: "screen", bookings: "location", employee: "staff", wifi: "location", qrmenu: "location", label: "handheld", team: "location" };
+const KINDS = { signage: ["screen"], bookings: ["location"], employee: ["location", "staff"], wifi: ["location"], qrmenu: ["location"], label: ["handheld"], team: ["location"], reservations: ["location"] };
+const DEFAULT_KIND = { signage: "screen", bookings: "location", employee: "staff", wifi: "location", qrmenu: "location", label: "handheld", team: "location", reservations: "location" };
 const KIND_LABEL = { location: "Business", screen: "TV", staff: "Staff add-on", handheld: "Handheld" };
 const KIND_WORD = { location: ["business", "businesses"], screen: ["TV", "TVs"], staff: ["staff add-on", "staff add-ons"], handheld: ["handheld", "handhelds"] };
 const kindOf = (u) => u.kind || DEFAULT_KIND[u.product] || "location";
@@ -898,7 +899,7 @@ function unitCount(prod, units) {
   return by.map(([k, n]) => `${n} ${KIND_WORD[k][n === 1 ? 0 : 1]}`).join(", ");
 }
 // the New customer pop-up's app tick boxes, in this order
-const NC_APPS = ["signage", "bookings", "employee", "team", "label", "wifi", "qrmenu"];
+const NC_APPS = ["signage", "bookings", "reservations", "employee", "team", "label", "wifi", "qrmenu"];
 const PLAN_LABEL = { trial: "Trial (3 days)", trial3: "Trial (3 days)", trial7: "Trial (3 days)",
   m1: "1 month", m3: "3 months", m6: "6 months", m12: "12 months", m24: "24 months", m36: "36 months",
   lifetime: "Lifetime", custom: "Custom end date" };
@@ -998,8 +999,8 @@ function renderSyncChips() {
 // ---------- open a customer's app account as the master (MASTER_OPEN_SPEC / MASTER_OPEN_PROTOCOL) ----------
 // sso-assert { action: "go", app, business: <lic_accounts.ext_id> } signs a biz claim (licence admins only);
 // the app's sso-login honours it only for its master and opens exactly that business, in a new tab.
-const OPENABLE = new Set(["signage", "bookings", "employee", "team", "label", "qrmenu", "wifi"]);
-const LOGO_V = "20261112b";   // bump with the files in apps/ (each app's own PV icon, copied from its repo)
+const OPENABLE = new Set(["signage", "bookings", "reservations", "employee", "team", "label", "qrmenu", "wifi"]);
+const LOGO_V = "20261113";   // bump with the files in apps/ (each app's own PV icon, copied from its repo)
 const appLogo = (k) => `apps/${k}.svg?v=${LOGO_V}`;
 const canOpen = (a) => !!a && !a.gone && OPENABLE.has(a.product) && a.ext_id != null && a.ext_id !== "";
 async function openInApp(key) {
@@ -1099,6 +1100,7 @@ const TONE_RANK = { r: 0, a: 1, g: 2 };
 const ICONS = {
   signage: '<rect x="3" y="4" width="18" height="12" rx="2"></rect><path d="M8 20h8M12 16v4"></path>',
   bookings: '<rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M16 3v4M8 3v4M3 10h18"></path>',
+  reservations: '<rect x="3" y="8" width="18" height="4" rx="1"></rect><path d="M6 12v7M18 12v7"></path>',
   team: '<circle cx="9" cy="8" r="3.5"></circle><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"></path><circle cx="17.5" cy="9" r="2.5"></circle><path d="M17 14.2c2.7.3 4.5 2.4 4.5 5.3"></path>',
   employee: '<circle cx="9" cy="8" r="3.5"></circle><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"></path>',
   wifi: '<path d="M2 8.8a15 15 0 0 1 20 0"></path><path d="M5 12.5a10 10 0 0 1 14 0"></path><path d="M8.5 16a5 5 0 0 1 7 0"></path><path d="M12 20h.01"></path>',
@@ -1209,7 +1211,7 @@ function custCard(c) {
     const act = open.length === 1 ? `data-openapp="${esc(open[0].product + "|" + open[0].ext_id)}"` : `data-openpick="${esc(c.id + "|" + k)}"`;
     return `<button type="button" class="ov-app" ${act} title="${esc(label + " (" + status + ")")}" aria-label="${esc(label + ". " + status)}">${body}<span class="ov-go" aria-hidden="true">↗</span></button>`;
   };
-  const TILE_ORDER = ["signage", "bookings", "employee", "team", "label", "qrmenu", "wifi"];
+  const TILE_ORDER = ["signage", "bookings", "reservations", "employee", "team", "label", "qrmenu", "wifi"];
   const nLinked = groupsOf(c).length, title = cardTitle(c);
   return `<article class="card ov-biz" data-cust="${c.id}">
     <div class="ov-bh"><div class="grow"><h3 title="${esc(title)}">${esc(title)}</h3><div class="muted small">${esc(nLinked > 1 ? `${nLinked} linked businesses · ${sub}` : sub)}</div></div><span class="ov-pill ${pcls}">${ptxt}</span></div>
@@ -1290,13 +1292,13 @@ function custDetail(c) {
     ${accts.map(accountBlock).join("") || `<div class="card bd-paused" style="background:#fff;border-color:var(--line);color:inherit">No app accounts here. Use “Move…” on an account under another business to bring it here.</div>`}
   </div>`;
 }
-const LINK_APPS = ["signage", "bookings", "employee", "team", "label", "qrmenu", "wifi"];
+const LINK_APPS = ["signage", "bookings", "reservations", "employee", "team", "label", "qrmenu", "wifi"];
 
 // Tiles / List (remembered in this browser)
 let VIEW_AS = (() => { try { return localStorage.getItem("pvl.viewAs") || "tiles"; } catch { return "tiles"; } })();
 function paintViewSwitch() { document.querySelectorAll("[data-view-as]").forEach((b) => { b.classList.toggle("on", b.dataset.viewAs === VIEW_AS); b.setAttribute("aria-pressed", String(b.dataset.viewAs === VIEW_AS)); }); }
 document.addEventListener("click", (e) => { const b = e.target.closest("[data-view-as]"); if (!b) return; VIEW_AS = b.dataset.viewAs; try { localStorage.setItem("pvl.viewAs", VIEW_AS); } catch {} renderCustomers(); });
-const LIST_APPS = ["signage", "bookings", "employee", "team", "label", "qrmenu", "wifi"];
+const LIST_APPS = ["signage", "bookings", "reservations", "employee", "team", "label", "qrmenu", "wifi"];
 function custTable(cs) {
   const cell = (c, k) => {
     const sum = custSummary(c), accts = accountsForCustomer(c), units = sum.units.filter((u) => u.product === k);
