@@ -1045,6 +1045,14 @@ html body .main-col .acct{background:var(--card)!important}
 section[data-view="expiring"] .bar{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin:0 0 16px}
 section[data-view="expiring"] .bar select{min-height:40px;border-radius:10px;font-weight:600}
 section[data-view="expiring"] .bar label{font-weight:600;font-size:14px}
+section[data-view="trials"] .tr-bar{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin:0 0 16px}
+section[data-view="trials"] .tr-bar select{min-height:40px;border-radius:10px;font-weight:600}
+section[data-view="trials"] .tr-bar label{font-weight:600;font-size:14px}
+section[data-view="trials"] .tr-bar .small{flex:1 1 280px;color:var(--muted)}
+#trList .tr-note{white-space:pre-wrap;overflow-wrap:anywhere}
+#trList td.acts{white-space:nowrap}
+#trList td.acts .btn+.btn{margin-left:6px}
+#trList .tr-biz{font-weight:600}
 @media (max-width:900px){.xtiles{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media (max-width:760px){
  .xtiles{gap:10px;margin-bottom:16px}
@@ -1294,6 +1302,7 @@ body.gate .pv-dock,body.gate .pv-ptr,body.gate .pv-synced,body.gate .res-tools{d
       <div class="nav-sep">Licences</div>
       <a data-tab="customers" class="active" href="#customers"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21h18M5 21V7l7-4 7 4v14M9 9h1M9 13h1M9 17h1M14 9h1M14 13h1M14 17h1"/></svg><span>Businesses</span></a>
       <a data-tab="expiring" href="#expiring"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg><span>Expiring</span></a>
+      <a data-tab="trials" href="#trials"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12v10H4V12"/><path d="M2 7h20v5H2z"/><path d="M12 22V7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7zM12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg><span data-long="Trial requests" data-short="Trials">Trial requests</span><span class="cnt" id="trialCnt" hidden></span></a>
       <a data-tab="paylog" href="#paylog"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 2h12v20l-3-2-3 2-3-2-3 2z"/><path d="M9 7h6M9 11h6M9 15h4"/></svg><span data-long="Payments" data-short="Payments">Payments</span><span class="cnt" id="failCnt" hidden></span></a>
       <a data-tab="payfail" href="#payfail" hidden style="display:none"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 7v6M12 16.5v.5"/></svg><span data-long="Failed payments" data-short="Failed">Failed payments</span></a>
       <a data-tab="payments" href="#payments" hidden style="display:none"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20M6 15h4"/></svg><span>Payment settings</span></a>
@@ -1368,6 +1377,21 @@ body.gate .pv-dock,body.gate .pv-ptr,body.gate .pv-synced,body.gate .res-tools{d
         <label class="row" style="gap:6px"><input type="checkbox" id="expTrials"> include trials</label>
       </div>
       <div id="expList"></div>
+    </section>
+
+    <!-- TRIAL REQUESTS (from dashboard.proviewcrm.co.uk "Request trial") -->
+    <section data-view="trials" class="hidden">
+      <div class="bar tr-bar">
+        <label for="trFilter">Show</label>
+        <select id="trFilter">
+          <option value="new" selected>New</option>
+          <option value="done">Done</option>
+          <option value="declined">Declined</option>
+          <option value="all">All</option>
+        </select>
+        <span class="small">Requests from the Proview dashboard. Nothing is granted automatically: give a licence by hand on the business, then mark the request done.</span>
+      </div>
+      <div id="trList"><div class="empty">Loading…</div></div>
     </section>
 
     <!-- ACTIVITY -->
@@ -2345,6 +2369,59 @@ function renderExpiring() {
   $("#expList").innerHTML = `<div class="xtiles">${tiles}</div>` + groups.map(([k, label, cls, f]) => { const g = rows.filter(({ s }) => f(s)); return g.length ? `<details class="xg" ${matchMedia("(max-width: 760px)").matches ? "" : "open"}><summary class="xgh"><span class="xdot xdot-${cls}"></span>${label}<span class="xc">${g.length}</span><span class="pv-chev" aria-hidden="true"></span></summary><div class="xl">${g.map(card).join("")}</div></details>` : ""; }).join("");
 }
 
+// ---------- trial requests (owner, 19 Nov 2026) ----------
+// "Request trial" on dashboard.proviewcrm.co.uk stores a row in lic_trial_requests (RLS: the master reads all and changes
+// status). Nothing is granted automatically (NO_TRIAL_SPEC): the master gives a licence by hand, then marks it done or
+// declined. ON_HOLD apps are left out, like everywhere else in the portal.
+const T = { rows: [], loaded: false };
+const TR_STATUS = { new: ["New", "warn"], done: ["Done", "ok"], declined: ["Declined", "none"] };
+async function loadTrials(quiet = false) {
+  const { data, error } = await sb.from("lic_trial_requests").select("*").order("created_at", { ascending: false }).limit(500);
+  if (error) { if (!quiet) toast(error.message, true); if (!T.loaded) $("#trList").innerHTML = `<div class="empty">${esc(error.message)}</div>`; return; }
+  T.rows = (data || []).filter((r) => shown(r.app)); T.loaded = true;
+  renderTrials();
+}
+// the business card for this email: its contact / owner email, else an app account's contact email
+function trialBiz(r) {
+  const e = String(r.email || "").toLowerCase(); if (!e) return null;
+  const low = (x) => String(x || "").trim().toLowerCase();
+  return S.customers.find((c) => low(c.contact_email) === e || low(c.owner_email) === e)
+    || (() => { const a = S.accounts.find((x) => !x.gone && low(x.contact_email) === e); return a && S.customers.find((c) => c.id === a.customer_id); })()
+    || null;
+}
+function renderTrials() {
+  const n = T.rows.filter((r) => r.status === "new").length;
+  const cnt = $("#trialCnt"); if (cnt) { cnt.textContent = n; cnt.hidden = !n; }
+  const box = $("#trList"); if (!box) return;
+  const f = $("#trFilter")?.value || "new";
+  const rows = T.rows.filter((r) => f === "all" || r.status === f);
+  const appName = (k) => PRODUCTS[k] ? "Proview " + PRODUCTS[k].label : k;
+  box.innerHTML = rows.length ? `<div class="acct" style="margin:0"><table><thead><tr><th>Asked</th><th>Email</th><th>App</th><th>Note</th><th>Business</th><th>Status</th><th></th></tr></thead><tbody>${
+    rows.map((r) => { const c = trialBiz(r), [sl, sc] = TR_STATUS[r.status] || [r.status, "none"];
+      return `<tr data-trial="${esc(r.id)}"><td class="small">${esc(fmtDT(r.created_at))}</td>
+      <td><a href="mailto:${esc(r.email)}">${esc(r.email)}</a></td>
+      <td><span class="ptag">${esc(appName(r.app))}</span></td>
+      <td>${r.business ? `<div class="tr-biz">${esc(r.business)}</div>` : ""}${r.note ? `<div class="tr-note small">${esc(r.note)}</div>` : r.business ? "" : `<span class="small">–</span>`}</td>
+      <td>${c ? `<a href="#customers" data-trbiz="${esc(c.id)}">${esc(c.name)}</a>` : `<span class="small">No business with this email</span>`}</td>
+      <td><span class="pill ${sc}">${esc(sl)}</span>${r.handled_at ? `<div class="small">${esc(fmtDate(r.handled_at))}</div>` : ""}</td>
+      <td class="acts">${r.status === "new" ? `<button type="button" class="btn sm primary" data-trset="done">Mark done</button><button type="button" class="btn sm" data-trset="declined">Decline</button>`
+        : `<button type="button" class="btn sm" data-trset="new">Reopen</button>`}</td></tr>`; }).join("")
+  }</tbody></table></div>` : `<div class="empty">${f === "new" ? "No new trial requests. When someone presses Request trial on the Proview dashboard, it shows up here and in your Inbox." : "Nothing here."}</div>`;
+}
+async function setTrial(id, status) {
+  const { data, error } = await sb.from("lic_trial_requests").update({ status }).eq("id", id).select().maybeSingle();
+  if (error || !data) { toast(error?.message || "That request couldn’t be changed.", true); return false; }
+  const i = T.rows.findIndex((r) => r.id === id); if (i >= 0) T.rows[i] = data;
+  renderTrials(); window.PVHub?.paint();
+  toast(status === "done" ? "Trial request marked done" : status === "declined" ? "Trial request declined" : "Trial request reopened");
+  return true;
+}
+$("#trFilter").onchange = renderTrials;
+$("#trList").onclick = (e) => {
+  const b = e.target.closest("[data-trset]"); if (b) { b.disabled = true; setTrial(b.closest("tr").dataset.trial, b.dataset.trset).finally(() => { b.disabled = false; }); return; }
+  const a = e.target.closest("[data-trbiz]"); if (a) { e.preventDefault(); setTab("customers"); openDetail(a.dataset.trbiz); }
+};
+
 // ---------- activity view ----------
 function renderActivity() {
   $("#actList").innerHTML = S.audit.length ? `<div class="acct" style="margin:0"><table><thead><tr><th>When</th><th>Who</th><th>Product</th><th>What</th><th>Change</th></tr></thead><tbody>${
@@ -2842,7 +2919,7 @@ document.addEventListener("change", (e) => {
 $("#q").oninput = renderCustomers;
 $("#expWindow").onchange = renderExpiring; $("#expIncl").onchange = renderExpiring; $("#expTrials").onchange = renderExpiring;
 $("#syncBtn").onclick = () => doSync(); $("#newCustBtn").onclick = newCustomer;
-const TITLES = { customers: "Businesses", expiring: "Expiring", activity: "Activity", payments: "Payments", paylog: "Payments", payfail: "Payments", settings: "Settings" };
+const TITLES = { customers: "Businesses", expiring: "Expiring", trials: "Trial requests", activity: "Activity", payments: "Payments", paylog: "Payments", payfail: "Payments", settings: "Settings" };
 function setTab(tab) {
   const _jump = tab === "payfail" ? "payFailView" : tab === "payments" ? "paySetHead" : ""; if (_jump) tab = "paylog";
   setTimeout(() => { if (_jump) document.getElementById(_jump)?.scrollIntoView({ behavior: "smooth", block: "start" }); }, 60);
@@ -2852,6 +2929,7 @@ function setTab(tab) {
   $("#appView").classList.remove("navopen");
   syncBizPick();
   if (tab === "activity") loadAudit();
+  if (tab === "trials") loadTrials();
   if (tab === "paylog") P.editing = false;
   if (tab === "payments" || tab === "paylog" || tab === "payfail") loadPayments();
 }
@@ -3063,6 +3141,7 @@ async function loadHeaderData() {
   ]);
   if (!py.error) H.payments = (py.data || []).filter((r) => shown(r.product));
   if (!au.error) H.audit = (au.data || []).filter((r) => shown(r.product));
+  await loadTrials(true);
   paintHeader();
 }
 const custOfUnit = (u) => { const a = S.accounts.find((x) => x.product === u.product && x.ext_id === u.account_ext_id); return a && S.customers.find((c) => c.id === a.customer_id); };
@@ -3088,6 +3167,15 @@ function inboxItems() {
       open: () => { setTab("customers"); if (c) openDetail(c.id); },
       actions: [{ label: "+12 months", kind: "pri", run: async () => { await applyChanges([{ product: u.product, unit: u.ext_id, type: "m12", extend: true }]); } },
                 { label: "Change…", run: async () => { window.PVHub.close(); openLicence(key); } }] });
+  }
+  for (const r of T.rows.filter((x) => x.status === "new")) {
+    const c = trialBiz(r);
+    out.push({ key: "trial:" + r.id, icon: "mail", need: true, at: r.created_at,
+      title: `Trial request: ${PRODUCTS[r.app]?.label ? "Proview " + PRODUCTS[r.app].label : r.app} from ${r.email}`,
+      sub: [r.business, r.note, c ? "Business: " + c.name : ""].filter(Boolean).join(" · ") || "Asked on the Proview dashboard",
+      open: () => { setTab("trials"); },
+      actions: [{ label: "Mark done", kind: "pri", run: async () => { await setTrial(r.id, "done"); } },
+                { label: "Decline", run: async () => { await setTrial(r.id, "declined"); } }] });
   }
   const seen = new Set(JSON.parse(localStorage.getItem("licence.inboxSeen") || "[]"));
   out.forEach((i) => { i.unread = !seen.has(i.key); });
@@ -3171,7 +3259,7 @@ function paintHeader() { paintBell(); window.PVHub?.paint(); }
     key: () => S.email || "x",
     searchItems(q) {
       const out = [];
-      [["customers", "Customers"], ["expiring", "Expiring"], ["paylog", "Payments"], ["payments", "Payment settings"], ["activity", "Activity"]]
+      [["customers", "Customers"], ["expiring", "Expiring"], ["trials", "Trial requests"], ["paylog", "Payments"], ["payments", "Payment settings"], ["activity", "Activity"]]
         .filter(([, l]) => !q || l.toLowerCase().includes(q)).forEach(([k, l]) => out.push({ group: "Pages", icon: "page", label: l, run: () => setTab(k) }));
       if (q) {
         S.customers.filter((c) => [c.name, c.contact_email, c.phone].filter(Boolean).join(" ").toLowerCase().includes(q)).slice(0, 10)
@@ -3182,7 +3270,7 @@ function paintHeader() { paintBell(); window.PVHub?.paint(); }
       return out;
     },
     inbox: {
-      empty: "Nothing needs you. Expired licences and online payments that weren’t applied show up here.",
+      empty: "Nothing needs you. Expired licences, online payments that weren’t applied and new trial requests show up here.",
       items: async () => { await loadHeaderData(); return inboxItems(); },
       count: () => inboxItems().filter((i) => i.unread).length,
       seen: () => localStorage.setItem("licence.inboxSeen", JSON.stringify(inboxItems().map((i) => i.key))),
@@ -3324,6 +3412,7 @@ async function start() {
   gate(false); $("#auth").innerHTML = ""; $("#appView").classList.remove("hidden");
   if (started) return; started = true;
   await loadAll().catch((e) => toast(e.message, true));
+  if (location.hash === "#trials") setTab("trials");   // the "new trial request" email links here
   loadHeaderData();
   doSync(true);
 }
