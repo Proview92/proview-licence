@@ -3437,5 +3437,29 @@ start();
   if (pv) new MutationObserver(() => pv.querySelectorAll(":scope > .acct").forEach((a) => { const k = a.dataset.prices || "stripe"; if (open.has(k) && !a.classList.contains("pv-open")) a.classList.add("pv-open"); })).observe(pv, { childList: true });
 })();
 </script>
+<script>
+/* Capital letters only in typed text (owner's request). Not for emails, passwords, numbers, dates or Stripe links/keys. */
+(() => {
+  const SKIP = /mail|url|link|key|pass|stripe|login|user/i;
+  const ok = (el) => {
+    if (!el || el.readOnly || el.disabled) return false;
+    if (el.tagName === "TEXTAREA") return true;
+    if (el.tagName !== "INPUT") return false;
+    const t = (el.getAttribute("type") || "text").toLowerCase();
+    if (t !== "text" && t !== "search") return false;
+    if (el.classList.contains("lnk")) return false;
+    const hint = [el.id, el.name, el.getAttribute("autocomplete"), el.placeholder, el.dataset.f, el.dataset.pp, el.dataset.co].filter(Boolean).join(" ");
+    return !SKIP.test(hint) && !/^https?:|@|buy\.stripe/.test(el.value);
+  };
+  document.addEventListener("input", (e) => {
+    const el = e.target; if (!ok(el) || e.isComposing) return;
+    const up = el.value.toLocaleUpperCase("en-GB"); if (up === el.value) return;
+    const a = el.selectionStart, b = el.selectionEnd;
+    el.value = up;
+    try { el.setSelectionRange(a, b); } catch {}
+  }, true);
+  document.addEventListener("compositionend", (e) => { const el = e.target; if (ok(el)) el.value = el.value.toLocaleUpperCase("en-GB"); }, true);
+})();
+</script>
 </body>
 </html>
