@@ -3483,7 +3483,7 @@ start();
   const save = (quiet) => { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch {} if (!quiet) toast(); };
   const PVG = "#131a31";
   const applyLook = () => { root.dataset.bg = st.bg || "white"; root.dataset.fs = st.fs || "md"; };
-  const applyColour = () => { applyLook(); const pv = st.main === "pv"; root.style.setProperty("--main", pv ? "#131a31" : st.main); root.classList.toggle("pvgrad", pv); };
+  const applyColour = () => { applyLook(); if (/^#(3f5fd0|4471c7|131a31)$/i.test(st.main || "")) st.main = "pv"; const pv = st.main === "pv"; root.style.setProperty("--main", pv ? "#131a31" : st.main); root.classList.toggle("pvgrad", pv); };
   applyColour();
   const COLS = [["Proview navy","pv"],["Green","#2f9e5a"],["Teal","#0f8b8d"],["Purple","#7a4fd6"],["Pink","#c2417f"],["Orange","#d9731a"],["Red","#c8382e"],["Slate","#3d4a63"]];
   const BGS = [["white","White","#ffffff","#d6dbe4"],["grey","Soft grey","#f3f4f6","#d6dbe4"],["cool","Cool navy","#eef0f5","#cfd3df"],["warm","Warm","#f8f5ef","#e3dccf"],["mint","Mint","#eff6f2","#cfe1d6"]];
