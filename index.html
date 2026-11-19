@@ -706,10 +706,10 @@ input,select,textarea{border-radius:10px!important;border-color:var(--line)!impo
 .appc tr:hover td,.lv tbody tr:hover{background:var(--brand-subtle)}
 .lv .lv-app.off{background:color-mix(in srgb,var(--tint) 60%,var(--card))}
 /* list view: whole rows alternate (owner, 20 Nov 2026), not patchy cells; empty app cells take their row's colour */
-.lv .lv-app.off{background:transparent}
-.lv tbody tr:nth-child(even) td{background:color-mix(in srgb,var(--side) 5%,var(--card))}
-.lv tbody tr:nth-child(odd) td{background:var(--card)}
-.lv tbody tr:hover td{background:color-mix(in srgb,var(--side) 10%,var(--card))}
+.lv tbody tr:nth-child(odd){background:var(--card)}
+.lv tbody tr:nth-child(even){background:color-mix(in srgb,var(--side) 5%,var(--card))}
+.lv tbody tr:hover{background:color-mix(in srgb,var(--side) 10%,var(--card))}
+.lv tbody tr td,.lv tbody tr td.lv-app.off{background:inherit}
 dialog{border-radius:14px;border:1px solid var(--line);background:var(--card);color:var(--ink)}
 #licDlg .licend,.bd-paused{border-radius:12px}
 #licDlg .licend{background:var(--brand-subtle);border-color:var(--line)}
