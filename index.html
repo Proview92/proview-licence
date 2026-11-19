@@ -2236,7 +2236,7 @@ document.addEventListener("change", (e) => {
 // ---------- Proview dashboard accounts (owner, 19 Nov 2026) ----------
 // Everyone with an email login (owners, admins, managers and staff; one password, 19 Nov 2026) should have a Proview
 // account (the dashboard.proviewcrm.co.uk login, auth.users on this
-// project). lic_dashboard_accounts (master only) says, per email: none ❌ | invited ⏳ (never signed in) | active ✅.
+// project). lic_dashboard_accounts (master only) says, per email: none ❌ | invited ⏳ (no password they know yet) | active ✅ (signed in, or has the synced password).
 // "Send dashboard invite" (licence hub dashboard_invite) makes the account if missing and emails a "set your password"
 // link to the dashboard; it is shown only for ❌ / ⏳, for staff too (they open their apps from the dashboard as well).
 const DASH = { st: new Map(), biz: new Map(), err: null };   // st: email -> row; biz: customer id -> { rows, loading, errs }
@@ -2264,7 +2264,7 @@ async function dashStatus(emails, force = false) {
 function dashChip(email) {
   const r = DASH.st.get(dashNorm(email));
   if (!r) return DASH.err ? "" : `<span class="dash-chip" data-dashchip="unknown">Dashboard …</span>`;
-  if (r.state === "active") return `<span class="dash-chip dash-ok" data-dashchip="active" title="${esc("Proview dashboard account · last signed in " + fmtDT(r.last_sign_in_at))}">Dashboard ✅</span>`;
+  if (r.state === "active") return `<span class="dash-chip dash-ok" data-dashchip="active" title="${esc(r.last_sign_in_at ? "Proview dashboard account · last signed in " + fmtDT(r.last_sign_in_at) : "Proview dashboard account ready · same password as their other Proview sites · not signed in to the dashboard yet")}">Dashboard ✅</span>`;
   if (r.state === "invited") return `<span class="dash-chip dash-inv" data-dashchip="invited" title="${esc("Proview dashboard account made " + fmtDT(r.created_at) + ", but they haven't set a password and signed in yet")}">Dashboard ⏳ invited</span>`;
   return `<span class="dash-chip dash-no" data-dashchip="none" title="No Proview dashboard account for this email, so they can't sign in at dashboard.proviewcrm.co.uk">No dashboard login ❌</span>`;
 }
