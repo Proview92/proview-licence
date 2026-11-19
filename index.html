@@ -1843,9 +1843,9 @@ function unitRow(u) {
 function accountBlock(a) {
   const p = PRODUCTS[a.product];
   const units = unitsForAccount(a), key = a.product + "|" + a.ext_id;
-  // No email from the app (Label, WiFi and some Signage accounts don't send one): show the business's instead.
+  // Every app card shows the business's admin login email (the app's own contact email only if there is no admin yet).
   const cu = S.customers.find((x) => x.id === a.customer_id);
-  const sub = [unitCount(a.product, units), a.contact_email || cu?.contact_email || cu?.owner_email, a.extra?.self_signup ? "signed up online" : ""].filter(Boolean).join(" · ");
+  const sub = [unitCount(a.product, units), cu?.owner_email || a.contact_email || cu?.contact_email, a.extra?.self_signup ? "signed up online" : ""].filter(Boolean).join(" · ");
   const bad = units.filter((u) => tone(u) === "r"), warn = units.filter((u) => tone(u) === "a"), nx = renewAt(units);
   const st = !units.length ? ["", "no licences yet"] : bad.length ? ["bad", `${bad.length} unlicensed`] : nx === Infinity ? ["ok", "Lifetime"] : [warn.length ? "warn" : "ok", (units.some((u) => /^m1$/.test(u.license_type)) ? "next payment " : "to ") + shortDate(nx)];
   return `<details class="pv-acc" ${matchMedia("(max-width: 760px)").matches ? "" : "open"}><summary class="pv-acc-s"><img src="${appLogo(a.product)}" alt=""><span class="pv-acc-t"><b>${p.label}</b><small>${esc(unitCount(a.product, units))}</small></span><span class="pv-acc-r"><span class="ov-dot ${st[0]}"></span>${esc(st[1])}</span><span class="pv-chev" aria-hidden="true"></span></summary><section class="card appc">
@@ -1970,7 +1970,7 @@ function custDetail(c) {
       <table><tbody>${groups.map((g) => `<tr><td><div class="un">${esc(g.name)}</div><div class="um">${esc([...new Set(g.units.map((u) => PRODUCTS[u.product]?.label))].join(" · "))}</div></td>
         <td class="acts"><button class="btn sm" data-unlink="${esc(c.id + "|" + g.origin)}">Unlink</button></td></tr>`).join("")}</tbody></table></section>` : "";
   const old = before.length ? `<div class="bd-paused">${before.map((x) => `${esc(PRODUCTS[x.a.product].label)}: ${esc(x.a.name)} has ${x.units.length} businesses from before (${esc(x.units.map((u) => u.name).join(", "))}).`).join("<br>")} Use “Split them” on the Businesses page to give each its own card.</div>` : "";
-  const sub = [c.contact_email || "No contact email", c.phone, c.owner_email ? "Owner login: " + [c.owner_name, c.owner_email].filter(Boolean).join(" ") : ""].filter(Boolean).join(" · ");
+  const sub = [c.contact_email || "No contact email", c.phone, c.owner_email ? "Admin login: " + [c.owner_name, c.owner_email].filter(Boolean).join(" ") : ""].filter(Boolean).join(" · ");
   const manage = `<details class="card pv-man"><summary><span><b>Manage business</b><small>Pause · link · delete</small></span><span class="pv-chev" aria-hidden="true"></span></summary><div class="pv-man-b">
       ${accts.length ? (paused ? `<button class="btn go" data-resume="${c.id}">Resume business</button>` : `<button class="btn warn" data-pause="${c.id}">Pause business</button>`) : ""}
       <button class="btn" data-link="${c.id}">Link with another business…</button>
@@ -2295,7 +2295,7 @@ async function loadBizDash(cid) {
     const e = dashNorm(email); if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e)) return;
     const x = by.get(e) || { email: e, from: [], name: "" }; if (!x.from.includes(from)) x.from.push(from); if (name && !x.name) x.name = name; by.set(e, x);
   };
-  put(c.contact_email, "Contact email"); put(c.owner_email, "Owner login", c.owner_name);
+  put(c.contact_email, "Contact email"); put(c.owner_email, "Admin login", c.owner_name);
   const accts = accountsForCustomer(c);
   const got = await Promise.allSettled(accts.map((a) => hub("users", { product: a.product, account: a.ext_id, op: "list" })));
   got.forEach((g, i) => {
