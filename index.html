@@ -1242,6 +1242,31 @@ details.xg{margin:0 0 14px}
 @media (min-width:761px){html body .main-col .ov-biz .pv-ph2,html body .bd-phacts,html body .bd-x{display:none!important}}
 body.gate .pv-dock,body.gate .pv-ptr,body.gate .pv-synced,body.gate .res-tools{display:none!important}
 </style>
+<style id="pv-users">
+#usersDlg{width:min(720px,calc(100vw - 20px));max-height:calc(100vh - 40px);padding:0;border:0;border-radius:16px;background:var(--card);color:var(--ink);box-shadow:0 20px 50px rgba(0,0,0,.3)}
+#usersDlg::backdrop{background:rgba(10,12,20,.45)}
+.ud-h{display:flex;align-items:center;gap:10px;padding:16px 18px 12px;border-bottom:1px solid var(--line)}
+.ud-h img{width:32px;height:32px;border-radius:8px}
+.ud-h .t{flex:1;min-width:0}.ud-h b{font-size:17px;display:block}.ud-h small{color:var(--muted);font-size:12.5px}
+.ud-x{width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background:var(--card);color:var(--ink);font-size:22px;line-height:1;cursor:pointer}
+.ud-b{padding:12px 18px 18px;overflow:auto;max-height:calc(100vh - 140px)}
+.ud-bar{display:flex;align-items:center;gap:10px;margin:0 0 10px}.ud-bar .grow{flex:1;color:var(--muted);font-size:13px}
+.ud-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 12px;align-items:center;padding:12px 0;border-top:1px solid var(--line)}
+.ud-row:first-child{border-top:0}
+.ud-n b{font-size:15px}.ud-n div{font-size:13px;color:var(--muted);overflow-wrap:anywhere}
+.ud-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+.ud-tag{font-size:11.5px;font-weight:700;border-radius:20px;padding:2px 8px;background:var(--tint);color:var(--muted)}
+.ud-tag.role{background:var(--brand-soft);color:var(--brand)}.ud-tag.warn{background:var(--warn-soft);color:var(--warn)}
+.ud-acts{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.ud-form{border:1px solid var(--line);border-radius:12px;padding:14px;margin:0 0 14px;background:var(--tint);display:grid;gap:10px}
+.ud-form label{display:grid;gap:4px;font-size:13px;font-weight:600}
+.ud-form input,.ud-form select{width:100%;box-sizing:border-box}
+.ud-form .pwrow{display:flex;gap:8px}.ud-form .pwrow input{flex:1}
+.ud-form .acts{display:flex;gap:8px;justify-content:flex-end}
+.ud-note{font-size:12.5px;color:var(--muted);line-height:1.45}
+.ud-empty{padding:18px 0;color:var(--muted);font-size:14px}
+@media (max-width:760px){.ud-row{grid-template-columns:1fr}.ud-acts{justify-content:flex-start}.ud-acts .btn{flex:1}}
+</style>
 </head>
 <body>
 
@@ -1788,6 +1813,7 @@ function accountBlock(a) {
     <div class="appc-h">
       <img src="${appLogo(a.product)}" alt="">
       <div class="grow"><div class="appc-t">${p.label} <span class="muted">· ${esc(a.name || "(unnamed)")}</span></div><div class="tiny" title="${esc(sub)}">${esc(sub)}</div></div>
+      <button class="btn sm" data-users="${esc(key)}" title="Logins for ${esc(a.name || "this business")} in ${p.label}">Users</button>
       <button class="btn sm" data-move="${esc(key)}" title="Move this app account to another business">Move…</button>
       <button class="btn sm dangerghost" data-delacct="${esc(key)}" title="Delete ${esc(a.name || "this business")} in ${p.label} only">Delete</button>
       ${canOpen(a) ? `<button type="button" class="btn sm primary" data-openapp="${esc(key)}" title="Open ${esc(a.name || "this business")} in Proview ${p.label}, signed in as Proview">Open ↗</button>` : ""}
@@ -2034,6 +2060,105 @@ document.addEventListener("click", (e) => {
   const r = e.target.closest("[data-remlic]"); if (r) { e.stopPropagation(); openRemoveLic(r.dataset.remlic); }
 }, true);
 matchMedia("(max-width: 760px)").addEventListener("change", () => { if (S.detail) renderCustomers(); });
+
+
+// ---------- Users of one app account: list, add, new password, reset link ----------
+const U = { key: null, data: null, form: null };
+function genPassword() {
+  const a = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789", b = new Uint32Array(12); crypto.getRandomValues(b);
+  return Array.from(b, (n) => a[n % a.length]).join("");
+}
+function usersDlg() {
+  let d = document.getElementById("usersDlg");
+  if (!d) {
+    d = document.createElement("dialog"); d.id = "usersDlg"; document.body.appendChild(d);
+    d.addEventListener("click", (e) => { if (e.target === d || e.target.closest("[data-udx]")) d.close(); });
+    d.addEventListener("click", onUsersClick);
+    d.addEventListener("submit", onUsersSubmit);
+  }
+  return d;
+}
+function usersAcc() { const [product, ext] = (U.key || "").split("|"); return { product, ext, a: S.accounts.find((x) => x.product === product && x.ext_id === ext) }; }
+function renderUsers() {
+  const d = usersDlg(), { product, a } = usersAcc(), p = PRODUCTS[product] || { label: product };
+  const head = `<div class="ud-h"><img src="${appLogo(product)}" alt=""><div class="t"><b>Users · ${esc(p.label)}</b><small>${esc(a?.name || "")}</small></div><button type="button" class="ud-x" data-udx aria-label="Close">×</button></div>`;
+  let body;
+  if (!U.data) body = `<div class="ud-empty">${U.err ? esc(U.err) : "Loading…"}</div>`;
+  else {
+    const users = U.data.users || [], roles = U.data.roles || [], roleName = (v) => roles.find((r) => r.value === v)?.label || v || "";
+    const f = U.form;
+    let form = "";
+    if (f?.mode === "add") {
+      const staff = U.data.staff;
+      form = `<form class="ud-form" data-udform="add">
+        ${staff ? `<label>Staff member<select name="member" required>${staff.length ? `<option value="">Choose…</option>` + staff.map((s) => `<option value="${esc(s.member)}" data-email="${esc(s.email || "")}">${esc(s.name || s.member)}</option>`).join("") : `<option value="">Everyone already has a login</option>`}</select></label>` :
+          `<label>Name<input name="name" type="text" required autocomplete="off"></label>`}
+        <label>Email<input name="email" type="email" required autocomplete="off"></label>
+        ${roles.length ? `<label>Role<select name="role" required>${roles.map((r) => `<option value="${esc(r.value)}" ${r.value === (roles.find((q) => /^admin$/i.test(q.value)) || roles.find((q) => q.value === "manager") || roles[0]).value ? "selected" : ""}>${esc(r.label)}</option>`).join("")}</select></label>` : ""}
+        <label>Password<span class="pwrow"><input name="password" type="text" minlength="8" required autocomplete="off" value="${esc(f.pw)}"><button type="button" class="btn sm" data-udgen>New</button></span></label>
+        <div class="ud-note">They sign in to ${esc(PRODUCTS[usersAcc().product]?.label || "the app")} with this email and password. If the email already has a login there, it's added to this business and their password stays the same. ${staff ? "" : "Choose their locations and what they can do inside the app."}</div>
+        <div class="acts"><button type="button" class="btn" data-udcancel>Cancel</button><button class="btn primary">Add user</button></div></form>`;
+    } else if (f?.mode === "password") {
+      form = `<form class="ud-form" data-udform="password"><div><b>New password for ${esc(f.email)}</b></div>
+        <label>Password<span class="pwrow"><input name="password" type="text" minlength="8" required autocomplete="off" value="${esc(f.pw)}"><button type="button" class="btn sm" data-udgen>New</button></span></label>
+        <div class="ud-note">Their old password stops working straight away. Tell them the new one.</div>
+        <div class="acts"><button type="button" class="btn" data-udcancel>Cancel</button><button class="btn primary">Set password</button></div></form>`;
+    }
+    const rows = users.length ? users.map((x) => `<div class="ud-row"><div class="ud-n"><b>${esc(x.name || x.email)}</b>${x.name ? `<div>${esc(x.email)}</div>` : ""}
+        <div class="ud-tags">${x.role ? `<span class="ud-tag role">${esc(roleName(x.role))}</span>` : ""}${x.invited ? `<span class="ud-tag warn">Invited · not signed up</span>` : !x.has_login ? `<span class="ud-tag warn">No login yet</span>` : `<span class="ud-tag">${x.last_sign_in ? "Last signed in " + esc(fmtDT(x.last_sign_in)) : "Never signed in"}</span>`}${x.active === false ? `<span class="ud-tag warn">Turned off</span>` : ""}</div></div>
+        <div class="ud-acts">${x.invited ? "" : `<button type="button" class="btn sm" data-udpw="${esc(x.email)}">${x.has_login ? "Change password" : "Set password"}</button>${x.has_login ? `<button type="button" class="btn sm" data-udreset="${esc(x.email)}">Send reset link</button>` : ""}`}</div></div>`).join("")
+      : `<div class="ud-empty">No users yet.</div>`;
+    body = `${f ? form : `<div class="ud-bar"><span class="grow">${users.length} user${users.length === 1 ? "" : "s"}</span><button type="button" class="btn sm primary" data-udadd>+ Add user</button></div>`}${rows}`;
+  }
+  d.innerHTML = head + `<div class="ud-b">${body}</div>`;
+  if (!d.open) d.showModal();
+  const inp = d.querySelector(".ud-form input:not([type=hidden])"); if (inp && U.form?.focus) { inp.focus(); U.form.focus = false; }
+}
+async function loadUsers() {
+  const { product, ext } = usersAcc(); U.data = null; U.err = null; renderUsers();
+  try { U.data = await hub("users", { product, account: ext, op: "list" }); }
+  catch (e) { U.err = e.message || "Couldn't load the users."; }
+  renderUsers();
+}
+function openUsers(key) { U.key = key; U.form = null; loadUsers(); }
+async function onUsersClick(e) {
+  const t = e.target;
+  if (t.closest("[data-udadd]")) { U.form = { mode: "add", pw: genPassword(), focus: true }; renderUsers(); return; }
+  if (t.closest("[data-udcancel]")) { U.form = null; renderUsers(); return; }
+  if (t.closest("[data-udgen]")) { const i = t.closest("form").querySelector("[name=password]"); i.value = genPassword(); i.focus(); return; }
+  const pw = t.closest("[data-udpw]"); if (pw) { U.form = { mode: "password", email: pw.dataset.udpw, pw: genPassword(), focus: true }; renderUsers(); return; }
+  const rs = t.closest("[data-udreset]");
+  if (rs) {
+    const em = rs.dataset.udreset, { product, ext, a } = usersAcc();
+    const ok = await ask({ title: "Send reset link", message: `Email ${em} a link to choose a new password for ${PRODUCTS[product]?.label}?`, ok: "Send link" });
+    if (!ok) return;
+    rs.disabled = true;
+    try { await hub("users", { product, account: ext, account_name: a?.name, op: "reset", email: em }); toast(`Reset link sent to ${em}`); }
+    catch (er) { toast(er.message || "Couldn't send the link", true); }
+    rs.disabled = false;
+  }
+}
+async function onUsersSubmit(e) {
+  const f = e.target.closest("[data-udform]"); if (!f) return; e.preventDefault();
+  const v = Object.fromEntries(new FormData(f)), { product, ext, a } = usersAcc(), btn = f.querySelector("button.primary");
+  if (U.data?.staff && v.member && !v.name) v.name = f.querySelector(`[name=member] option[value="${CSS.escape(v.member)}"]`)?.textContent || "";
+  btn.disabled = true;
+  try {
+    if (f.dataset.udform === "add") {
+      const r = await hub("users", { product, account: ext, account_name: a?.name, op: "add", ...v });
+      toast(r.existing ? `${v.email} added. They already had a login, so their password didn't change.` : `${v.email} added`);
+    } else {
+      await hub("users", { product, account: ext, account_name: a?.name, op: "password", email: U.form.email, password: v.password });
+      toast(`New password set for ${U.form.email}`);
+    }
+    U.form = null; await loadUsers();
+  } catch (er) { toast(er.message || "That didn't work", true); btn.disabled = false; }
+}
+document.addEventListener("click", (e) => { const b = e.target.closest("[data-users]"); if (b) { e.stopPropagation(); openUsers(b.dataset.users); } }, true);
+document.addEventListener("change", (e) => {
+  const s = e.target.closest("#usersDlg select[name=member]"); if (!s) return;
+  const em = s.selectedOptions[0]?.dataset.email, i = s.form.querySelector("[name=email]"); if (em && i && !i.value) i.value = em;
+});
 
 function render() { renderCustomers(); renderExpiring(); fillBizPick(); paintHeader(); }
 

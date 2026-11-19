@@ -792,6 +792,53 @@ Deno.serve(async (req) => {
 
     if (action === "sync") return json(await syncApps(db, Object.values(apps)));
 
+    // Logins of one app account (each app's hub_users, token-checked like hub_call). Master only (checked above).
+    //   users { product, account, op: "list" }                         -> { users: [...], roles: [...], staff? }
+    //   users { product, account, op: "add", email, name, role, password, member? }
+    //   users { product, account, op: "password", email, password }
+    //   users { product, account, op: "reset", email }                  the app emails its own reset link
+    if (action === "users") {
+      const app = apps[String(body.product ?? "")];
+      if (!app) return json({ error: "Unknown app." }, 400);
+      const op = String(body.op ?? "list"), account = String(body.account ?? "");
+      const email = String(body.email ?? "").trim().toLowerCase();
+      const args = { account, email, name: body.name ?? null, role: body.role ?? null, password: body.password ?? null, member: body.member ?? null };
+      const usersCall = async (o: string) => {
+        const r = await fetch(`${app.url}/rest/v1/rpc/hub_users`, {
+          method: "POST", headers: { apikey: app.apikey, "Content-Type": "application/json" },
+          body: JSON.stringify({ p_token: app.token, p_action: o, p_args: args }),
+        });
+        const txt = await r.text(); let b: any; try { b = JSON.parse(txt); } catch { b = txt; }
+        if (r.status === 404 || /hub_users/.test(String(b?.message ?? "")) && /not find|does not exist/.test(String(b?.message ?? "")))
+          throw new Error(`${app.label} can't manage logins from here yet.`);
+        if (!r.ok) throw new Error(b?.message ?? `HTTP ${r.status}`);
+        return b;
+      };
+      const audit = (what: string, error: string | null = null) => db.from("lic_audit").insert({
+        admin_email: adminEmail, product: app.product, account_name: String(body.account_name ?? "") || null,
+        action: what, after: { account, email, role: body.role ?? null }, error });
+      if (op === "list") return json(await usersCall("list"));
+      if (op === "reset") {
+        await usersCall("check");
+        const to = app.app_url ? `?redirect_to=${encodeURIComponent(app.app_url)}` : "";
+        const r = await fetch(`${app.url}/auth/v1/recover${to}`, {
+          method: "POST", headers: { apikey: app.apikey, "Content-Type": "application/json" }, body: JSON.stringify({ email }),
+        });
+        if (!r.ok) {
+          const t = await r.text(); let m = t; try { const j = JSON.parse(t); m = j.msg || j.error_description || j.message || t; } catch {}
+          const msg = r.status === 429 ? "Too many reset emails were sent from this app just now. Try again in a few minutes, or set a new password instead." : `The reset email couldn't be sent: ${m}`;
+          await audit("Reset link", msg); return json({ error: msg }, 400);
+        }
+        await audit("Reset link"); return json({ ok: true, email });
+      }
+      if (op !== "add" && op !== "password") return json({ error: "Unknown action." }, 400);
+      try {
+        const r = await usersCall(op);
+        await audit(op === "add" ? "Add user" : "Change password");
+        return json(r);
+      } catch (e) { await audit(op === "add" ? "Add user" : "Change password", (e as Error).message); throw e; }
+    }
+
     // Locations (LOCATIONS_LINK_SPEC): link two locations, unlink one, and the one-off split of businesses that already
     // had several locations. Master only (checked above).
     //   link   { customer_a, customer_b }        B is linked into A (A keeps its card)
