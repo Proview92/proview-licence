@@ -25,7 +25,9 @@ const DB = {
   lic_link_origins: [{ id: 'ca', name: 'Cafe Alpha' }, { id: 'cb', name: 'Cafe Beta' }],
   lic_plans: [], lic_payments: [], lic_audit: [],
 };
-const PLAN = [{ customer_id: 'co', customer_name: 'Old Group', businesses: [{ product: 'signage', account: 'so', account_name: 'Old Group', keep: { ext_id: 'loc/o1', name: 'Old Group' }, out: [{ ext_id: 'loc/o2', name: 'Old Group Soho' }] }],
+// ON HOLD (owner, 19 Nov 2026): Bookings and Employee are hidden everywhere in the portal; a held Bookings account rides along
+const PLAN = [{ customer_id: 'co', customer_name: 'Old Group', businesses: [{ product: 'signage', account: 'so', account_name: 'Old Group', keep: { ext_id: 'loc/o1', name: 'Old Group' }, out: [{ ext_id: 'loc/o2', name: 'Old Group Soho' }] },
+    { product: 'bookings', account: 'bo', account_name: 'Old Group', keep: { ext_id: 'o1', name: 'Old Group' }, out: [{ ext_id: 'o2', name: 'Old Group Soho' }] }],
   new_cards: [{ name: 'Old Group Soho', units: [{ product: 'signage', account: 'so', ext_id: 'loc/o2', name: 'Old Group Soho' }] }] }];
 (async () => {
   const browser = await puppeteer.launch({ executablePath: '/usr/bin/google-chrome', headless: 'new', args: ['--no-sandbox'] });
@@ -46,7 +48,7 @@ const PLAN = [{ customer_id: 'co', customer_name: 'Old Group', businesses: [{ pr
       const b = JSON.parse(r.postData() || '{}'); hubCalls.push(b);
       if (b.action === 'split_preview') return j({ ok: true, plan: PLAN });
       if (b.action === 'split') return j({ ok: true, split: [{ ok: true, name: 'Old Group Soho', results: {} }] });
-      if (b.action === 'link') return j({ ok: false, customer: b.customer_a, removed_b: false, results: { signage: { ok: true, linked: 1 }, label: { ok: false, error: 'Label is down' } } });
+      if (b.action === 'link') return j({ ok: false, customer: b.customer_a, removed_b: false, results: { signage: { ok: true, linked: 1 }, bookings: { ok: false, error: 'Bookings is down' }, label: { ok: false, error: 'Label is down' } } });
       if (b.action === 'unlink') return j({ ok: true, customer: 'new', results: { signage: { ok: true, unlinked: 1 } } });
       return j({ ok: true, apps: {} });
     }
@@ -67,6 +69,8 @@ const PLAN = [{ customer_id: 'co', customer_name: 'Old Group', businesses: [{ pr
   ok('stat "Businesses" (not Customers), "App accounts" kept ' + stats.join(','), stats[0] === 'Businesses' && stats.includes('App accounts'));
   const noLoc = () => page.evaluate(() => { const t = [document.body.innerText, ...[...document.querySelectorAll('[placeholder],[aria-label],[title]')].map((e) => [e.placeholder, e.getAttribute('aria-label'), e.title].join(' '))].join(' '); return (t.match(/.{0,30}\blocations?\b.{0,30}/gi) || []); });
   const nl1 = await noLoc(); ok('list page: no visible "location" text ' + JSON.stringify(nl1), !nl1.length);
+  const held = () => page.evaluate(() => { const t = [document.body.innerText, ...[...document.querySelectorAll('[placeholder],[aria-label],[title]')].map((e) => [e.placeholder, e.getAttribute('aria-label'), e.title].join(' '))].join(' '); return (t.match(/.{0,30}\b(Bookings|Employee)\b.{0,30}/gi) || []); });
+  const h1 = await held(); ok('on hold: no visible "Bookings" / "Employee" on the list page ' + JSON.stringify(h1), !h1.length);
   const cardA = await page.evaluate(() => { const c = document.querySelector('[data-cust="ca"]'); return { h: c.querySelector('h3').textContent, sub: c.querySelector('.ov-bh .muted').textContent }; });
   ok('linked card title "Cafe Alpha + Cafe Beta", "2 linked businesses" under it ' + JSON.stringify(cardA), cardA.h === 'Cafe Alpha + Cafe Beta' && /^2 linked businesses/.test(cardA.sub));
   ok('a business on its own keeps its name', (await page.evaluate(() => document.querySelector('[data-cust="cg"] h3').textContent)) === 'Gamma Grill');
@@ -76,6 +80,7 @@ const PLAN = [{ customer_id: 'co', customer_name: 'Old Group', businesses: [{ pr
   // split: preview, then confirm
   await page.click('[data-split]'); await wait(500);
   const prev = await txt('#askMsg');
+  ok('split preview leaves out on-hold apps ' + JSON.stringify(prev.match(/.{0,20}Bookings.{0,20}/)), !/Bookings|Employee/.test(prev));
   ok('split preview lists the business, what it keeps and the new card ' + prev.slice(0, 160), (await txt('#askTitle')) === 'Split grouped businesses?' && !/location/i.test(prev) && (await page.evaluate(() => document.getElementById('askDlg').open)) && /Old Group/.test(prev) && /keeps Old Group/.test(prev) && /New cards: Old Group Soho \(Signage\)/.test(prev));
   ok('nothing split before confirming', !hubCalls.some((c) => c.action === 'split'));
   await page.screenshot({ path: require('path').join(require('os').tmpdir(), 'split-preview.png') });
@@ -86,6 +91,9 @@ const PLAN = [{ customer_id: 'co', customer_name: 'Old Group', businesses: [{ pr
   const det = await txt('#custList');
   ok('detail: "← All businesses", "Link with another business…", no Merge ' , /← All businesses/.test(det) && /Link with another business…/.test(det) && !/Merge/.test(det));
   const nl2 = await noLoc(); ok('business page: no visible "location" text ' + JSON.stringify(nl2), !nl2.length);
+  const h2 = await held(); ok('on hold: no visible "Bookings" / "Employee" on the business page ' + JSON.stringify(h2), !h2.length);
+  const accs = await page.evaluate(() => [...document.querySelectorAll('.pv-acc-t b')].map((b) => b.textContent));
+  ok('business page: on-hold app accounts not listed ' + JSON.stringify(accs), JSON.stringify(accs) === JSON.stringify(['Signage', 'Label']));
   const rows = await page.evaluate(() => [...document.querySelectorAll('[data-unlink]')].map((b) => b.dataset.unlink));
   ok('linked businesses listed, each with Unlink ' + JSON.stringify(rows), JSON.stringify(rows) === JSON.stringify(['ca|ca', 'ca|cb']) && /Linked businesses/.test(det) && /2 businesses are linked in every app/.test(det) && /Cafe Beta\s*Signage · Label/.test(det));
   await page.screenshot({ path: require('path').join(require('os').tmpdir(), 'location-page.png') });
@@ -107,6 +115,7 @@ const PLAN = [{ customer_id: 'co', customer_name: 'Old Group', businesses: [{ pr
   ok('Link sends { customer_a, customer_b } ' + JSON.stringify(lk), lk && lk.customer_a === 'ca' && lk.customer_b === 'cg');
   const part = await txt('#askMsg');
   ok('partial link reported per app: ' + part, (await txt('#askTitle')) === 'Linked in some apps only' && /Signage: linked/.test(part) && /Label: not done: Label is down/.test(part));
+  ok('partial link result leaves out on-hold apps', !/Bookings/.test(part));
   await okBtn();
   await page.setViewport({ width: 390, height: 844, isMobile: true }); await wait(300);
   await page.screenshot({ path: require('path').join(require('os').tmpdir(), 'location-page-390.png'), fullPage: false });

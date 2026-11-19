@@ -1503,6 +1503,16 @@ const PRODUCTS = {
   team:     { label: "Team",     unit: "Business", units: "businesses",   app: "https://team.proviewcrm.co.uk", trial: "trial" },
   reservations: { label: "Reservations", unit: "Business", units: "businesses", app: "https://reservations.proviewcrm.co.uk", trial: "trial" },
 };
+// ===== ON HOLD (owner, 19 Nov 2026): "remove proview bookings and employee from everywhere, including license portal,
+// put the projects on hold for now". These apps are only hidden here: their apps, data, licences, prices and Stripe
+// subscriptions are untouched, and licence-hub still syncs them. Their accounts, licences, payments and activity rows
+// are left out when the portal loads them, so every list, box, chip, stat and count shows only the other apps.
+// A business whose only apps are on hold is hidden too. To bring them back: empty this list.
+const ON_HOLD = ["bookings", "employee"];
+const shown = (k) => !ON_HOLD.includes(k);
+const showApps = (list) => list.filter(shown);
+// the apps this portal shows, in PRODUCTS order (iterate this; PRODUCTS itself still holds every app for lookups)
+const SHOWN = Object.fromEntries(Object.entries(PRODUCTS).filter(([k]) => shown(k)));
 // What each licence is for (PER_LOCATION_LICENCE_SPEC): every app licenses each location; Signage also each TV and
 // Employee each extra person over the package. Units synced before kinds existed read as their app's old kind.
 // owner 12 Nov 2026: Signage licenses each TV only; Label each handheld only; WiFi and QR Menu each location only
@@ -1519,7 +1529,7 @@ function unitCount(prod, units) {
   return by.map(([k, n]) => `${n} ${KIND_WORD[k][n === 1 ? 0 : 1]}`).join(", ");
 }
 // the New customer pop-up's app tick boxes, in this order
-const NC_APPS = ["signage", "bookings", "reservations", "employee", "team", "label", "wifi", "qrmenu"];
+const NC_APPS = showApps(["signage", "bookings", "reservations", "employee", "team", "label", "wifi", "qrmenu"]);
 const PLAN_LABEL = { trial: "Trial (3 days)", trial3: "Trial (3 days)", trial7: "Trial (3 days)",
   m1: "1 month", m3: "3 months", m6: "6 months", m12: "12 months", m24: "24 months", m36: "36 months",
   lifetime: "Lifetime", custom: "Custom end date" };
@@ -1577,14 +1587,20 @@ async function loadAll() {
     sb.from("lic_link_origins").select("*"),
   ]);
   for (const r of [c, a, u]) if (r.error) throw r.error;
-  S.customers = c.data; S.accounts = a.data; S.units = u.data; S.origins = o.error ? [] : o.data;   // (no table yet = nothing linked)
+  // ON_HOLD apps are left out here, so nothing below shows or counts them; their cards are hidden when they hold nothing else
+  const live = (x) => !x.gone, heldCust = new Set(a.data.filter((x) => live(x) && !shown(x.product)).map((x) => x.customer_id));
+  const shownCust = new Set(a.data.filter((x) => live(x) && shown(x.product)).map((x) => x.customer_id));
+  S.held = heldCust;   // cards that also hold an on-hold app account (see delBiz)
+  S.customers = c.data.filter((x) => !heldCust.has(x.id) || shownCust.has(x.id));
+  S.accounts = a.data.filter((x) => shown(x.product)); S.units = u.data.filter((x) => shown(x.product));
+  S.origins = o.error ? [] : o.data;   // (no table yet = nothing linked)
   render();
 }
 
 async function loadAudit() {
   const { data, error } = await sb.from("lic_audit").select("*").order("at", { ascending: false }).limit(300);
   if (error) return toast(error.message, true);
-  S.audit = data; renderActivity();
+  S.audit = data.filter((r) => shown(r.product)); renderActivity();
 }
 
 async function doSync(quiet = false) {
@@ -1592,11 +1608,11 @@ async function doSync(quiet = false) {
   S.syncing = true; S.syncErr = ""; paintDot();
   try {
     const r = await hub("sync");
-    S.lastSync = { at: new Date(), apps: r.apps };
+    S.lastSync = { at: new Date(), apps: Object.fromEntries(Object.entries(r.apps || {}).filter(([k]) => shown(k))) };
     renderSyncChips();
-    const bad = Object.entries(r.apps).filter(([, v]) => !v.ok);
+    const bad = Object.entries(S.lastSync.apps).filter(([, v]) => !v.ok);
     if (bad.length) toast("Could not reach: " + bad.map(([k, v]) => `${PRODUCTS[k].label} (${v.error})`).join(", "), true);
-    else if (!quiet) toast("Synced with all three apps");
+    else if (!quiet) toast("Synced with all the apps");
     if (r.customers_created) toast(`${r.customers_created} new business card(s) created from the apps`);
     await loadAll();
   } catch (e) { S.syncErr = e.message; toast("Sync failed: " + e.message, true); }
@@ -1605,7 +1621,7 @@ async function doSync(quiet = false) {
 
 function renderSyncChips() {
   const s = S.lastSync; if (!s) return;
-  $("#syncChips").innerHTML = Object.entries(PRODUCTS).map(([k, p]) => {
+  $("#syncChips").innerHTML = Object.entries(SHOWN).map(([k, p]) => {
     const r = s.apps[k];
     return `<span class="chip ${r?.ok ? "ok" : "bad"}" title="${esc(r?.error || "")}"><span class="dot"></span>${p.label}${r?.ok ? (Number.isFinite(r.units) ? ` · ${unitCount(k, S.units.filter((u) => u.product === k && !u.gone))}` : "") : " · offline"}</span>`;
   }).join("") + `<span class="chip">Last synced ${fmtDT(s.at)}</span>`;
@@ -1619,7 +1635,7 @@ function renderSyncChips() {
 // ---------- open a customer's app account as the master (MASTER_OPEN_SPEC / MASTER_OPEN_PROTOCOL) ----------
 // sso-assert { action: "go", app, business: <lic_accounts.ext_id> } signs a biz claim (licence admins only);
 // the app's sso-login honours it only for its master and opens exactly that business, in a new tab.
-const OPENABLE = new Set(["signage", "bookings", "reservations", "employee", "team", "label", "qrmenu", "wifi"]);
+const OPENABLE = new Set(showApps(["signage", "bookings", "reservations", "employee", "team", "label", "qrmenu", "wifi"]));
 const LOGO_V = "20261113";   // bump with the files in apps/ (each app's own PV icon, copied from its repo)
 const appLogo = (k) => `apps/${k}.svg?v=${LOGO_V}`;
 const canOpen = (a) => !!a && !a.gone && OPENABLE.has(a.product) && a.ext_id != null && a.ext_id !== "";
@@ -1742,7 +1758,7 @@ function renderChips() {
   const chip = (k, label, dot) => `<button type="button" class="pchip ${S.prod === k ? "on" : ""}" data-prod="${k}" aria-pressed="${S.prod === k}"${dot ? ` title="${esc(dot[1])}"` : ""}>${dot ? `<i class="pdot ${dot[0]}"></i>` : ""}${label}</button>`;
   // each app's chip carries its sync status: green = synced, red = couldn't reach it at the last sync
   const st = (k) => { const r = S.lastSync?.apps?.[k]; return !r ? null : r.ok ? ["ok", "Synced"] : ["bad", r.error ? "Offline: " + r.error : "Offline"]; };
-  $("#pchips").innerHTML = chip("", "All products") + Object.entries(PRODUCTS).map(([k, p]) => {
+  $("#pchips").innerHTML = chip("", "All products") + Object.entries(SHOWN).map(([k, p]) => {
     const d = st(k);
     return chip(k, `${p.label} ${live.filter((u) => u.product === k).length}${d && d[0] === "bad" ? " · offline" : ""}`, d);
   }).join("");
@@ -1809,7 +1825,7 @@ function custLicText(units) {
 function custCard(c) {
   const accts = accountsForCustomer(c);
   const sum = custSummary(c);
-  const prods = Object.keys(PRODUCTS).filter((k) => accts.some((a) => a.product === k));
+  const prods = Object.keys(SHOWN).filter((k) => accts.some((a) => a.product === k));
   const [pcls, ptxt] = c.paused_at ? ["warn", "Paused"] : PILL[sum.worst];
   const licensed = sum.units.length - sum.bad.length, soon = sum.units.filter((u) => tone(u) === "a").length;
   const sub = !sum.units.length ? (prods.length ? prods.map((k) => PRODUCTS[k].label).join(" · ") : "No products linked yet")
@@ -1834,7 +1850,7 @@ function custCard(c) {
     const act = open.length === 1 ? `data-openapp="${esc(open[0].product + "|" + open[0].ext_id)}"` : `data-openpick="${esc(c.id + "|" + k)}"`;
     return `<button type="button" class="ov-app" ${act} title="${esc(label + " (" + status + ")")}" aria-label="${esc(label + ". " + status)}">${body}<span class="ov-go" aria-hidden="true">↗</span></button>`;
   };
-  const TILE_ORDER = ["signage", "bookings", "reservations", "employee", "team", "label", "qrmenu", "wifi"];
+  const TILE_ORDER = showApps(["signage", "bookings", "reservations", "employee", "team", "label", "qrmenu", "wifi"]);
   const nLinked = groupsOf(c).length, title = cardTitle(c);
   return `<article class="card ov-biz" data-cust="${c.id}">
     <div class="ov-bh"><div class="grow"><h3 title="${esc(title)}">${esc(title)}</h3><div class="muted small">${esc(nLinked > 1 ? `${nLinked} linked businesses · ${sub}` : sub)}</div></div><span class="ov-pill ${pcls}">${ptxt}</span></div>
@@ -1921,13 +1937,13 @@ function custDetail(c) {
     ${manage}
   </div>`;
 }
-const LINK_APPS = ["signage", "bookings", "reservations", "employee", "team", "label", "qrmenu", "wifi"];
+const LINK_APPS = showApps(["signage", "bookings", "reservations", "employee", "team", "label", "qrmenu", "wifi"]);
 
 // Tiles / List (remembered in this browser)
 let VIEW_AS = (() => { try { return localStorage.getItem("pvl.viewAs") || "tiles"; } catch { return "tiles"; } })();
 function paintViewSwitch() { document.querySelectorAll("[data-view-as]").forEach((b) => { b.classList.toggle("on", b.dataset.viewAs === VIEW_AS); b.setAttribute("aria-pressed", String(b.dataset.viewAs === VIEW_AS)); }); }
 document.addEventListener("click", (e) => { const b = e.target.closest("[data-view-as]"); if (!b) return; VIEW_AS = b.dataset.viewAs; try { localStorage.setItem("pvl.viewAs", VIEW_AS); } catch {} renderCustomers(); });
-const LIST_APPS = ["signage", "bookings", "reservations", "employee", "team", "label", "qrmenu", "wifi"];
+const LIST_APPS = showApps(["signage", "bookings", "reservations", "employee", "team", "label", "qrmenu", "wifi"]);
 function custTable(cs) {
   const cell = (c, k) => {
     const sum = custSummary(c), accts = accountsForCustomer(c), units = sum.units.filter((u) => u.product === k);
@@ -2344,7 +2360,7 @@ async function moveAccount(key) {
 // ---------- link / unlink / split (LOCATIONS_LINK_SPEC; licence-hub does the work in every app) ----------
 const appList = (c) => [...new Set(accountsForCustomer(c).map((a) => PRODUCTS[a.product]?.label).filter(Boolean))];
 function resultHtml(results) {
-  const rows = Object.entries(results || {}).map(([k, r]) => `<li><b>${esc(PRODUCTS[k]?.label || k)}</b>: ${r.ok
+  const rows = Object.entries(results || {}).filter(([k]) => shown(k)).map(([k, r]) => `<li><b>${esc(PRODUCTS[k]?.label || k)}</b>: ${r.ok
     ? (r.linked ? "linked" : r.unlinked ? "unlinked" : r.moved ? "moved to this card (only one had it)" : "nothing to do")
     : `<span style="color:var(--bad)">not done: ${esc(r.error || "failed")}</span>`}</li>`);
   return rows.length ? `<ul style="margin:6px 0 0;padding-left:18px">${rows.join("")}</ul>` : "";
@@ -2387,7 +2403,8 @@ async function splitGrouped() {
   let plan;
   try { plan = (await hub("split_preview")).plan || []; } catch (e) { return toast(e.message, true); }
   if (!plan.length) { toast("Nothing to split (press Sync if you expected some)"); return; }
-  const html = plan.map((p) => `<div style="margin:0 0 10px"><b>${esc(p.customer_name)}</b><ul style="margin:4px 0 0;padding-left:18px">${p.businesses.map((b) =>
+  const html = plan.map((p) => ({ ...p, businesses: p.businesses.filter((b) => shown(b.product)), new_cards: p.new_cards.map((n) => ({ ...n, units: n.units.filter((u) => shown(u.product)) })).filter((n) => n.units.length) }))   // ON_HOLD apps left out
+    .filter((p) => p.businesses.length).map((p) => `<div style="margin:0 0 10px"><b>${esc(p.customer_name)}</b><ul style="margin:4px 0 0;padding-left:18px">${p.businesses.map((b) =>
       `<li>${esc(PRODUCTS[b.product]?.label || b.product)} · ${esc(b.account_name)}: keeps <b>${esc(b.keep.name)}</b>; ${b.out.map((o) => `<b>${esc(o.name)}</b>`).join(", ")} leave${b.out.length === 1 ? "s" : ""}</li>`).join("")}</ul>
       <div class="small">New cards: ${p.new_cards.map((n) => `${esc(n.name)} (${esc([...new Set(n.units.map((u) => PRODUCTS[u.product]?.label))].join(", "))})`).join("; ")}</div></div>`).join("");
   const go = await ask({ title: "Split grouped businesses?", ok: "Split them", html: `<p style="margin:0 0 10px">Each business below moves into an app account of its own, with its data, devices and licence, and gets its own card. People who can see it are copied.</p>${html}` });
@@ -2403,7 +2420,7 @@ async function splitGrouped() {
 }
 // Pause / Resume / Delete a whole business in every app (licence-hub pause / resume / delete_business)
 const appsOf = (c) => [...new Set(accountsForCustomer(c).map((a) => PRODUCTS[a.product]?.label).filter(Boolean))].join(", ") || "no apps";
-function failedApps(r) { return Object.values(r?.results || {}).filter((x) => !x.ok).map((x) => `${PRODUCTS[x.product]?.label || x.product}: ${x.error}`); }
+function failedApps(r) { return Object.values(r?.results || {}).filter((x) => !x.ok && shown(x.product)).map((x) => `${PRODUCTS[x.product]?.label || x.product}: ${x.error}`); }
 async function pauseBusiness(id, on) {
   const c = S.customers.find((x) => x.id === id); if (!c) return;
   const ok = await ask(on
@@ -2421,9 +2438,13 @@ async function pauseBusiness(id, on) {
 }
 async function deleteBusiness(id) {
   const c = S.customers.find((x) => x.id === id); if (!c) return;
+  // ON_HOLD: licence-hub's delete_business deletes the card in every app, the on-hold ones too, so a card that also holds
+  // an on-hold app account isn't deleted as a whole while that app is on hold (its other app accounts can each be deleted)
+  if (S.held?.has(c.id)) return ask({ title: `Delete ${c.name}`, cancel: false, ok: "OK",
+    message: "This business also has an app that’s on hold, so it can’t be deleted as a whole for now. Use Delete on each app account below instead." });
   const n = accountsForCustomer(c).length;
   const v = await ask({ title: `Delete ${c.name} completely?`, danger: true, ok: "Delete for ever",
-    html: `<p style="margin-top:0">${n ? `This deletes <b>${esc(c.name)}</b> in ${esc(appsOf(c))}: its locations, TVs, handhelds, staff, bookings, menus, guests, content and licences. <b>It can't be undone.</b>` : "This removes the business card. It has no app accounts."}</p><p>Type <b>${esc(c.name)}</b> to confirm.</p>`,
+    html: `<p style="margin-top:0">${n ? `This deletes <b>${esc(c.name)}</b> in ${esc(appsOf(c))}: its locations, TVs, handhelds, staff, reservations, menus, guests, content and licences. <b>It can't be undone.</b>` : "This removes the business card. It has no app accounts."}</p><p>Type <b>${esc(c.name)}</b> to confirm.</p>`,
     fields: [{ label: "Business name", required: true }] });
   if (!v) return;
   if (v[0] !== String(c.name).trim()) return toast("The name didn't match, so nothing was deleted.", true);
@@ -2578,7 +2599,7 @@ async function loadPayments() {
     sb.from("lic_payments").select("*").order("created_at", { ascending: false }).limit(200),
   ]);
   for (const r of [st, pl, py]) if (r.error) { $("#payView").innerHTML = `<div class="empty">${esc(r.error.message)}</div>`; return; }
-  P.settings = st.data; P.plans = pl.data; P.payments = py.data;
+  P.settings = st.data; P.plans = pl.data.filter((r) => shown(r.product)); P.payments = py.data.filter((r) => shown(r.product));
   renderPayLists();
   // don't wipe prices someone is still typing: only redraw the settings form when it isn't being edited
   if (!P.editing) renderPayments();
@@ -2648,7 +2669,7 @@ function renderPayments() {
   };
   const kindNote = { location: "Each business needs its own licence.", screen: "Each TV also needs its own licence, on top of its business.",
     staff: "Each business includes 10 staff; every extra person needs a Staff add-on." };
-  const SALE = Object.keys(PRODUCTS).flatMap((prod) => (KINDS[prod] || ["location"]).map((kind) => [prod, kind]));
+  const SALE = Object.keys(SHOWN).flatMap((prod) => (KINDS[prod] || ["location"]).map((kind) => [prod, kind]));
   $("#payView").innerHTML = `
   <div class="acct" style="margin:0 0 14px">
     <div class="ah"><span class="pn">Stripe</span>
@@ -2667,7 +2688,7 @@ function renderPayments() {
       </div>
       <ol class="pay-steps mt">
         <li>In Stripe → Developers → API keys → <b>Create restricted key</b>, give it <b>Read</b> access to <b>Checkout Sessions</b>, <b>Invoices</b> and <b>PaymentIntents</b> only, and paste it above.</li>
-        <li>In Stripe → <b>Payment Links</b>, create one link per product, licence and plan (e.g. “Proview Bookings – business – 12 months”, “Proview Signage – TV – 12 months”). Paste each link and its price below.</li>
+        <li>In Stripe → <b>Payment Links</b>, create one link per product, licence and plan (e.g. “Proview WiFi – business – 12 months”, “Proview Signage – TV – 12 months”). Paste each link and its price below.</li>
         <li>Owners see “Buy / renew online” in their app. Every 5 minutes this portal checks Stripe and applies paid licences automatically; they appear in Activity.</li>
       </ol>
     </div>
@@ -2762,8 +2783,8 @@ async function loadHeaderData() {
     sb.from("lic_payments").select("*").order("created_at", { ascending: false }).limit(50),
     sb.from("lic_audit").select("*").order("at", { ascending: false }).limit(100),
   ]);
-  if (!py.error) H.payments = py.data || [];
-  if (!au.error) H.audit = au.data || [];
+  if (!py.error) H.payments = (py.data || []).filter((r) => shown(r.product));
+  if (!au.error) H.audit = (au.data || []).filter((r) => shown(r.product));
   paintHeader();
 }
 const custOfUnit = (u) => { const a = S.accounts.find((x) => x.product === u.product && x.ext_id === u.account_ext_id); return a && S.customers.find((c) => c.id === a.customer_id); };
@@ -2905,11 +2926,11 @@ const ART = `<div class="auth-art"><div class="brand"><div class="pvlogo"></div>
   <h2>Every licence, every product — one place.</h2>
   <div class="pva-lic" aria-hidden="true"><div class="hd"><b>Licences</b><span>This week</span></div>
     <div class="li"><span class="tg">SIGNAGE</span><b>Front window TV</b><span class="st ok">Active</span></div>
-    <div class="li"><span class="tg">BOOKINGS</span><b>Main restaurant</b><span class="st wn">12 days left</span></div>
-    <div class="li"><span class="tg">EMPLOYEE</span><b>Front desk team</b><span class="st gr">Lifetime</span></div>
+    <div class="li"><span class="tg">QR MENU</span><b>Main restaurant</b><span class="st wn">12 days left</span></div>
+    <div class="li"><span class="tg">LABEL</span><b>Front desk handheld</b><span class="st gr">Lifetime</span></div>
     <div class="li"><span class="tg">SIGNAGE</span><b>Menu board</b><span class="st ok">Renewed +12m</span></div>
   </div>
-  <div class="sub">Manage Signage, Bookings and Employee licences from one login.</div></div>`;
+  <div class="sub">Manage every Proview app’s licences from one login.</div></div>`;
 const BRAND = `<div class="auth-brand"><div class="pvlogo" role="img" aria-label="Proview logo"></div><span class="wordmark">PROVIEW<span>LICENCES</span></span></div>`;
 const eyeBtn = (f) => `<button type="button" class="pw-eye" data-f="${f}" title="Show password" aria-label="Show password">${EYE}</button>`;
 let AUTHMODE = "signin";
