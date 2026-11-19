@@ -1,5 +1,5 @@
 // Licence portal: Proview dashboard accounts (owner, 19 Nov 2026). The business page's "Proview dashboard" line, the
-// dashboard chip on every app's Users panel, "Send dashboard invite" (only for ❌ / ⏳, never for staff), its toasts, and
+// dashboard chip on every app's Users panel, "Send dashboard invite" (only for ❌ / ⏳, staff too since one password, 19 Nov 2026), its toasts, and
 // the automatic invite of "+ Add user", New business and Add to app. Headless Chrome with a mocked Supabase and licence-hub.
 // Usage: node supabase/tests/portal_dashboard_invite_ui.test.js (screenshots go to the temp folder).
 const puppeteer = require('/opt/npm-tools/node_modules/puppeteer-core');
@@ -92,11 +92,14 @@ const statusRow = (e) => { const s = ACC[e] || 'none'; return { email: e, state:
   ok('business page has a "Proview dashboard" line', head === 'Proview dashboard');
   const L1 = await line();
   const by = Object.fromEntries(L1.map((x) => [x.email, x]));
-  ok('owner emails: contact email + every owner/admin/manager login, deduplicated ' + JSON.stringify(L1.map((x) => x.email)),
-    L1.length === 4 && ['babnewington@gmail.com', 'mgr@x.test', 'fail@x.test', 'active@x.test'].every((e) => by[e]));
+  ok('dashboard emails: contact email + every login, staff too, deduplicated ' + JSON.stringify(L1.map((x) => x.email)),
+    L1.length === 6 && ['babnewington@gmail.com', 'mgr@x.test', 'fail@x.test', 'active@x.test', 'staff@x.test', 'editor@x.test'].every((e) => by[e]));
   ok('one row for babnewington from contact email + Signage + Team + Reservations: ' + by['babnewington@gmail.com']?.from,
     /Contact email/.test(by['babnewington@gmail.com']?.from) && /Signage Owner \/ Admin/.test(by['babnewington@gmail.com']?.from) && /Team Owner/.test(by['babnewington@gmail.com']?.from) && /Reservations Owner/.test(by['babnewington@gmail.com']?.from));
-  ok('staff and editor logins are not owner emails', !by['staff@x.test'] && !by['editor@x.test']);
+  ok('staff and editor logins are listed with their app role, with Send dashboard invite (one password) ' + JSON.stringify([by['staff@x.test'], by['editor@x.test']]),
+    /Team Staff/.test(by['staff@x.test']?.from || '') && /Signage Editor/.test(by['editor@x.test']?.from || '') && by['staff@x.test']?.btn && by['editor@x.test']?.btn);
+  const sub = await page.evaluate(() => document.querySelector('[data-dashline] .dl-h small')?.textContent);
+  ok('the line says staff sign in too, with the same password everywhere: ' + sub, /staff too/.test(sub || '') && /same password/.test(sub || ''));
   ok('on-hold Bookings: its logins are not read or listed', !by['held@x.test'] && !hubCalls.some((c) => c.action === 'users' && c.product === 'bookings'));
   ok('states: none ❌ / invited ⏳ / active ✅ ' + JSON.stringify(L1.map((x) => x.chipText)),
     by['babnewington@gmail.com']?.chip === 'none' && /❌/.test(by['babnewington@gmail.com']?.chipText) && by['mgr@x.test']?.chip === 'invited' && /⏳/.test(by['mgr@x.test']?.chipText) && by['active@x.test']?.chip === 'active' && /✅/.test(by['active@x.test']?.chipText));
@@ -130,7 +133,12 @@ const statusRow = (e) => { const s = ACC[e] || 'none'; return { email: e, state:
   const rowOf = (e) => R.find((x) => x.t.toLowerCase().includes(e));
   ok('Users panel: every login has a dashboard chip ' + JSON.stringify(R.map((x) => x.chip)), R.length === 4 && R.every((x) => x.chip && x.chip !== 'unknown'));
   ok('Users panel: owner ⏳ (just invited) and manager ⏳ have Send dashboard invite', rowOf('babnewington')?.chip === 'invited' && rowOf('babnewington')?.btn === 'babnewington@gmail.com' && rowOf('mgr@x.test')?.btn === 'mgr@x.test');
-  ok('Users panel: staff login gets a chip but never an invite button', rowOf('staff@x.test')?.chip === 'none' && !rowOf('staff@x.test')?.btn);
+  ok('Users panel: staff login gets a chip and Send dashboard invite (one password)', rowOf('staff@x.test')?.chip === 'none' && rowOf('staff@x.test')?.btn === 'staff@x.test');
+  // a staff member can be sent the invite from the Users panel
+  await clearToasts(); hubCalls.length = 0;
+  await page.evaluate(() => document.querySelector('#usersDlg [data-dashinv="staff@x.test"]').click()); await wait(700);
+  ok('Users panel: Send dashboard invite works for staff ' + JSON.stringify(hubCalls), hubCalls.some((c) => c.action === 'dashboard_invite' && c.email === 'staff@x.test'));
+  R = await rows();
   await page.screenshot({ path: path.join(os.tmpdir(), 'dash-invite-users.png') });
   // Reservations panel: active admin has no button
   await page.evaluate(() => document.querySelector('#usersDlg [data-udx]').click()); await wait(200);

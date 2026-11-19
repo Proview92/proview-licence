@@ -761,6 +761,229 @@ async function deleteAccount(db: any, apps: Record<string, App>, adminEmail: str
   return { status: 200, body: { ok: true, deleted: true } };
 }
 
+// ---------- one password on every Proview site (owner, 19 Nov 2026; ONE_PASSWORD_SPEC.md) ----------
+// Each Proview site keeps its own sign-in page; a password set or changed on any of them (the app, a reset link, the
+// Users panel's Change password, the dashboard) is copied to every other site where that email has a login, and to
+// the Proview account (dashboard), which is made when missing. Only the bcrypt hash Supabase Auth keeps travels, from
+// server to server (each app's hub_call with its hub token; lic_pw_* on this project with the service role). Hashes
+// are never logged, never stored here outside auth.users / pw_changes and never sent to the portal page.
+//   pull  hub_call 'password_changes' { since }  -> changes made on that site (never ones the sync copied there)
+//   push  hub_call 'set_password_hash' { email, hash, changed_at }: applied only when newer than what the site holds;
+//         never makes an app login, never deletes one, leaves on hold (banned) logins blocked
+// Per email the newest password change wins. A change that is only a new login (kind 'new', e.g. a login made by Add
+// user, by the dashboard hand-off or by New business with a random password) never overwrites a password people
+// already use: the new login gets the person's dashboard password when they have one, else (no Proview account yet)
+// the Proview account is made with the new login's password.
+export const PW_ON_HOLD = ["bookings", "employee"];   // as the portal's ON_HOLD: built, but left out of the sync
+export const PW_OVERLAP_MS = 5 * 60e3;
+// Only apps on Supabase are synced. The old WiFi Node server (SQLite logins, wifi.proviewcrm.co.uk) is being replaced by
+// WiFi /app on Supabase: it is skipped until the portal's WiFi connection points at the WiFi Supabase project.
+export const pwOnSupabase = (a: { url?: string }) => /^https:\/\/[a-z0-9]{20}\.supabase\.co\/?$/.test(String(a?.url ?? ""));                 // read a little before each cursor (pushes are idempotent)
+const BCRYPT = /^\$2[aby]\$\d{2}\$[./A-Za-z0-9]{53}$/;
+export type PwChange = { email: string; hash: string | null; changed_at: string; kind: "set" | "new" };
+export type PwSite = {
+  product: string;
+  pull: (since: string | null) => Promise<{ changes: PwChange[]; more?: boolean }>;
+  push: (email: string, hash: string, changed_at: string) => Promise<{ applied?: boolean; created?: boolean; reason?: string }>;
+};
+export type PwDeps = {
+  apps: PwSite[];                                   // enabled apps (not on hold)
+  licence: PwSite & {
+    set: (email: string, hash: string, changed_at: string, create: boolean, kind?: "set" | "new") => Promise<{ applied?: boolean; created?: boolean; reason?: string }>;
+    accounts: (emails: string[]) => Promise<{ email: string; exists: boolean; usable: boolean; hash?: string | null }[]>;
+  };
+  state: () => Promise<Record<string, { cursor?: string | null }>>;
+  saveState: (product: string, cursor: string | null, error: string | null) => Promise<void>;
+};
+const plusMs = (iso: string, ms: number) => new Date(Date.parse(iso) + ms).toISOString();
+
+export async function passwordSync(d: PwDeps) {
+  const sites: PwSite[] = [d.licence, ...d.apps.filter((a) => !PW_ON_HOLD.includes(a.product))];
+  const state = await d.state();
+  const pulled: (PwChange & { product: string })[] = [], maxAt: Record<string, string | null> = {}, errors: Record<string, string> = {};
+  for (const s of sites) {
+    const cur = state[s.product]?.cursor ?? null;
+    let since = cur ? new Date(Date.parse(cur) - PW_OVERLAP_MS).toISOString() : null;
+    maxAt[s.product] = cur;
+    try {
+      for (let page = 0; page < 20; page++) {
+        const r = await s.pull(since);
+        for (const c of r.changes ?? []) {
+          const email = String(c.email ?? "").trim().toLowerCase();
+          if (!email || !c.changed_at) continue;
+          pulled.push({ ...c, email, product: s.product });
+          if (!maxAt[s.product] || Date.parse(c.changed_at) > Date.parse(maxAt[s.product]!)) maxAt[s.product] = c.changed_at;
+        }
+        if (!r.more || !r.changes?.length) break;
+        since = r.changes[r.changes.length - 1].changed_at;
+      }
+    } catch (e) { errors[s.product] = `read: ${errText(e)}`; }
+  }
+  const failedAt: Record<string, string> = {};   // source product -> oldest change that couldn't be copied everywhere
+  const fail = (src: PwChange & { product: string }, where: string, e: unknown) => {
+    errors[where] = `${src.email}: ${errText(e)}`;
+    if (!failedAt[src.product] || Date.parse(src.changed_at) < Date.parse(failedAt[src.product])) failedAt[src.product] = src.changed_at;
+  };
+  const byEmail = new Map<string, (PwChange & { product: string })[]>();
+  for (const c of pulled) byEmail.set(c.email, [...(byEmail.get(c.email) ?? []), c]);
+  const synced: string[] = [], created: string[] = [], adopted: string[] = [];
+  const newestFirst = (x: PwChange, y: PwChange) => Date.parse(y.changed_at) - Date.parse(x.changed_at);
+  for (const [email, list] of byEmail) {
+    const sets = list.filter((c) => c.kind === "set" && c.hash && BCRYPT.test(c.hash)).sort(newestFirst);
+    if (sets.length) {
+      const w = sets[0];
+      let changed = false;
+      for (const s of sites) {
+        if (s.product === w.product) continue;
+        try {
+          const r = s === d.licence ? await d.licence.set(email, w.hash!, w.changed_at, true) : await s.push(email, w.hash!, w.changed_at);
+          if (r?.applied) changed = true;
+          if (r?.created) created.push(email);
+        } catch (e) { fail(w, s.product, e); }
+      }
+      if (changed) synced.push(email);
+      continue;
+    }
+    // only new logins: the person's dashboard password, if they have one, goes to each new app login
+    const news = list.filter((c) => c.kind === "new" && c.product !== "licence").sort(newestFirst);
+    if (!news.length) continue;
+    let acc: { exists: boolean; usable: boolean; hash?: string | null } | undefined;
+    try { acc = (await d.licence.accounts([email]))?.[0]; } catch (e) { fail(news[0], "licence", e); continue; }
+    if (acc?.usable && acc.hash && BCRYPT.test(acc.hash)) {
+      for (const n of news) {
+        const s = sites.find((x) => x.product === n.product);
+        if (!s) continue;
+        try { const r = await s.push(email, acc.hash, plusMs(n.changed_at, 1)); if (r?.applied) adopted.push(email); }
+        catch (e) { fail(n, s.product, e); }
+      }
+    } else if (!acc?.exists) {
+      const best = news.find((c) => c.hash && BCRYPT.test(c.hash));
+      if (best) {
+        // made with kind 'new': the hash may be a random one nobody knows, so it isn't a dashboard password yet
+        try { const r = await d.licence.set(email, best.hash!, best.changed_at, true, "new"); if (r?.created) created.push(email); }
+        catch (e) { fail(best, "licence", e); }
+      }
+    }
+  }
+  // each cursor moves to the newest change read, or stays just before a change that couldn't be copied (retried)
+  for (const s of sites) {
+    if (errors[s.product]?.startsWith("read:")) { await d.saveState(s.product, null, errors[s.product]); continue; }
+    const cur = failedAt[s.product] ? plusMs(failedAt[s.product], -1) : maxAt[s.product];
+    await d.saveState(s.product, cur, errors[s.product] ?? null);
+  }
+  const uniq = (a: string[]) => [...new Set(a)].sort();
+  return { ok: !Object.keys(errors).length, read: pulled.length, synced: uniq(synced), created: uniq(created), adopted: uniq(adopted),
+           errors, skipped_on_hold: d.apps.filter((a) => PW_ON_HOLD.includes(a.product)).map((a) => a.product) };
+}
+
+// the real sites: each app's hub_call, and this project's lic_pw_* (service role)
+function pwDeps(db: any, apps: Record<string, App>): PwDeps {
+  const rpc = async (fn: string, args: Record<string, unknown>) => { const { data, error } = await db.rpc(fn, args); if (error) throw new Error(error.message); return data; };
+  return {
+    apps: Object.values(apps).filter(pwOnSupabase).map((a) => ({
+      product: a.product,
+      pull: (since) => callApp(a, "password_changes", { since, limit: 500 }),
+      push: (email, hash, changed_at) => callApp(a, "set_password_hash", { email, hash, changed_at }),
+    })),
+    licence: {
+      product: "licence",
+      pull: (since) => rpc("lic_pw_changes", { p_since: since, p_limit: 500 }),
+      push: (email, hash, changed_at) => rpc("lic_pw_set", { p_email: email, p_hash: hash, p_changed_at: changed_at, p_create: false, p_kind: "set" }),
+      set: (email, hash, changed_at, create, kind = "set") => rpc("lic_pw_set", { p_email: email, p_hash: hash, p_changed_at: changed_at, p_create: create, p_kind: kind }),
+      accounts: (emails) => rpc("lic_pw_accounts", { p_emails: emails }),
+    },
+    state: () => rpc("lic_pw_state", {}),
+    saveState: async (product, cursor, error) => { await rpc("lic_pw_state_set", { p_product: product, p_cursor: cursor, p_error: error }); },
+  };
+}
+
+// Activity: emails only, never hashes. Nothing is logged for a run that changed nothing (it runs every minute).
+async function pwAudit(db: any, adminEmail: string | null, r: Awaited<ReturnType<typeof passwordSync>>) {
+  const errs = Object.entries(r.errors).map(([k, v]) => `${k}: ${v}`);
+  if (!r.synced.length && !r.created.length && !r.adopted.length && !errs.length) return;
+  await db.from("lic_audit").insert({ admin_email: adminEmail ?? "Password sync (every minute)", product: null, action: "Password sync",
+    after: { emails: r.synced, dashboard_accounts_made: r.created, new_logins_given_dashboard_password: r.adopted },
+    error: errs.length ? errs.join(" · ").slice(0, 900) : null });
+}
+
+// Starting state (one-off). Per email: the sites it has a login on, whether it has a dashboard password, and what
+// happens: (a) its dashboard password is copied to every app where it has a login, or (b) it gets ONE "set your
+// password" email (dashboard_invite; sent only by password_invites with an explicit list, never here).
+// apply: false = dry run (changes nothing, sends nothing). apply: true = does (a) only.
+export function startPlan(lic: { email: string; has_password: boolean }[], apps: Record<string, { email: string; has_password?: boolean }[]>) {
+  const by = new Map<string, { email: string; sites: string[]; dashboard: "password" | "no password" | "none" }>();
+  for (const x of lic) by.set(x.email, { email: x.email, sites: ["dashboard"], dashboard: x.has_password ? "password" : "no password" });
+  for (const [product, list] of Object.entries(apps)) for (const x of list) {
+    const e = by.get(x.email) ?? { email: x.email, sites: [], dashboard: "none" as const };
+    if (!e.sites.includes(product)) e.sites.push(product);
+    by.set(x.email, e);
+  }
+  const rows = [...by.values()].map((e) => ({ ...e, apps: e.sites.filter((s) => s !== "dashboard"),
+    action: !e.sites.some((s) => s !== "dashboard") ? "nothing" : e.dashboard === "password" ? "a" : "b" }))
+    .sort((x, y) => x.email.localeCompare(y.email));
+  return { rows, emails: rows.length, a: rows.filter((r) => r.action === "a").length, b: rows.filter((r) => r.action === "b").length,
+           nothing: rows.filter((r) => r.action === "nothing").length, would_get_email: rows.filter((r) => r.action === "b").map((r) => r.email) };
+}
+async function passwordStart(db: any, apps: Record<string, App>, adminEmail: string | null, apply: boolean) {
+  const { data: lic, error } = await db.rpc("lic_pw_all");
+  if (error) throw new Error(error.message);
+  const per: Record<string, { email: string }[]> = {}, errors: Record<string, string> = {};
+  const live = Object.values(apps).filter((a) => !PW_ON_HOLD.includes(a.product) && pwOnSupabase(a));
+  await Promise.all(live.map(async (a) => {
+    try { per[a.product] = ((await callApp(a, "password_changes", { all: true }))?.logins ?? []).map((x: any) => ({ email: String(x.email).toLowerCase() })); }
+    catch (e) { errors[a.product] = errText(e); }
+  }));
+  const plan = startPlan(((lic as any[]) ?? []).map((x) => ({ email: String(x.email).toLowerCase(), has_password: !!x.has_password })), per);
+  const not_supabase = Object.values(apps).filter((a) => !pwOnSupabase(a)).map((a) => a.product);
+  if (!apply) return { ok: !Object.keys(errors).length, dry_run: true, ...plan, errors, on_hold: PW_ON_HOLD, not_supabase };
+  if (Object.keys(errors).length) return { ok: false, dry_run: false, error: "Some apps couldn't be read; nothing was changed.", errors };
+  const pushed: string[] = [], held: string[] = [];
+  for (const r of plan.rows.filter((x) => x.action === "a")) {
+    const { data: acc } = await db.rpc("lic_pw_accounts", { p_emails: [r.email] });
+    const a = (acc as any[])?.[0];
+    if (!a?.usable || !a.hash) continue;
+    const at = a.held_at ?? "1970-01-01T00:00:00.000Z";   // an app that has had a newer change since keeps it
+    for (const p of r.apps) {
+      try { const x = await callApp(apps[p], "set_password_hash", { email: r.email, hash: a.hash, changed_at: at }); (x?.applied ? pushed : held).push(`${r.email} (${p})`); }
+      catch (e) { errors[`${p} ${r.email}`] = errText(e); }
+    }
+  }
+  await db.from("lic_audit").insert({ admin_email: adminEmail, action: "Password sync: starting passwords",
+    after: { emails: plan.rows.filter((x) => x.action === "a").map((x) => x.email), copied: pushed.length, kept_newer: held },
+    error: Object.keys(errors).length ? Object.entries(errors).map(([k, v]) => `${k}: ${v}`).join(" · ").slice(0, 900) : null });
+  return { ok: !Object.keys(errors).length, dry_run: false, a: plan.a, copied: pushed.length, kept_newer: held, errors };
+}
+
+// Proview dashboard invite (shared by dashboard_invite and password_invites)
+async function dashboardInvite(db: any, userDb: any, adminEmail: string | null, body: any): Promise<{ status: number; body: any }> {
+  const email = String(body.email ?? "").trim().toLowerCase();
+  const name = String(body.name ?? "").trim();
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return { status: 400, body: { error: "Enter a valid email address." } };
+  const { data: st, error: serr } = await userDb.rpc("lic_dashboard_accounts", { p_emails: [email] });
+  if (serr) return { status: 400, body: { error: `Couldn't check the dashboard account: ${serr.message}` } };
+  const row = (Array.isArray(st) ? st[0] : null) as { state?: string; email_confirmed_at?: string | null } | null;
+  const state = row?.state ?? "none";
+  if (state === "active" || (body.only_if_missing && state !== "none")) return { status: 200, body: { ok: true, email, state, sent: null } };
+  let sent: "invite" | "recovery", err: { message?: string; status?: number } | null = null;
+  if (state === "none" || !row?.email_confirmed_at) {
+    sent = "invite";
+    const { error } = await db.auth.admin.inviteUserByEmail(email, { redirectTo: DASHBOARD_URL, ...(name ? { data: { full_name: name } } : {}) });
+    err = error;
+  } else {
+    sent = "recovery";
+    const { error } = await db.auth.resetPasswordForEmail(email, { redirectTo: DASHBOARD_URL });
+    err = error;
+  }
+  const why = String(err?.message || "").replace(/\.\s*$/, "");
+  const msg = err ? (err.status === 429 || /rate limit|only request this after/i.test(why)
+    ? `The dashboard invite couldn't be sent: ${why || "too many emails just now"}. Try again in a minute.`
+    : `The dashboard invite couldn't be sent: ${why || "unknown error"}`) : null;
+  await db.from("lic_audit").insert({ admin_email: adminEmail, product: null, account_name: String(body.account_name ?? "") || null,
+    action: "Dashboard invite", before: { state }, after: { email, sent }, error: msg });
+  if (msg) return { status: 400, body: { error: msg } };
+  return { status: 200, body: { ok: true, email, state, sent } };
+}
+
 Deno.serve(async (req) => {
   const h = cors(req);
   if (req.method === "OPTIONS") return new Response("ok", { headers: h });
@@ -781,6 +1004,16 @@ Deno.serve(async (req) => {
       return json(await checkPayments(db, await loadApps(db)));
     }
 
+    // every minute (pg_cron 'licence-password-sync'): the password sync, with its own secret (hub_private.pw_cron)
+    if (cronSecret && action === "password_sync") {
+      const { data: okc } = await db.rpc("lic_pw_cron_ok", { p_secret: cronSecret });
+      if (okc !== true) return json({ error: "Not authorised" }, 403);
+      const all = await loadApps(db);
+      const r = await passwordSync(pwDeps(db, all));
+      await pwAudit(db, null, r);
+      return json({ ...r, not_supabase: Object.values(all).filter((a) => !pwOnSupabase(a)).map((a) => a.product) });
+    }
+
     // who is calling?
     const auth = req.headers.get("Authorization") ?? "";
     const userDb = createClient(SB_URL, ANON, { global: { headers: { Authorization: auth } } });
@@ -798,38 +1031,39 @@ Deno.serve(async (req) => {
     //   active                    -> nothing sent (they already sign in)
     // only_if_missing: send only when there is no account yet (the automatic invite of Add user / New business / Add to app).
     // Both emails land on the dashboard's "Set your password" screen, which then signs them in.
-    if (action === "dashboard_invite") {
-      const email = String(body.email ?? "").trim().toLowerCase();
-      const name = String(body.name ?? "").trim();
-      if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return json({ error: "Enter a valid email address." }, 400);
-      const { data: st, error: serr } = await userDb.rpc("lic_dashboard_accounts", { p_emails: [email] });
-      if (serr) return json({ error: `Couldn't check the dashboard account: ${serr.message}` }, 400);
-      const row = (Array.isArray(st) ? st[0] : null) as { state?: string; email_confirmed_at?: string | null } | null;
-      const state = row?.state ?? "none";
-      if (state === "active" || (body.only_if_missing && state !== "none")) return json({ ok: true, email, state, sent: null });
-      let sent: "invite" | "recovery", err: { message?: string; status?: number } | null = null;
-      if (state === "none" || !row?.email_confirmed_at) {
-        sent = "invite";
-        const { error } = await db.auth.admin.inviteUserByEmail(email, { redirectTo: DASHBOARD_URL, ...(name ? { data: { full_name: name } } : {}) });
-        err = error;
-      } else {
-        sent = "recovery";
-        const { error } = await db.auth.resetPasswordForEmail(email, { redirectTo: DASHBOARD_URL });
-        err = error;
+    if (action === "dashboard_invite") { const r = await dashboardInvite(db, userDb, adminEmail, body); return json(r.body, r.status); }
+
+    // One password (master only, checked above):
+    //   password_invites { emails: [...] } -> the "set your password" email (dashboard_invite) to exactly these emails,
+    //        each only when it has no dashboard password yet; nothing else. At most 200 at a time.
+    if (action === "password_invites") {
+      const list = [...new Set((Array.isArray(body.emails) ? body.emails : []).map((e: unknown) => String(e ?? "").trim().toLowerCase()).filter(Boolean))] as string[];
+      if (!list.length) return json({ error: "Give the list of emails to send to." }, 400);
+      if (list.length > 200) return json({ error: "Send to at most 200 emails at a time." }, 400);
+      const { data: accs, error: aerr2 } = await db.rpc("lic_pw_accounts", { p_emails: list });
+      if (aerr2) return json({ error: aerr2.message }, 400);
+      const results: Record<string, unknown> = {};
+      for (const email of list) {
+        const a = (accs as any[])?.find((x) => x.email === email);
+        if (a?.usable) { results[email] = { ok: true, sent: null, skipped: "already has a dashboard password" }; continue; }
+        const r = await dashboardInvite(db, userDb, adminEmail, { email, account_name: "One password: set your password" });
+        results[email] = r.status === 200 ? r.body : { ok: false, error: r.body.error };
       }
-      const why = String(err?.message || "").replace(/\.\s*$/, "");
-      const msg = err ? (err.status === 429 || /rate limit|only request this after/i.test(why)
-        ? `The dashboard invite couldn't be sent: ${why || "too many emails just now"}. Try again in a minute.`
-        : `The dashboard invite couldn't be sent: ${why || "unknown error"}`) : null;
-      await db.from("lic_audit").insert({ admin_email: adminEmail, product: null, account_name: String(body.account_name ?? "") || null,
-        action: "Dashboard invite", before: { state }, after: { email, sent }, error: msg });
-      if (msg) return json({ error: msg }, 400);
-      return json({ ok: true, email, state, sent });
+      return json({ ok: Object.values(results).every((r: any) => r.ok), results });
     }
 
     const apps = await loadApps(db);
 
     if (action === "sync") return json(await syncApps(db, Object.values(apps)));
+
+    //   password_sync                      -> run the sync now (as every minute)
+    //   password_start { apply?: false }   -> dry run: per email its sites, dashboard password or not, (a) / (b); sends nothing
+    //   password_start { apply: true }     -> (a) only: each dashboard password is copied to the apps of that email
+    if (action === "password_sync") {
+      const r = await passwordSync(pwDeps(db, apps)); await pwAudit(db, adminEmail, r);
+      return json({ ...r, not_supabase: Object.values(apps).filter((a) => !pwOnSupabase(a)).map((a) => a.product) });
+    }
+    if (action === "password_start") return json(await passwordStart(db, apps, adminEmail, body.apply === true));
 
     // Logins of one app account (each app's hub_users, token-checked like hub_call). Master only (checked above).
     //   users { product, account, op: "list" }                         -> { users: [...], roles: [...], staff? }

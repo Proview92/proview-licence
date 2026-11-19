@@ -2110,12 +2110,12 @@ function renderUsers() {
         <label>Email<input name="email" type="email" required autocomplete="off"></label>
         ${roles.length ? `<label>Role<select name="role" required>${roles.map((r) => `<option value="${esc(r.value)}" ${r.value === (roles.find((q) => /^admin$/i.test(q.value)) || roles.find((q) => q.value === "manager") || roles[0]).value ? "selected" : ""}>${esc(r.label)}</option>`).join("")}</select></label>` : ""}
         <label>Password<span class="pwrow"><input name="password" type="text" minlength="8" required autocomplete="off" value="${esc(f.pw)}"><button type="button" class="btn sm" data-udgen>New</button></span></label>
-        <div class="ud-note">They sign in to ${esc(PRODUCTS[usersAcc().product]?.label || "the app")} with this email and password. If the email already has a login there, it's added to this business and their password stays the same. ${staff ? "" : "Choose their locations and what they can do inside the app."}</div>
+        <div class="ud-note">They sign in to ${esc(PRODUCTS[usersAcc().product]?.label || "the app")} with this email and password. If the email already has a login there, it's added to this business and their password stays the same. The password is the same on all Proview sites: if they already have one, this login gets it within a minute. ${staff ? "" : "Choose their locations and what they can do inside the app."}</div>
         <div class="acts"><button type="button" class="btn" data-udcancel>Cancel</button><button class="btn primary">Add user</button></div></form>`;
     } else if (f?.mode === "password") {
       form = `<form class="ud-form" data-udform="password"><div><b>New password for ${esc(f.email)}</b></div>
         <label>Password<span class="pwrow"><input name="password" type="text" minlength="8" required autocomplete="off" value="${esc(f.pw)}"><button type="button" class="btn sm" data-udgen>New</button></span></label>
-        <div class="ud-note">Their old password stops working straight away. Tell them the new one.</div>
+        <div class="ud-note">Their old password stops working straight away. The password is the same on all Proview sites, so this becomes their password on every site and on the dashboard within a minute. Tell them the new one.</div>
         <div class="acts"><button type="button" class="btn" data-udcancel>Cancel</button><button class="btn primary">Set password</button></div></form>`;
     }
     const rows = users.length ? users.map((x) => `<div class="ud-row"><div class="ud-n"><b>${esc(x.name || x.email)}</b>${x.name ? `<div>${esc(x.email)}</div>` : ""}
@@ -2186,9 +2186,10 @@ async function onUsersSubmit(e) {
     if (f.dataset.udform === "add") {
       const r = await hub("users", { product, account: ext, account_name: a?.name, op: "add", ...v });
       const said = r.existing ? `${v.email} added. They already had a login, so their password didn't change.` : `${v.email} added.`;
-      // owners, admins and managers also get a Proview dashboard account (invite) when that email has none; staff don't
+      // owners, admins and managers also get a Proview dashboard account (invite) when that email has none (staff get theirs
+      // from the password sync, with the password typed here)
       let dash = "", dashErr = null;
-      if (dashRole({ role: v.role }, U.data?.roles || [])) {
+      if (dashManager({ role: v.role }, U.data?.roles || [])) {
         try { const d = await hub("dashboard_invite", { email: v.email, name: v.name, account_name: a?.name, only_if_missing: true }); if (d?.sent) dash = " Dashboard invite sent."; }
         catch (er) { dashErr = er.message || "the dashboard invite couldn't be sent"; }
         DASH.st.delete(String(v.email || "").trim().toLowerCase()); dashForget(product, ext);
@@ -2196,7 +2197,7 @@ async function onUsersSubmit(e) {
       if (dashErr) toast(`${said} ${dashErr}`, true); else toast(said + dash);
     } else {
       await hub("users", { product, account: ext, account_name: a?.name, op: "password", email: U.form.email, password: v.password });
-      toast(`New password set for ${U.form.email}`);
+      toast(`New password set for ${U.form.email} (on all Proview sites within a minute)`);
     }
     U.form = null; await loadUsers();
   } catch (er) { toast(er.message || "That didn't work", true); btn.disabled = false; }
@@ -2209,15 +2210,22 @@ document.addEventListener("change", (e) => {
 
 
 // ---------- Proview dashboard accounts (owner, 19 Nov 2026) ----------
-// Every owner / admin / manager should have a Proview account (the dashboard.proviewcrm.co.uk login, auth.users on this
+// Everyone with an email login (owners, admins, managers and staff; one password, 19 Nov 2026) should have a Proview
+// account (the dashboard.proviewcrm.co.uk login, auth.users on this
 // project). lic_dashboard_accounts (master only) says, per email: none ❌ | invited ⏳ (never signed in) | active ✅.
 // "Send dashboard invite" (licence hub dashboard_invite) makes the account if missing and emails a "set your password"
-// link to the dashboard; it is shown only for ❌ / ⏳. Staff roles never get one (they can't open apps from the dashboard).
+// link to the dashboard; it is shown only for ❌ / ⏳, for staff too (they open their apps from the dashboard as well).
 const DASH = { st: new Map(), biz: new Map(), err: null };   // st: email -> row; biz: customer id -> { rows, loading, errs }
 const DASH_ROLE = /owner|admin|manager/i;
 const dashNorm = (e) => String(e || "").trim().toLowerCase();
-// owner / admin / manager by the app's role value or label; a login with no role counts only in apps that have no roles
+// who gets a Proview dashboard login: everyone with an email login in the app, staff too (one password, owner 19 Nov
+// 2026); PIN-only staff (no email, or a staff row with no login and no invite) are left as they are
 function dashRole(x, roles) {
+  if (!x?.email) return false;
+  return x.has_login !== false || !!x.invited;
+}
+// owner / admin / manager by the app's role value or label (the automatic invite of + Add user)
+function dashManager(x, roles) {
   if (!x?.role) return !(roles || []).length;
   return DASH_ROLE.test(x.role + " " + ((roles || []).find((r) => r.value === x.role)?.label || ""));
 }
@@ -2248,7 +2256,7 @@ function dashLine(c) {
 }
 function dashLineInner(c) {
   const ent = DASH.biz.get(c.id);
-  const head = `<div class="dl-h"><b>Proview dashboard</b><small>Owners, admins and managers sign in at dashboard.proviewcrm.co.uk to open their apps.</small></div>`;
+  const head = `<div class="dl-h"><b>Proview dashboard</b><small>Everyone with a login, staff too, signs in at dashboard.proviewcrm.co.uk to open their apps, with the same password as on every Proview site.</small></div>`;
   if (!ent || ent.loading) return head + `<div class="dl-note">Checking…</div>`;
   const rows = ent.rows.map((x) => `<div class="dl-row" data-dashrow="${esc(x.email)}"><div class="dl-e">${esc(x.email)}<small>${esc(x.from.join(" · "))}</small></div>${dashChip(x.email)}${dashBtn(x.email, x.name, c.name) || "<span></span>"}</div>`).join("");
   const errs = [...ent.errs, ...(DASH.err ? [DASH.err] : [])];
@@ -3186,7 +3194,7 @@ function paintHeader() { paintBell(); window.PVHub?.paint(); }
 $("#who").onclick = (e) => window.PVHub?.accountMenu(e.currentTarget, {
   initials: $("#who").textContent, name: S.name || "", email: S.email, sub: "Proview licence admin", focusFirst: e.detail === 0,
   items: [{ label: "Activity", icon: "page", run: () => setTab("activity") },
-          { label: "Change password", icon: "user", run: async () => { const { error } = await sb.auth.resetPasswordForEmail(S.email, { redirectTo: location.origin + location.pathname }); toast(error ? error.message : "Password reset email sent to " + S.email, !!error); } },
+          { label: "Change password", icon: "user", run: async () => { const { error } = await sb.auth.resetPasswordForEmail(S.email, { redirectTo: location.origin + location.pathname }); toast(error ? error.message : "Password reset email sent to " + S.email + ". The new password works on all Proview sites.", !!error); } },
           { label: "Sign out", icon: "logout", run: signOutNow, sep: true }],
 });
 
@@ -3230,7 +3238,7 @@ function showNewPw(msg) {
   $("#auth").innerHTML = `${ART}<div class="auth-form"><form id="npForm" novalidate>
     ${BRAND}
     <h1>Set a new password</h1>
-    <p class="muted">Choose a password of 8 or more characters.</p>
+    <p class="muted">Choose a password of 8 or more characters. Your password is the same on all Proview sites, so this changes it everywhere.</p>
     <div id="authMsg">${msg ? `<div class="notice bad">${esc(msg)}</div>` : ""}</div>
     <label class="af">New password<div class="pw-wrap"><input id="lgPw" type="password" autocomplete="new-password" placeholder="At least 8 characters">${eyeBtn("lgPw")}</div></label>
     <label class="af">Type it again<div><div class="pw-wrap"><input id="lgPw2" type="password" autocomplete="new-password" placeholder="Type it again">${eyeBtn("lgPw2")}</div><div class="pw-match" id="pwMatch"></div></div></label>
