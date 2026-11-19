@@ -50,10 +50,12 @@ const APPS: Record<string, { name: string; home: string; origins: string[]; land
     origins: ["https://qrmenu.proviewcrm.co.uk", "https://proview92.github.io"], land: "",
     check: "https://yblafwttmqaqvfvedaoc.supabase.co/functions/v1/sso-login",
   },
+  // 19 Nov 2026: the WiFi back office is the Supabase app at /app/ (as the other Supabase apps: no separate landing
+  // page, the hand-off arrives as #pv_sso=, checked by the WiFi project's sso-login)
   wifi: {
-    name: "Proview WiFi", home: "https://wifi.proviewcrm.co.uk/customer",
-    origins: ["https://wifi.proviewcrm.co.uk"], land: "https://wifi.proviewcrm.co.uk/customer/sso",
-    check: "https://wifi.proviewcrm.co.uk/customer/sso/check",
+    name: "Proview WiFi", home: "https://wifi.proviewcrm.co.uk/app/",
+    origins: ["https://wifi.proviewcrm.co.uk"], land: "",
+    check: "https://twpmmxnmyyxtjgodldeq.supabase.co/functions/v1/sso-login",
   },
 };
 

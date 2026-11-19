@@ -1559,7 +1559,7 @@ const PRODUCTS = {
   signage:  { label: "Signage",  unit: "TV", units: "TVs", app: "https://app.proviewsignage.co.uk",  trial: "trial7" },
   bookings: { label: "Bookings", unit: "Business", units: "businesses",   app: "https://bookings.proviewcrm.co.uk", trial: "trial"  },
   employee: { label: "Employee", unit: "Staff member", units: "staff", app: "https://employee.proviewcrm.co.uk", trial: "trial3" },
-  wifi:     { label: "WiFi",     unit: "Business", units: "businesses",   app: "https://wifi.proviewcrm.co.uk/admin", trial: "trial" },
+  wifi:     { label: "WiFi",     unit: "Business", units: "businesses",   app: "https://wifi.proviewcrm.co.uk/app/", trial: null },   // no trials (NO_TRIAL_SPEC.md)
   qrmenu:   { label: "QR Menu",  unit: "Business", units: "businesses",   app: "https://qrmenu.proviewcrm.co.uk", trial: "trial3" },
   label:    { label: "Label",    unit: "Handheld", units: "handhelds",   app: "https://label.proviewcrm.co.uk", trial: "trial" },
   team:     { label: "Team",     unit: "Business", units: "businesses",   app: "https://team.proviewcrm.co.uk", trial: "trial" },
@@ -2615,7 +2615,8 @@ function ncRow(k, r, e, lic) {
   const name = "Proview " + PRODUCTS[k].label;
   if (!r) return `<li data-res="${k}"><span class="mk">…</span><span class="tx"><b>${esc(name)}</b><small>Adding…</small></span></li>`;
   if (r.ok) {
-    const trial = lic !== "trial" ? "" : r.trial?.applied ? ` On a 3-day trial until ${esc(ncWhen(r.trial.expires_at))}.`
+    const trial = lic !== "trial" ? "" : r.trial?.no_trial ? ` ${esc(name)} has no trials: it starts with no licence until one is bought.`
+      : r.trial?.applied ? ` On a 3-day trial until ${esc(ncWhen(r.trial.expires_at))}.`
       : r.trial ? " It already had a licence, so no trial was added."
       : ` <span class="nd-warn">The trial couldn’t be started${r.trial_error ? ` (${esc(r.trial_error)})` : ""}: set a licence on the business’s page.</span>`;
     return `<li class="ok" data-res="${k}"><span class="mk" aria-label="Done">✓</span><span class="tx"><b>${esc(name)}</b><small>${r.existing
@@ -2844,7 +2845,7 @@ async function addAppTo(cid, k, keep) {
       try { const dd = await hub("dashboard_invite", { email, name: owner, account_name: c.name, only_if_missing: true }); if (dd?.sent) dash = ` Dashboard invite sent to ${email}.`; }
       catch (er) { toast(er.message || "The dashboard invite couldn't be sent", true); }
       DASH.st.delete(email); DASH.biz.delete(cid); dashRepaint();
-      toast(`${c.name} added to ${name}` + (lic === "trial" ? (r.trial?.applied ? " on a 3-day trial" : r.trial_error ? ` (trial not started: ${r.trial_error})` : "") : "") + (dash ? "." + dash : ""));
+      toast(`${c.name} added to ${name}` + (lic === "trial" ? (r.trial?.no_trial ? " (no trial: Proview WiFi has none)" : r.trial?.applied ? " on a 3-day trial" : r.trial_error ? ` (trial not started: ${r.trial_error})` : "") : "") + (dash ? "." + dash : ""));
       if (lic === "set") {
         openDetail(cid);
         const u = S.units.find((x) => x.product === k && !x.gone && x.account_ext_id === r.account_id);
