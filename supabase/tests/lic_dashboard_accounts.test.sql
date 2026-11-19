@@ -13,13 +13,14 @@ begin
   -- ---------- setup (as postgres) ----------
   insert into auth.users (id, instance_id, aud, role, email, encrypted_password, email_confirmed_at, invited_at, last_sign_in_at, created_at, updated_at, is_anonymous)
   values
-    (adm,    '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', t || '-master@example.invalid',  'x', now(), null, now(), now() - interval '9 days', now(), false),
     (act,    '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', t || '-active@example.invalid',  'x', now() - interval '5 days', null, now() - interval '1 day', now() - interval '5 days', now(), false),
     (inv,    '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', t || '-invited@example.invalid', '',  null, now() - interval '2 hours', null, now() - interval '2 hours', now(), false),
     (conf,   '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', t || '-made@example.invalid',    'x', now(), null, null, now() - interval '3 hours', now(), false),
     (anon_u, '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', t || '-anon@example.invalid',    null, null, null, now(), now(), now(), true),
     (other,  '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', t || '-other@example.invalid',   'x', now(), null, now(), now(), now(), false);
-  insert into public.lic_admins (email) values (t || '-master@example.invalid');
+  -- lic_admins only allows the real master (check lic_admins_master_only), so test as that account.
+  select id into adm from auth.users where lower(email) = 'altun@proviewtech.co.uk' and email_confirmed_at is not null;
+  if adm is null then raise exception 'master account not found'; end if;
 
   -- ---------- shape: security definer, fixed search_path, no password / token columns ----------
   select p.prosecdef, coalesce(array_to_string(p.proconfig, ','), ''), pg_get_function_result(p.oid) into ok, msg, res
