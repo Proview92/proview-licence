@@ -1998,7 +1998,6 @@ function custDetail(c) {
       <div class="row mt"><button class="btn primary sm" data-savecust="${c.id}">Save details</button></div>
     </div></details>
     ${linked}
-    ${dashLine(c)}
     ${accts.map(accountBlock).join("") || `<div class="card bd-paused" style="background:#fff;border-color:var(--line);color:inherit">No app accounts here. Use “Move…” on an account under another business to bring it here.</div>`}
     ${manage}
   </div>`;
