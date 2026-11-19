@@ -100,3 +100,14 @@ Deno.test("not signed in: 401", async () => {
 });
 
 addEventListener("unload", () => { globalThis.fetch = realFetch; });
+
+Deno.test("WiFi (19 Nov 2026): lands on /app/ and is checked by the WiFi Supabase project's sso-login", async () => {
+  const n0 = seen.length;
+  const r = await call({ action: "go", app: "wifi", business: "8356a97d-54f5-42ca-a6aa-094f248309d7" });
+  assertEquals(r.status, 200);
+  assert(r.body.url.startsWith("https://wifi.proviewcrm.co.uk/app/#pv_sso="), r.body.url);
+  assert(seen.slice(n0).some((x) => x.url === "https://twpmmxnmyyxtjgodldeq.supabase.co/functions/v1/sso-login"), "checked by the WiFi project");
+  assert(!seen.slice(n0).some((x) => /\/customer\/sso/.test(x.url)), "not by the old Node server");
+  const back = await call({ action: "go", app: "wifi", return: "https://wifi.proviewcrm.co.uk/app/#guests" });
+  assert(back.body.url.startsWith("https://wifi.proviewcrm.co.uk/app/#pv_sso="), back.body.url);
+});

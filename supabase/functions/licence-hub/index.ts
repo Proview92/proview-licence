@@ -354,7 +354,8 @@ const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 //   Employee  'trial' { account_id }   -> pe_master_trial (owner trial3 + location trial3: staff package and staff follow)
 //   Bookings  'set' trial  on the new location   (= bk_master_trial: 3 days on the business's unlicensed location)
 //   QR Menu   'set' trial3 on the new location   (= pq_master_trial: 3 days)
-//   WiFi      'set' trial  on the new location   (= WiFi's own Add business trial, setLicence 'trial': 3 days)
+//   WiFi      none: Proview WiFi has no trials (NO_TRIAL_SPEC.md; owner 19 Nov 2026). Its new location starts with no
+//             licence, and its hub_call 'set' refuses trial types; the answer says no_trial instead.
 //   Label     'set' trial  until now + 3 days    (= Label's own Add business, pl_set_site_licence 'trial')
 // The location is the one add_business just made with no licence, so this never replaces a licence already set.
 const TRIAL_NOTE = "3-day trial chosen in the licence portal's New customer";
@@ -364,13 +365,16 @@ export function trialCall(product: string, r: any, now = Date.now()): [string, R
     site ? ["set", { unit: site, kind: "location", type, extend: false, expires: null, notes: TRIAL_NOTE, ...extra }] as [string, Record<string, unknown>] : null;
   switch (product) {
     case "signage": case "employee": return r?.account_id ? ["trial", { account_id: String(r.account_id) }] : null;
-    case "bookings": case "wifi": case "team": case "reservations": return set("trial");
+    case "bookings": case "team": case "reservations": return set("trial");
+    case "wifi": return null;   // no trials in Proview WiFi (NO_TRIAL_APPS)
     case "qrmenu": return set("trial3");
     // Label: the business gets a spare 3-day trial licence that its first paired handheld takes (Label migration 013)
     case "label": return r?.account_id ? ["trial", { account_id: String(r.account_id), notes: TRIAL_NOTE }] : null;
   }
   return null;
 }
+// apps that never start a trial, even when New location asks for one: the business starts with no licence
+export const NO_TRIAL_APPS = new Set(["wifi"]);
 // either answer -> { applied, expires_at, license_type? }
 export function trialResult(action: string, a: any) {
   if (action === "trial") return { applied: !!a?.applied, expires_at: a?.expires_at ?? null };
@@ -894,7 +898,11 @@ Deno.serve(async (req) => {
           results[product] = { ok: true, existing: !!r.existing, account_id: ext, ...(error ? { link_error: error.message } : {}) };
           await db.from("lic_audit").insert({ admin_email: adminEmail, product, account_name: business, action: "added business",
             after: { customer: cust.name, owner: email, existing: !!r.existing, account_id: ext, licence, invite: !!body.invite } });
-          if (licence === "trial") {
+          if (licence === "trial" && NO_TRIAL_APPS.has(product)) {
+            results[product].trial = { applied: false, expires_at: null, no_trial: true };
+            await db.from("lic_audit").insert({ admin_email: adminEmail, product, account_name: business,
+              action: "no trial (this app has no trials: no licence until one is bought)", after: { account_id: ext } });
+          } else if (licence === "trial") {
             // the business is made either way: a trial that can't start is reported on its own, not as a failed app
             const tc = trialCall(product, { ...r, account_id: ext });
             try {
