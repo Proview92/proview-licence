@@ -1843,7 +1843,9 @@ function unitRow(u) {
 function accountBlock(a) {
   const p = PRODUCTS[a.product];
   const units = unitsForAccount(a), key = a.product + "|" + a.ext_id;
-  const sub = [unitCount(a.product, units), a.contact_email, a.extra?.self_signup ? "signed up online" : ""].filter(Boolean).join(" · ");
+  // No email from the app (Label, WiFi and some Signage accounts don't send one): show the business's instead.
+  const cu = S.customers.find((x) => x.id === a.customer_id);
+  const sub = [unitCount(a.product, units), a.contact_email || cu?.contact_email || cu?.owner_email, a.extra?.self_signup ? "signed up online" : ""].filter(Boolean).join(" · ");
   const bad = units.filter((u) => tone(u) === "r"), warn = units.filter((u) => tone(u) === "a"), nx = renewAt(units);
   const st = !units.length ? ["", "no licences yet"] : bad.length ? ["bad", `${bad.length} unlicensed`] : nx === Infinity ? ["ok", "Lifetime"] : [warn.length ? "warn" : "ok", (units.some((u) => /^m1$/.test(u.license_type)) ? "next payment " : "to ") + shortDate(nx)];
   return `<details class="pv-acc" ${matchMedia("(max-width: 760px)").matches ? "" : "open"}><summary class="pv-acc-s"><img src="${appLogo(a.product)}" alt=""><span class="pv-acc-t"><b>${p.label}</b><small>${esc(unitCount(a.product, units))}</small></span><span class="pv-acc-r"><span class="ov-dot ${st[0]}"></span>${esc(st[1])}</span><span class="pv-chev" aria-hidden="true"></span></summary><section class="card appc">
