@@ -467,7 +467,18 @@ button.ov-app .an{padding-right:10px}
 .ov-app.off .ov-lg img{filter:grayscale(1);opacity:.3}
 /* Narrow cards (phones): two columns of three, so names and dates fit and each box is a big tap target */
 .ov-biz{container-type:inline-size}
-@container (max-width:440px){.ov-apps{grid-template-columns:repeat(2,1fr);gap:8px;padding:12px 14px 14px}.ov-app{padding:10px 10px;min-height:56px}}
+/* narrow business cards: 6 apps as 3 columns x 2 rows, logo above the app name (owner, 20 Nov 2026) */
+@container (max-width:440px){
+.ov-apps{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;padding:12px}
+.ov-app{padding:9px 8px 8px;min-height:0;gap:4px}
+.ov-app .an{flex-direction:column;align-items:flex-start;gap:5px;font-size:12.5px;width:100%}
+button.ov-app .an{padding-right:0}
+.ov-app .an .nm{max-width:100%}
+.ov-app .ad{font-size:11.5px}
+.ov-app .ad .ov-dot{margin:0 5px 0 0}
+.ov-app .ov-add{top:5px;right:5px;width:22px;height:22px;font-size:19px}
+.ov-app .ov-go{top:6px;right:7px}
+}
 .ov-biz{display:flex;flex-direction:column;overflow:hidden}
 .ov-bh{display:flex;align-items:flex-start;gap:10px;padding:16px 18px 12px}
 .pv-loc .ov-bh h3{font-size:17px;font-weight:700;margin:0 0 2px}
