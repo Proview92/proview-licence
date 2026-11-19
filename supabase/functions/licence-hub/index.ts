@@ -797,12 +797,15 @@ Deno.serve(async (req) => {
     //   users { product, account, op: "add", email, name, role, password, member? }
     //   users { product, account, op: "password", email, password }
     //   users { product, account, op: "reset", email }                  the app emails its own reset link
+    //   users { product, account, op: "hold", email, on }                on hold (can't sign in) / resume; the whole login in that app
+    //   users { product, account, op: "remove", email }                  out of this business; the login itself stays
     if (action === "users") {
       const app = apps[String(body.product ?? "")];
       if (!app) return json({ error: "Unknown app." }, 400);
       const op = String(body.op ?? "list"), account = String(body.account ?? "");
       const email = String(body.email ?? "").trim().toLowerCase();
-      const args = { account, email, name: body.name ?? null, role: body.role ?? null, password: body.password ?? null, member: body.member ?? null };
+      const args = { account, email, name: body.name ?? null, role: body.role ?? null, password: body.password ?? null, member: body.member ?? null,
+                     on: body.on !== false, protect: adminEmail };   // protect: the signed-in master's own login is never held or removed
       const usersCall = async (o: string) => {
         const r = await fetch(`${app.url}/rest/v1/rpc/hub_users`, {
           method: "POST", headers: { apikey: app.apikey, "Content-Type": "application/json" },
@@ -831,12 +834,13 @@ Deno.serve(async (req) => {
         }
         await audit("Reset link"); return json({ ok: true, email });
       }
-      if (op !== "add" && op !== "password") return json({ error: "Unknown action." }, 400);
+      const what: Record<string, string> = { add: "Add user", password: "Change password", remove: "Remove user", hold: body.on === false ? "Resume user" : "Put user on hold" };
+      if (!what[op]) return json({ error: "Unknown action." }, 400);
       try {
         const r = await usersCall(op);
-        await audit(op === "add" ? "Add user" : "Change password");
+        await audit(what[op]);
         return json(r);
-      } catch (e) { await audit(op === "add" ? "Add user" : "Change password", (e as Error).message); throw e; }
+      } catch (e) { await audit(what[op], (e as Error).message); return json({ error: (e as Error).message }, 400); }
     }
 
     // Locations (LOCATIONS_LINK_SPEC): link two locations, unlink one, and the one-off split of businesses that already
