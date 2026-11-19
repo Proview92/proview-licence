@@ -1230,7 +1230,7 @@ details.xg{margin:0 0 14px}
 @media (max-width:760px){
  .pv-sheetwrap .bd>*{flex-shrink:0!important}
  .pv-sheetwrap .bd-head{order:1}.pv-sheetwrap .bd-paused{order:2}.pv-sheetwrap .pv-acc,.pv-sheetwrap .bd>section.appc{order:3}
- .pv-sheetwrap .bd-det{order:5}.pv-sheetwrap .pv-man{order:6}
+ .pv-sheetwrap .dash-line{order:4;border:1px solid var(--line)!important;border-radius:12px!important;box-shadow:none!important}.pv-sheetwrap .bd-det{order:5}.pv-sheetwrap .pv-man{order:6}
  .pv-sheetwrap .pv-acc .pv-chev,.pv-sheetwrap .pv-man .pv-chev{transform:rotate(45deg);margin-bottom:4px}
  .pv-sheetwrap .pv-acc[open] .pv-chev,.pv-sheetwrap .pv-man[open] .pv-chev{transform:rotate(-135deg);margin-bottom:-2px}
  .pv-sheetwrap .bd-det>summary::before{display:none!important;content:none!important}
@@ -1268,6 +1268,17 @@ body.gate .pv-dock,body.gate .pv-ptr,body.gate .pv-synced,body.gate .res-tools{d
 .ud-note{font-size:12.5px;color:var(--muted);line-height:1.45}
 .ud-empty{padding:18px 0;color:var(--muted);font-size:14px}
 @media (max-width:760px){.ud-row{grid-template-columns:1fr}.ud-acts{justify-content:flex-start}.ud-acts .btn{flex:1}}
+/* Proview dashboard accounts (owner, 19 Nov 2026) */
+.dash-chip{font-size:11.5px;font-weight:700;border-radius:20px;padding:2px 8px;background:var(--tint);color:var(--muted);white-space:nowrap}
+.dash-chip.dash-ok{background:var(--ok-soft,#e7f6ec);color:var(--ok,#1e7b3a)}.dash-chip.dash-inv{background:var(--warn-soft);color:var(--warn)}
+.dash-chip.dash-no{background:var(--bad-soft,#fde8e8);color:var(--bad,#c62828)}
+.dash-line{padding:14px 18px;margin:0 0 14px}
+.ud-tags [data-dashinv]{height:auto;min-height:0;padding:2px 10px;font-size:12px;border-radius:20px;line-height:1.5}
+.dl-h{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}.dl-h b{font-size:15px}.dl-h small{color:var(--muted);font-size:12.5px}
+.dl-row{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:6px 12px;align-items:center;padding:9px 0;border-top:1px solid var(--line)}
+.dl-h{margin-bottom:4px}.dl-row:first-of-type{border-top:0}.dl-e{font-size:14px;font-weight:600;overflow-wrap:anywhere}.dl-e small{display:block;font-weight:400;color:var(--muted);font-size:12px}
+.dl-note{font-size:12.5px;color:var(--muted);margin-top:6px}
+@media (max-width:760px){.dl-row{grid-template-columns:1fr auto}.dl-row .btn{grid-column:1/-1}}
 </style>
 </head>
 <body>
@@ -1961,6 +1972,7 @@ function custDetail(c) {
       <div class="row mt"><button class="btn primary sm" data-savecust="${c.id}">Save details</button></div>
     </div></details>
     ${linked}
+    ${dashLine(c)}
     ${accts.map(accountBlock).join("") || `<div class="card bd-paused" style="background:#fff;border-color:var(--line);color:inherit">No app accounts here. Use “Move…” on an account under another business to bring it here.</div>`}
     ${manage}
   </div>`;
@@ -2107,7 +2119,7 @@ function renderUsers() {
         <div class="acts"><button type="button" class="btn" data-udcancel>Cancel</button><button class="btn primary">Set password</button></div></form>`;
     }
     const rows = users.length ? users.map((x) => `<div class="ud-row"><div class="ud-n"><b>${esc(x.name || x.email)}</b>${x.name ? `<div>${esc(x.email)}</div>` : ""}
-        <div class="ud-tags">${x.role ? `<span class="ud-tag role">${esc(roleName(x.role))}</span>` : ""}${x.invited ? `<span class="ud-tag warn">Invited · not signed up</span>` : !x.has_login ? `<span class="ud-tag warn">No login yet</span>` : `<span class="ud-tag">${x.last_sign_in ? "Last signed in " + esc(fmtDT(x.last_sign_in)) : "Never signed in"}</span>`}${x.on_hold ? `<span class="ud-tag hold">On hold</span>` : ""}${x.active === false ? `<span class="ud-tag warn">Turned off</span>` : ""}</div></div>
+        <div class="ud-tags">${x.role ? `<span class="ud-tag role">${esc(roleName(x.role))}</span>` : ""}${x.invited ? `<span class="ud-tag warn">Invited · not signed up</span>` : !x.has_login ? `<span class="ud-tag warn">No login yet</span>` : `<span class="ud-tag">${x.last_sign_in ? "Last signed in " + esc(fmtDT(x.last_sign_in)) : "Never signed in"}</span>`}${x.on_hold ? `<span class="ud-tag hold">On hold</span>` : ""}${x.active === false ? `<span class="ud-tag warn">Turned off</span>` : ""}${x.email ? dashChip(x.email) : ""}${x.email && dashRole(x, roles) ? dashBtn(x.email, x.name, a?.name) : ""}</div></div>
         <div class="ud-acts">${x.invited ? "" : `<button type="button" class="btn sm" data-udpw="${esc(x.email)}">${x.has_login ? "Change password" : "Set password"}</button>${x.has_login && !x.on_hold ? `<button type="button" class="btn sm" data-udreset="${esc(x.email)}">Send reset link</button>` : ""}`}${x.has_login ? `<button type="button" class="btn sm" data-udhold="${esc(x.email)}" data-on="${x.on_hold ? "0" : "1"}" data-others="${Number(x.others) || 0}">${x.on_hold ? "Resume" : "Put on hold"}</button>` : ""}<button type="button" class="btn sm ud-del" data-udrem="${esc(x.email)}">${x.invited ? "Cancel invite" : "Remove"}</button></div></div>`).join("")
       : `<div class="ud-empty">No users yet.</div>`;
     body = `${f ? form : `<div class="ud-bar"><span class="grow">${users.length} user${users.length === 1 ? "" : "s"}</span><button type="button" class="btn sm primary" data-udadd>+ Add user</button></div>`}${rows}`;
@@ -2121,6 +2133,7 @@ async function loadUsers() {
   try { U.data = await hub("users", { product, account: ext, op: "list" }); }
   catch (e) { U.err = e.message || "Couldn't load the users."; }
   renderUsers();
+  if (U.data?.users?.length) { try { await dashStatus(U.data.users.map((x) => x.email)); } catch (e) { DASH.err = e.message; } if (U.data && !U.form) renderUsers(); }
 }
 function openUsers(key) { U.key = key; U.form = null; loadUsers(); }
 async function onUsersClick(e) {
@@ -2149,7 +2162,7 @@ async function onUsersClick(e) {
       html: `<p style="margin-top:0">They lose access to <b>${esc(a?.name || "this business")}</b> in ${esc(app)}. Their login isn't deleted, so you can add them again later, and any other businesses they use aren't affected.</p>` });
     if (!ok) return;
     rm.disabled = true;
-    try { await hub("users", { product, account: ext, account_name: a?.name, op: "remove", email: em }); toast(`${em} removed`); await loadUsers(); }
+    try { await hub("users", { product, account: ext, account_name: a?.name, op: "remove", email: em }); toast(`${em} removed`); dashForget(product, ext); await loadUsers(); }
     catch (er) { toast(er.message || "That didn't work", true); rm.disabled = false; }
     return;
   }
@@ -2172,7 +2185,15 @@ async function onUsersSubmit(e) {
   try {
     if (f.dataset.udform === "add") {
       const r = await hub("users", { product, account: ext, account_name: a?.name, op: "add", ...v });
-      toast(r.existing ? `${v.email} added. They already had a login, so their password didn't change.` : `${v.email} added`);
+      const said = r.existing ? `${v.email} added. They already had a login, so their password didn't change.` : `${v.email} added.`;
+      // owners, admins and managers also get a Proview dashboard account (invite) when that email has none; staff don't
+      let dash = "", dashErr = null;
+      if (dashRole({ role: v.role }, U.data?.roles || [])) {
+        try { const d = await hub("dashboard_invite", { email: v.email, name: v.name, account_name: a?.name, only_if_missing: true }); if (d?.sent) dash = " Dashboard invite sent."; }
+        catch (er) { dashErr = er.message || "the dashboard invite couldn't be sent"; }
+        DASH.st.delete(String(v.email || "").trim().toLowerCase()); dashForget(product, ext);
+      }
+      if (dashErr) toast(`${said} ${dashErr}`, true); else toast(said + dash);
     } else {
       await hub("users", { product, account: ext, account_name: a?.name, op: "password", email: U.form.email, password: v.password });
       toast(`New password set for ${U.form.email}`);
@@ -2185,6 +2206,96 @@ document.addEventListener("change", (e) => {
   const s = e.target.closest("#usersDlg select[name=member]"); if (!s) return;
   const em = s.selectedOptions[0]?.dataset.email, i = s.form.querySelector("[name=email]"); if (em && i && !i.value) i.value = em;
 });
+
+
+// ---------- Proview dashboard accounts (owner, 19 Nov 2026) ----------
+// Every owner / admin / manager should have a Proview account (the dashboard.proviewcrm.co.uk login, auth.users on this
+// project). lic_dashboard_accounts (master only) says, per email: none ❌ | invited ⏳ (never signed in) | active ✅.
+// "Send dashboard invite" (licence hub dashboard_invite) makes the account if missing and emails a "set your password"
+// link to the dashboard; it is shown only for ❌ / ⏳. Staff roles never get one (they can't open apps from the dashboard).
+const DASH = { st: new Map(), biz: new Map(), err: null };   // st: email -> row; biz: customer id -> { rows, loading, errs }
+const DASH_ROLE = /owner|admin|manager/i;
+const dashNorm = (e) => String(e || "").trim().toLowerCase();
+// owner / admin / manager by the app's role value or label; a login with no role counts only in apps that have no roles
+function dashRole(x, roles) {
+  if (!x?.role) return !(roles || []).length;
+  return DASH_ROLE.test(x.role + " " + ((roles || []).find((r) => r.value === x.role)?.label || ""));
+}
+async function dashStatus(emails, force = false) {
+  const list = [...new Set((emails || []).map(dashNorm).filter((e) => /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e)))].filter((e) => force || !DASH.st.has(e));
+  if (!list.length) return;
+  const { data, error } = await sb.rpc("lic_dashboard_accounts", { p_emails: list });
+  if (error) throw new Error(/lic_dashboard_accounts/.test(error.message) && /find|exist/i.test(error.message) ? "Dashboard accounts can't be checked yet (run the dashboard_accounts migration)." : error.message);
+  DASH.err = null;
+  (data || []).forEach((r) => DASH.st.set(dashNorm(r.email), r));
+}
+function dashChip(email) {
+  const r = DASH.st.get(dashNorm(email));
+  if (!r) return DASH.err ? "" : `<span class="dash-chip" data-dashchip="unknown">Dashboard …</span>`;
+  if (r.state === "active") return `<span class="dash-chip dash-ok" data-dashchip="active" title="${esc("Proview dashboard account · last signed in " + fmtDT(r.last_sign_in_at))}">Dashboard ✅</span>`;
+  if (r.state === "invited") return `<span class="dash-chip dash-inv" data-dashchip="invited" title="${esc("Proview dashboard account made " + fmtDT(r.created_at) + ", but they haven't set a password and signed in yet")}">Dashboard ⏳ invited</span>`;
+  return `<span class="dash-chip dash-no" data-dashchip="none" title="No Proview dashboard account for this email, so they can't sign in at dashboard.proviewcrm.co.uk">No dashboard login ❌</span>`;
+}
+function dashBtn(email, name, accountName) {
+  const r = DASH.st.get(dashNorm(email));
+  if (!r || r.state === "active") return "";
+  return `<button type="button" class="btn sm" data-dashinv="${esc(dashNorm(email))}" data-name="${esc(name || "")}" data-acct="${esc(accountName || "")}">Send dashboard invite</button>`;
+}
+// the business page: contact email + every owner / admin / manager login of its apps, one row per email
+function dashLine(c) {
+  if (!DASH.biz.has(c.id)) queueMicrotask(() => loadBizDash(c.id));
+  return `<section class="card dash-line" data-dashline="${esc(c.id)}">${dashLineInner(c)}</section>`;
+}
+function dashLineInner(c) {
+  const ent = DASH.biz.get(c.id);
+  const head = `<div class="dl-h"><b>Proview dashboard</b><small>Owners, admins and managers sign in at dashboard.proviewcrm.co.uk to open their apps.</small></div>`;
+  if (!ent || ent.loading) return head + `<div class="dl-note">Checking…</div>`;
+  const rows = ent.rows.map((x) => `<div class="dl-row" data-dashrow="${esc(x.email)}"><div class="dl-e">${esc(x.email)}<small>${esc(x.from.join(" · "))}</small></div>${dashChip(x.email)}${dashBtn(x.email, x.name, c.name) || "<span></span>"}</div>`).join("");
+  const errs = [...ent.errs, ...(DASH.err ? [DASH.err] : [])];
+  return head + (rows || `<div class="dl-note">No owner email yet.</div>`) + (errs.length ? `<div class="dl-note">${esc(errs.join(" · "))}</div>` : "");
+}
+async function loadBizDash(cid) {
+  const c = S.customers.find((x) => x.id === cid); if (!c) return;
+  const ent = { loading: true, rows: [], errs: [] }; DASH.biz.set(cid, ent);
+  const by = new Map(), put = (email, from, name) => {
+    const e = dashNorm(email); if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e)) return;
+    const x = by.get(e) || { email: e, from: [], name: "" }; if (!x.from.includes(from)) x.from.push(from); if (name && !x.name) x.name = name; by.set(e, x);
+  };
+  put(c.contact_email, "Contact email"); put(c.owner_email, "Owner login", c.owner_name);
+  const accts = accountsForCustomer(c);
+  const got = await Promise.allSettled(accts.map((a) => hub("users", { product: a.product, account: a.ext_id, op: "list" })));
+  got.forEach((g, i) => {
+    const a = accts[i], label = PRODUCTS[a.product]?.label || a.product;
+    if (g.status === "rejected") return ent.errs.push(`${label}: ${g.reason?.message || "couldn't list its logins"}`);
+    const roles = g.value?.roles || [];
+    (g.value?.users || []).filter((x) => x.email && dashRole(x, roles))
+      .forEach((x) => put(x.email, `${label} ${roles.find((r) => r.value === x.role)?.label || x.role || "login"}`, x.name));
+  });
+  ent.rows = [...by.values()];
+  try { await dashStatus(ent.rows.map((x) => x.email)); } catch (e) { DASH.err = e.message; }
+  if (DASH.biz.get(cid) !== ent) return;   // forgotten meanwhile: a newer load runs
+  ent.loading = false; dashRepaint();
+}
+// a login was added / removed: the business's list is read again next time it is shown
+function dashForget(product, ext) { const a = S.accounts.find((x) => x.product === product && x.ext_id === ext); if (a?.customer_id) DASH.biz.delete(a.customer_id); }
+function dashRepaint() {
+  document.querySelectorAll("[data-dashline]").forEach((el) => {
+    const c = S.customers.find((x) => x.id === el.dataset.dashline); if (!c) return;
+    if (!DASH.biz.has(c.id)) loadBizDash(c.id);
+    el.innerHTML = dashLineInner(c);
+  });
+  if (document.getElementById("usersDlg")?.open && U.data && !U.form) renderUsers();   // never while a form is being typed in
+}
+async function sendDashInvite(b) {
+  const email = b.dataset.dashinv; b.disabled = true; b.textContent = "Sending…";
+  try {
+    const r = await hub("dashboard_invite", { email, name: b.dataset.name || null, account_name: b.dataset.acct || null });
+    toast(r?.sent ? `Dashboard invite sent to ${email}` : `${email} already signs in to the dashboard`);
+    try { await dashStatus([email], true); } catch (e) { DASH.err = e.message; }
+    dashRepaint();
+  } catch (er) { toast(er.message || "The dashboard invite couldn't be sent", true); b.disabled = false; b.textContent = "Send dashboard invite"; }
+}
+document.addEventListener("click", (e) => { const b = e.target.closest("[data-dashinv]"); if (b) { e.stopPropagation(); sendDashInvite(b); } }, true);
 
 function render() { renderCustomers(); renderExpiring(); fillBizPick(); paintHeader(); }
 
@@ -2441,10 +2552,13 @@ async function ncSubmit(v, ui) {
   const { data: r, error } = await sb.rpc("lic_add_customer", { p_business: biz, p_name: name, p_email: e, p_mobile: mobile, p_password: pw,
     p_contact_email: null, p_phone: mobile || null, p_notes: null });
   if (error) { toast(error.message, true); return false; }
-  // the one invite email: the Proview login's "choose a password" link, which opens the dashboard (new logins only)
+  // the one invite email (new logins only): the licence hub's dashboard_invite, the same path as "Send dashboard invite".
+  // lic_add_customer has just made the Proview login (confirmed, password nobody knows), so it sends the "choose a
+  // password" email that lands on the dashboard's Set your password screen.
   let mailErr = null;
   if (invite && !r?.existing) {
-    try { const { error: me } = await sb.auth.resetPasswordForEmail(e, { redirectTo: SIGNIN_URL }); if (me) mailErr = me; } catch (x) { mailErr = x; }
+    try { await hub("dashboard_invite", { email: e, name, account_name: biz }); } catch (x) { mailErr = x; }
+    DASH.st.delete(e);
   }
   ui.close();
   const details = `PROVIEW login\n${SIGNIN_URL}\nEmail: ${e}\nPassword: ${pw}`;
@@ -2640,7 +2754,12 @@ async function addAppTo(cid, k, keep) {
       const r = out.results?.[k];
       await loadAll(); render();
       if (!r?.ok) return toast(`Not added to ${name}: ${r?.error || "no answer"}`, true);
-      toast(`${c.name} added to ${name}` + (lic === "trial" ? (r.trial?.applied ? " on a 3-day trial" : r.trial_error ? ` (trial not started: ${r.trial_error})` : "") : ""));
+      // the owner opens the app from the Proview dashboard: invite them when the email has no Proview account yet
+      let dash = "";
+      try { const dd = await hub("dashboard_invite", { email, name: owner, account_name: c.name, only_if_missing: true }); if (dd?.sent) dash = ` Dashboard invite sent to ${email}.`; }
+      catch (er) { toast(er.message || "The dashboard invite couldn't be sent", true); }
+      DASH.st.delete(email); DASH.biz.delete(cid); dashRepaint();
+      toast(`${c.name} added to ${name}` + (lic === "trial" ? (r.trial?.applied ? " on a 3-day trial" : r.trial_error ? ` (trial not started: ${r.trial_error})` : "") : "") + (dash ? "." + dash : ""));
       if (lic === "set") {
         openDetail(cid);
         const u = S.units.find((x) => x.product === k && !x.gone && x.account_ext_id === r.account_id);

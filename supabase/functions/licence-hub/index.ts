@@ -4,6 +4,7 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 const SB_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const ANON = Deno.env.get("SUPABASE_ANON_KEY")!;
+const DASHBOARD_URL = "https://dashboard.proviewcrm.co.uk/";   // where Proview account invite / "choose a password" links land
 
 // Bearer-token auth only (no cookies), so any origin is safe.
 function cors(_req: Request) {
@@ -787,6 +788,44 @@ Deno.serve(async (req) => {
     if (aerr || !isAdmin) return json({ error: "Not authorised" }, 403);
     const { data: u } = await userDb.auth.getUser(auth.replace(/^Bearer\s+/i, ""));
     const adminEmail = u?.user?.email ?? null;
+
+    // Proview dashboard invite (owner, 19 Nov 2026). Master only (checked above).
+    //   dashboard_invite { email, name?, only_if_missing? } -> { ok, email, state, sent: "invite" | "recovery" | null }
+    // state is the account before (lic_dashboard_accounts): none | invited | active.
+    //   none                      -> the Proview account is made and invited (auth invite email: "set your password")
+    //   invited, not confirmed    -> the invite is sent again
+    //   invited, confirmed        -> (made by New business with a password nobody knows) the "choose a password" email
+    //   active                    -> nothing sent (they already sign in)
+    // only_if_missing: send only when there is no account yet (the automatic invite of Add user / New business / Add to app).
+    // Both emails land on the dashboard's "Set your password" screen, which then signs them in.
+    if (action === "dashboard_invite") {
+      const email = String(body.email ?? "").trim().toLowerCase();
+      const name = String(body.name ?? "").trim();
+      if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return json({ error: "Enter a valid email address." }, 400);
+      const { data: st, error: serr } = await userDb.rpc("lic_dashboard_accounts", { p_emails: [email] });
+      if (serr) return json({ error: `Couldn't check the dashboard account: ${serr.message}` }, 400);
+      const row = (Array.isArray(st) ? st[0] : null) as { state?: string; email_confirmed_at?: string | null } | null;
+      const state = row?.state ?? "none";
+      if (state === "active" || (body.only_if_missing && state !== "none")) return json({ ok: true, email, state, sent: null });
+      let sent: "invite" | "recovery", err: { message?: string; status?: number } | null = null;
+      if (state === "none" || !row?.email_confirmed_at) {
+        sent = "invite";
+        const { error } = await db.auth.admin.inviteUserByEmail(email, { redirectTo: DASHBOARD_URL, ...(name ? { data: { full_name: name } } : {}) });
+        err = error;
+      } else {
+        sent = "recovery";
+        const { error } = await db.auth.resetPasswordForEmail(email, { redirectTo: DASHBOARD_URL });
+        err = error;
+      }
+      const why = String(err?.message || "").replace(/\.\s*$/, "");
+      const msg = err ? (err.status === 429 || /rate limit|only request this after/i.test(why)
+        ? `The dashboard invite couldn't be sent: ${why || "too many emails just now"}. Try again in a minute.`
+        : `The dashboard invite couldn't be sent: ${why || "unknown error"}`) : null;
+      await db.from("lic_audit").insert({ admin_email: adminEmail, product: null, account_name: String(body.account_name ?? "") || null,
+        action: "Dashboard invite", before: { state }, after: { email, sent }, error: msg });
+      if (msg) return json({ error: msg }, 400);
+      return json({ ok: true, email, state, sent });
+    }
 
     const apps = await loadApps(db);
 
