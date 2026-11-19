@@ -1122,6 +1122,16 @@ section[data-view="trials"] .tr-bar .small{flex:1 1 280px;color:var(--muted)}
  .pv-mini img{width:18px;height:18px;border-radius:5px}
  .pv-mini i{width:7px;height:7px;border-radius:50%;background:var(--ok)}
  .pv-mini i.warn{background:#d98a00}.pv-mini i.bad{background:var(--bad)}.pv-mini i.none{background:var(--line)}
+ /* phone cards, tidy (owner, 20 Nov 2026): rounded navy header, smaller name, evenly spaced app chips and tiles */
+ html body .main-col .ov-biz{overflow:hidden!important}
+ html body .main-col .ov-biz .ov-bh{border-radius:calc(var(--radius,12px) - 1px) calc(var(--radius,12px) - 1px) 0 0;padding:11px 12px 11px 14px!important;gap:8px!important}
+ html body .main-col .ov-biz.pv-min .ov-bh{padding-bottom:11px!important}
+ html body .main-col .ov-biz .ov-bh h3{font-size:14.5px!important;font-weight:700!important;letter-spacing:.01em;margin:0!important;line-height:1.25!important}
+ html body .main-col .ov-biz .ov-bh .ov-pill{font-size:11.5px!important;padding:3px 9px!important}
+ html body .main-col .ov-biz.pv-min .pv-mini{gap:8px;padding:12px 14px 14px}
+ html body .main-col .pv-mini span{padding:5px 10px 5px 5px;font-size:12.5px;gap:7px;border-radius:9px}
+ html body .main-col .pv-mini img{width:20px;height:20px}
+ html body .main-col .ov-biz .ov-apps{gap:8px!important;padding:12px!important}
  /* 4. list view: real columns that scroll sideways, business name stays put */
  html body .main-col .lv{overflow-x:auto!important;-webkit-overflow-scrolling:touch}
  html body .main-col .lv table{display:table!important;min-width:760px!important;width:auto!important;border-collapse:separate!important;border-spacing:0}
@@ -3483,9 +3493,9 @@ start();
   const save = (quiet) => { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch {} if (!quiet) toast(); };
   const PVG = "#131a31";
   const applyLook = () => { root.dataset.bg = st.bg || "white"; root.dataset.fs = st.fs || "md"; };
-  const applyColour = () => { applyLook(); if (/^#(3f5fd0|4471c7|131a31)$/i.test(st.main || "")) st.main = "pv"; const pv = st.main === "pv"; root.style.setProperty("--main", pv ? "#131a31" : st.main); root.classList.toggle("pvgrad", pv); };
+  const applyColour = () => { applyLook(); if (/^#(3f5fd0|4471c7|131a31|3d4a63)$/i.test(st.main || "")) st.main = "pv"; const pv = st.main === "pv"; root.style.setProperty("--main", pv ? "#131a31" : st.main); root.classList.toggle("pvgrad", pv); };
   applyColour();
-  const COLS = [["Proview navy","pv"],["Green","#2f9e5a"],["Teal","#0f8b8d"],["Purple","#7a4fd6"],["Pink","#c2417f"],["Orange","#d9731a"],["Red","#c8382e"],["Slate","#3d4a63"]];
+  const COLS = [["Proview navy","pv"],["Green","#2f9e5a"],["Teal","#0f8b8d"],["Purple","#7a4fd6"],["Pink","#c2417f"],["Orange","#d9731a"],["Red","#c8382e"]];
   const BGS = [["white","White","#ffffff","#d6dbe4"],["grey","Soft grey","#f3f4f6","#d6dbe4"],["cool","Cool navy","#eef0f5","#cfd3df"],["warm","Warm","#f8f5ef","#e3dccf"],["mint","Mint","#eff6f2","#cfe1d6"]];
   const TPL = [["remind","Renewal reminder"],["expired","Licence ended"],["failed","Payment failed"],["paused","Business paused"],["renewed","Thank you for renewing"]];
   const PL = [["1","1 month"],["3","3 months"],["6","6 months"],["12","12 months"],["24","24 months"],["36","36 months"],["life","Lifetime"]];
