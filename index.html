@@ -22,7 +22,7 @@
     --radius: 10px;
   }
   * { box-sizing: border-box; }
-  html, body { margin: 0; background: var(--bg); color: var(--ink);
+  html, body { margin: 0; background: var(--tint); color: var(--ink);
     font: 15px/1.45 var(--font); -webkit-font-smoothing: antialiased; }
   button, input, select, textarea { font: inherit; color: inherit; }
   a { color: var(--brand); } a:hover { color: var(--brand-dark); }
@@ -56,7 +56,7 @@
   .top h2 { font-size: 18px; font-weight: 700; letter-spacing: -.015em; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .top .sp { flex: 1; }
   .icon-btn { position: relative; background: none; border: 1px solid transparent; border-radius: 10px; width: 38px; height: 38px; padding: 0; display: grid; place-items: center; cursor: pointer; color: var(--ink); }
-  .icon-btn:hover { background: var(--bg); border-color: var(--line); }
+  .icon-btn:hover { background: var(--tint); border-color: var(--line); }
   .icon-btn svg { width: 20px; height: 20px; }
   .top-out svg { width: 18px; height: 18px; }
   .menu-btn { display: none !important; }
@@ -64,7 +64,7 @@
   .top-av { width: 34px; height: 34px; border-radius: 50%; border: 0; padding: 0; flex: none; display: grid; place-items: center; background: var(--grad); color: #fff; font-family: inherit; font-weight: 700; font-size: 12.5px; line-height: 1; cursor: pointer; }
   .nav-scrim { display: none; }
   /* iPad: icon rail with short labels */
-  @media (min-width: 701px) and (max-width: 900px) {
+  @media (min-width: 9001px) and (max-width: 9000px) {
     .app, .app.collapsed { grid-template-columns: 72px 1fr !important; }
     .app .wordmark, .app .nav-sep, .app .side-foot { display: none !important; }
     .app .side .brand { justify-content: center; padding: 18px 0 14px; }
@@ -73,7 +73,7 @@
     .app .side .nav svg { width: 18px; height: 18px; }
   }
   /* phones: slide-in side menu */
-  @media (max-width: 700px) {
+  @media (max-width: 760px) {
     .app, .app.collapsed { grid-template-columns: 1fr !important; }
     .side { position: fixed; top: 0; bottom: 0; left: 0; width: 280px; max-width: 86vw; height: 100dvh; z-index: 76; transform: translateX(-105%); transition: transform .25s ease; box-shadow: 10px 0 40px rgba(0,0,0,.35); }
     .app.navopen .side { transform: none; }
@@ -92,7 +92,7 @@
   }
 
   .main { min-width: 0; padding: 20px 22px 40px; max-width: 1280px; width: 100%; }
-  @media (max-width: 700px) { .main { padding: 14px 12px 40px; } }
+  @media (max-width: 760px) { .main { padding: 14px 12px 40px; } }
   .bar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 14px; }
   .bar input[type=search] { flex: 1; min-width: 220px; padding: 9px 12px; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
   .btn { border: 1px solid var(--line); background: #fff; padding: 8px 12px; border-radius: 8px; cursor: pointer; white-space: nowrap; }
@@ -305,7 +305,7 @@
   .dback { color: var(--brand); }
   .msg.info { background: var(--brand-soft); color: #213f8a; }
 /* phones: a compact icon menu always on the left (same on all Proview apps) */
-@media (max-width:700px){
+@media (max-width:760px){
 html .app{grid-template-columns:60px minmax(0,1fr)!important}
 html .app .side,html .app.navopen .side{position:sticky!important;top:0!important;left:auto!important;transform:none!important;width:60px!important;min-width:60px!important;max-width:60px!important;height:100vh!important;height:100dvh!important;z-index:20!important;padding:10px 5px calc(10px + env(safe-area-inset-bottom))!important;overflow-y:auto!important;overflow-x:hidden!important;box-shadow:none!important;display:flex!important;flex-direction:column!important;grid-row:1/-1}
 html .menu-btn,html .nav-scrim,html #navScrim{display:none!important}
@@ -343,8 +343,8 @@ html .wordmark span,html .wordmark span.x.x{background:linear-gradient(90deg,#FB
 .top .hdr-pick select { display: block; width: auto; height: 38px; max-width: 320px; min-width: 170px; border-radius: 10px; border: 1px solid var(--line); background-color: #fff; color: var(--ink); font: 600 14px var(--font); padding: 0 30px 0 12px; cursor: pointer; text-overflow: ellipsis; white-space: nowrap; overflow: hidden; }
 .top .hdr-pick select:focus { outline: none; border-color: var(--line); }
 .top .hdr-pick select:focus-visible { outline: 2px solid #5a8dee; outline-offset: 2px; }
-@media (min-width: 701px) { .top h2 { flex-shrink: 0; } .top .hdr-pick select { max-width: min(320px, 100%); } }
-@media (max-width: 700px) {
+@media (min-width: 761px) { .top h2 { flex-shrink: 0; } .top .hdr-pick select { max-width: min(320px, 100%); } }
+@media (max-width: 760px) {
   .top { padding: 8px 10px; gap: 2px; min-height: 62px; flex-wrap: wrap; row-gap: 6px; }
   .top h2 { font-size: 18px; flex: 1; }
   .icon-btn { width: 36px; height: 36px; }
@@ -384,12 +384,12 @@ html .app.collapsed .side :is(.nav,#pv-x)>a,html .app.collapsed .side :is(.nav,#
 html .app.collapsed .side :is(.side-foot,#pv-x){flex-direction:column!important;align-items:center!important;justify-content:normal!important;gap:4px!important;padding:0 10px 14px!important}
 html .app.collapsed .side :is(.side-foot,#pv-x)>*{width:30px!important;height:26px!important;padding:6px 8px!important;margin:0!important;justify-content:center!important;box-sizing:border-box!important}
 }
-@media (min-width:701px) and (max-width:900px){
+@media (min-width:9001px) and (max-width:9000px){
  .app .side .nav a{font-size:15px}
  .app .side .nav a>span{letter-spacing:-.1px}
 }
 /* Proview menu on phones: one spec for all Proview apps (60px rail; every button 50 x 52 with an 18px icon and a 10px label) */
-@media (max-width:700px){
+@media (max-width:760px){
  html .side .nav{padding:0!important;display:flex!important;flex-direction:column!important;align-items:center!important}
  html .side .nav>button:not(.nav-more),html .side .nav>a{width:50px!important;min-width:0!important;max-width:50px!important;height:52px!important;margin:0 auto!important;padding:0 1px!important;border-radius:9px!important;gap:4px!important;flex-direction:column!important;justify-content:center!important;align-items:center!important;box-sizing:border-box!important}
  html .side .nav>button svg,html .side .nav>a svg{width:18px!important;height:18px!important;margin:0!important;flex:none}
@@ -486,7 +486,7 @@ button.ov-li:hover{background:#f8f7f4}
 .ov-li:last-child{border-bottom:0}
 .ov-li b{font-weight:700}
 .ov-empty-card{grid-column:1/-1}
-@media (max-width:700px){.ov-grid{grid-template-columns:1fr}.ov-stats{grid-template-columns:repeat(3,1fr);gap:8px}.pv-loc .ov-stat{padding:10px 10px}.ov-stat .tiny{font-size:11px}.ov-v{font-size:21px}}
+@media (max-width:760px){.ov-grid{grid-template-columns:1fr}.ov-stats{grid-template-columns:repeat(3,1fr);gap:8px}.pv-loc .ov-stat{padding:10px 10px}.ov-stat .tiny{font-size:11px}.ov-v{font-size:21px}}
 /* this app's colours for the Locations page (= Signage's values) */
 body{--ov-panel:var(--card);--ov-line:var(--line);--ov-ink:var(--ink);--ov-ink2:var(--ink2);--ov-ink3:var(--muted)}
 .pv-loc .pchips{margin:0 0 12px}
@@ -578,7 +578,7 @@ html .side .nav .cnt[hidden]{display:none!important}
 .appc .acts .btn{margin-left:4px}
 .appc .none{padding:12px 16px;font-size:13px;color:var(--ink2,#6b6a66)}
 .linkbtn{background:none;border:0;padding:0;color:var(--brand);font:600 12px var(--font,inherit);cursor:pointer}
-@media (max-width:700px){.appc .hide-sm{display:none}.appc .un,.appc .um{max-width:180px}}
+@media (max-width:760px){.appc .hide-sm{display:none}.appc .un,.appc .um{max-width:180px}}
 #licDlg .licend{background:#f8f7f4;border:1px solid var(--line);border-radius:10px;padding:10px 12px 12px;margin-bottom:6px}
 #licDlg.first .licend{display:none}
 #licDlg .dpick{display:flex;align-items:center;gap:6px;margin-top:4px}
@@ -623,6 +623,625 @@ html .side .nav .cnt[hidden]{display:none!important}
 .lv .lv-add:hover{transform:scale(1.15)}
 .lv .lv-go{text-align:right}
 </style>
+
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@500&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style id="res-theme">
+/* ===== Proview navy theme (same look as Proview Reservations) ===== */
+:root{--main:#3f5fd0;
+  --bg:#f4f6fa;--tint:#f4f6fa;--page:#fff;--card:#fff;--ink:#0f1117;--ink2:#474d5e;--muted:#474d5e;--line:#d6dbe4;--line-input:#c9cfdb;
+  --brand:var(--main);--brand-dark:#3450b8;--brand-ink:#fff;--brand-soft:color-mix(in srgb,var(--main) 14%,#fff);--brand-subtle:color-mix(in srgb,var(--main) 6%,#fff);
+  --grad:var(--main);--grad-light:var(--main);
+  --side:color-mix(in srgb,var(--main) 35%,#111);--side-ink:#c5c9d8;
+  --shadow:0 1px 2px rgba(20,22,31,.05);
+  --font:"Plus Jakarta Sans","Segoe UI",system-ui,-apple-system,Roboto,Helvetica,Arial,sans-serif;
+  --g:#12874a;--a:#9a5b00;--r:#c62a1f;--ok:#12874a;--ok-soft:#e2f4ea;--warn:#9a5b00;--warn-soft:#fbefd6;--bad:#c62a1f;--bad-soft:#fce8e6;
+  --none:#5b6072;--none-soft:#e9ecf3;--radius:12px}
+:root[data-theme="dark"]{--bg:#171c29;--tint:#171c29;--page:#171c29;--card:#212839;--ink:#f2f4fa;--ink2:#aab2c8;--muted:#aab2c8;--line:#3a4560;--line-input:#3a4560;
+  --brand:color-mix(in srgb,var(--main) 60%,#fff);--brand-dark:#8ba3f7;--brand-soft:color-mix(in srgb,var(--main) 24%,#212839);--brand-subtle:#253049;
+  --grad:color-mix(in srgb,var(--main) 60%,#fff);--side:color-mix(in srgb,var(--main) 26%,#0d121f);
+  --ok:#5ad69f;--ok-soft:#1b3a30;--warn:#f2c066;--warn-soft:color-mix(in srgb,#f2c066 12%,#212839);--bad:#f68c82;--bad-soft:#41262d;
+  --g:#5ad69f;--a:#f2c066;--r:#f68c82;--none:#aab2c8;--none-soft:#2b3346;color-scheme:dark}
+body{font-family:var(--font);font-size:14px;background:var(--tint);color:var(--ink);letter-spacing:-.003em}
+button,input,select,textarea{font-family:var(--font)}
+/* sidebar like Reservations: navy, section labels, soft white active pill */
+.side{background:var(--side)!important;color:var(--side-ink)}
+.side .brand{padding:18px 14px 16px}
+.side .nav{padding:4px 10px;gap:2px}
+.side .nav-sep{color:rgba(255,255,255,.42);font-weight:700;font-size:11px;letter-spacing:.09em;padding:14px 12px 6px}
+.side .nav a{height:40px;padding:0 12px;border-radius:9px;font-weight:500;font-size:14.5px;color:var(--side-ink)}
+.side .nav a svg{width:18px;height:18px}
+.side .nav a:hover{background:rgba(255,255,255,.07);color:#fff}
+.side .nav a.active{background:rgba(255,255,255,.2);color:#fff}
+.side .nav a.active svg{color:#fff}
+.side-foot{flex-direction:column;align-items:stretch;gap:6px;padding:0 10px 14px}
+.res-sidebtn{background:rgba(255,255,255,.08);border:0;color:#fff;border-radius:9px;padding:10px 12px;cursor:pointer;font-weight:600;text-align:left;font:600 14px var(--font)}
+.res-sidebtn:hover{background:rgba(255,255,255,.16)}
+.res-who{background:rgba(255,255,255,.08);border-radius:9px;padding:10px 12px;color:#fff;font-weight:700;font-size:13.5px}
+.res-who small{display:block;color:var(--side-ink);font-weight:500;font-size:12px}
+.res-who small:before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:#5ad69f;margin-right:6px}
+/* top bar + surfaces */
+.top{background:var(--card);border-bottom:1px solid var(--line);box-shadow:none}
+.top h1,.top .title{font-weight:700;letter-spacing:-.02em}
+.card,.stat,.ov-stat,.kpi,section.card{border-radius:12px!important;border:1px solid var(--line)!important;box-shadow:none!important;background:var(--card)}
+.btn{border-radius:10px;font-weight:600;border:1px solid var(--line);background:var(--card);color:var(--ink);box-shadow:none}
+.btn:hover{border-color:var(--brand)}
+.btn.primary,.btn.pri,.ov-cta{background:var(--brand)!important;border-color:var(--brand)!important;color:#fff!important;background-image:none!important}
+:root[data-theme="dark"] .btn.primary{color:#0d0f15!important}
+input,select,textarea{border-radius:10px!important;border-color:var(--line)!important;background:var(--card);color:var(--ink)}
+.pchip{border-radius:20px;font-weight:600}
+.pchip.on{background:var(--brand-soft);color:var(--brand);border-color:transparent}
+.vsw button.on{background:var(--brand-soft);color:var(--brand)}
+.ov-pill.ok,.pill.ok{background:var(--ok-soft);color:var(--ok)}
+.ov-pill.warn,.pill.warn{background:var(--warn-soft);color:var(--warn)}
+.ov-pill.bad,.pill.bad{background:var(--bad-soft);color:var(--bad)}
+.ov-app{border-radius:10px;border-color:var(--line);background:var(--card)}
+.ov-app.off{background:color-mix(in srgb,var(--tint) 70%,var(--card))}
+.appc th,.lv th{background:color-mix(in srgb,var(--tint) 60%,var(--card));text-transform:uppercase;letter-spacing:.04em;font-size:11.5px}
+.appc tr:hover td,.lv tbody tr:hover{background:var(--brand-subtle)}
+.lv .lv-app.off{background:color-mix(in srgb,var(--tint) 60%,var(--card))}
+dialog{border-radius:14px;border:1px solid var(--line);background:var(--card);color:var(--ink)}
+#licDlg .licend,.bd-paused{border-radius:12px}
+#licDlg .licend{background:var(--brand-subtle);border-color:var(--line)}
+#licDlg .dp button{background:var(--card);border-color:var(--line)}
+:root[data-theme="dark"] .ov-app.off,:root[data-theme="dark"] .appc th,:root[data-theme="dark"] .lv th{background:#1b2131}
+:root[data-theme="dark"] .bd-paused{background:var(--warn-soft);color:var(--warn);border-color:transparent}
+:root[data-theme="dark"] .hdr-cap{background:#1b2131}
+:root[data-theme="dark"] .hdr-cap>button,:root[data-theme="dark"] .hdr-cap>a{color:var(--ink)}
+:root[data-theme="dark"] .hdr-cap>button:hover{background:var(--card)!important}
+:root[data-theme="dark"] .pv-dash,:root[data-theme="dark"] select,:root[data-theme="dark"] .chip,:root[data-theme="dark"] .pchip,:root[data-theme="dark"] .vsw,
+:root[data-theme="dark"] .btn,:root[data-theme="dark"] input,:root[data-theme="dark"] textarea{background:var(--card)!important;color:var(--ink)!important;border-color:var(--line)!important}
+:root[data-theme="dark"] .pchip.on,:root[data-theme="dark"] .vsw button.on{background:var(--brand-soft)!important;color:var(--brand)!important}
+:root[data-theme="dark"] .btn.primary{background:var(--brand)!important;color:#0d0f15!important}
+:root[data-theme="dark"] .vsw button{color:var(--ink2)}
+:root[data-theme="dark"] .pv-acct,:root[data-theme="dark"] .hub-pal,:root[data-theme="dark"] .hub-panel,:root[data-theme="dark"] .pv-addbiz{background:var(--card);color:var(--ink)}
+/* bottom-left tools, as in Reservations: menu position + light/dark */
+.res-tools{display:flex;flex-direction:column;gap:6px;padding:6px 10px 8px}
+.res-tb{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.08);border:0;color:#fff;border-radius:10px;padding:10px 12px;cursor:pointer;font:600 14px var(--font);text-align:left}
+.res-tb:hover{background:rgba(255,255,255,.16)}.res-tb svg{width:19px;height:19px;flex:none}
+.app.collapsed .res-tools{align-items:center}.app.collapsed .res-tb{width:48px;height:48px;padding:0;justify-content:center}.app.collapsed .res-tb .tl{display:none}
+@media (max-width:760px){html .app .res-tools{display:flex!important;align-items:center;padding:6px 0 8px}html .app .res-tb{width:48px;height:48px;padding:0;justify-content:center}html .app .res-tb .tl{display:none}}
+@media (max-width:760px){html .app .res-tb{width:46px;height:46px}}
+/* menu at the bottom */
+html body.navb .app,html body.navb .app.collapsed{grid-template-columns:minmax(0,1fr)!important}
+html body.navb .app .side{position:fixed!important;left:0!important;right:0!important;bottom:0!important;top:auto!important;width:auto!important;min-width:0!important;max-width:none!important;height:auto!important;transform:none!important;flex-direction:row!important;align-items:center!important;padding:6px 8px calc(6px + env(safe-area-inset-bottom))!important;z-index:60!important;box-shadow:0 -4px 18px rgba(0,0,0,.12)!important;overflow:hidden!important}
+html body.navb .app .side .brand,html body.navb .app .side .side-foot,html body.navb .app .side .nav-sep{display:none!important}
+html body.navb .app .side .nav{flex:1 1 auto!important;flex-direction:row!important;padding:0!important;gap:2px!important;overflow-x:auto!important;overflow-y:hidden!important}
+html body.navb .app .side .nav>a{flex:1 1 0!important;min-width:58px!important;height:54px!important;flex-direction:column!important;justify-content:center!important;align-items:center!important;gap:4px!important;padding:0 2px!important;margin:0!important}
+html body.navb .app .side .nav>a>span{display:block!important;font-size:11px!important;line-height:13px!important;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+html body.navb .app .side .nav>a>.cnt{position:absolute}
+html body.navb .app .res-tools{display:flex!important;flex-direction:row!important;gap:6px;padding:0 0 0 6px!important;align-items:center}
+html body.navb .app .res-tb{width:46px!important;height:46px!important;padding:0!important;justify-content:center}
+html body.navb .app .res-tb .tl{display:none}
+html body.navb .main-col{padding-bottom:calc(76px + env(safe-area-inset-bottom))}
+body.navb .res-demo{bottom:calc(80px + env(safe-area-inset-bottom))}
+@media (max-width:760px){html body.navb .app .side .nav>a{min-width:52px!important}html body.navb .app .side .nav>a>span{font-size:10px!important}}
+.res-demo{position:fixed;left:50%;bottom:14px;transform:translateX(-50%);z-index:90;background:var(--ink);color:var(--card);padding:7px 14px;border-radius:20px;font-size:12.5px;font-weight:600;box-shadow:0 4px 16px rgba(0,0,0,.18)}
+
+/* top-right buttons, laid out like Reservations: "● Saved", then separate square buttons, avatar, sign out */
+html .top .hdr-cap,html:root[data-theme="dark"] .top .hdr-cap{background:transparent!important;padding:0!important;gap:10px!important;border-radius:0}
+html .top .hdr-cap>button,html .top .hdr-cap>a,html .top .pv-dash,html .top .top-out{width:44px!important;height:44px!important;min-width:44px!important;border-radius:12px!important;border:1px solid var(--line)!important;background:var(--card)!important;color:var(--ink)!important;display:grid!important;place-items:center;padding:0!important;position:relative;box-shadow:none!important}
+html .top .hdr-cap>button:hover,html .top .hdr-cap>a:hover,html .top .pv-dash:hover,html .top .top-out:hover{background:var(--tint)!important;border-color:color-mix(in srgb,var(--line) 60%,var(--ink))!important}
+html .top .hdr-cap svg,html .top .pv-dash svg,html .top .top-out svg{width:20px!important;height:20px!important}
+html .top .pv-dash span{display:none!important}
+html .top .pv-dash{margin-left:10px!important}
+html .top .hdr-dot{position:relative;margin:0 74px 0 4px!important}
+html .top .hdr-dot::after{content:"Saved";position:absolute;left:16px;top:50%;transform:translateY(-50%);font:600 15px var(--font);color:var(--muted);white-space:nowrap}
+html .top .hdr-dot.saving::after{content:"Saving…"}html .top .hdr-dot.offline::after{content:"Offline"}html .top .hdr-dot.error::after{content:"Not saved"}
+html .top .hub-badge,html .top .bell-dot{top:-6px!important;right:-6px!important}
+html .top .top-me{gap:10px!important;margin-left:10px!important}
+html .top .top-av{width:44px!important;height:44px!important;font-size:16px!important;background:var(--main)!important}
+html .top .top-out{color:var(--bad)!important}
+@media (max-width:760px){html .top .hdr-dot{margin:0 4px!important}html .top .hdr-dot::after{display:none}}
+@media (max-width:760px){html .top .hdr-cap{gap:4px!important}html .top .hdr-cap>button,html .top .hdr-cap>a,html .top .pv-dash,html .top .top-out,html .top .top-av{width:34px!important;height:34px!important;min-width:34px!important;border-radius:10px!important}html .top .hdr-cap svg,html .top .pv-dash svg,html .top .top-out svg{width:17px!important;height:17px!important}html .top .pv-dash{margin-left:4px!important}html .top .top-me{gap:4px!important;margin-left:4px!important}html .top .top-av{font-size:13px!important}}
+
+/* "Proview blue": the blue gradient used on license.proviewcrm.co.uk buttons */
+html.pvgrad .btn.primary,html.pvgrad .btn.pri,html.pvgrad .ov-cta,html.pvgrad .top .top-av{background:linear-gradient(135deg,#2f84d4 0%,#5a5fbb 100%)!important;border-color:transparent!important;color:#fff!important}
+html.pvgrad[data-theme="dark"] .btn.primary{color:#fff!important}
+
+/* Settings page, laid out like Reservations */
+.setbar{display:flex;gap:8px;margin:0 0 14px}.setbar .btn{min-height:42px;padding:0 16px}
+#resSettings{max-width:860px}
+.sc{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:6px 20px 18px;margin:0 0 12px}
+.sc>h2.sh{display:flex;align-items:center;justify-content:space-between;gap:10px;cursor:pointer;min-height:54px;margin:0;font-size:17px;font-weight:700;letter-spacing:-.01em;user-select:none;-webkit-user-select:none}
+.sc>h2.sh::after{content:"";width:9px;height:9px;border-right:2.5px solid currentColor;border-bottom:2.5px solid currentColor;transform:rotate(45deg) translate(-2px,-2px);opacity:.55;flex:none;margin-right:6px;transition:transform .15s}
+.sc.cl{padding-bottom:6px}.sc.cl>h2.sh::after{transform:rotate(-45deg) translate(-2px,-2px)}.sc.cl>.sb{display:none}
+.sb>p.mut{color:var(--muted);margin:0 0 14px;font-size:13.5px;line-height:1.5}
+.srow{display:grid;grid-template-columns:220px minmax(0,1fr);gap:8px 16px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
+.srow>label,.srow>.sl{font-weight:600;font-size:14px}.srow small{display:block;color:var(--muted);font-weight:500;font-size:12.5px;margin-top:2px}
+.srow input[type=text],.srow input[type=email],.srow input[type=tel],.srow select,.srow textarea{width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);font:500 14px var(--font);box-sizing:border-box}
+.srow textarea{min-height:120px;resize:vertical;line-height:1.5}
+.sw{display:flex;flex-wrap:wrap;gap:10px}.sw button{width:38px;height:38px;border-radius:50%;border:3px solid var(--card);box-shadow:0 0 0 1px var(--line);cursor:pointer}
+.sw button.on{box-shadow:0 0 0 2px var(--ink)}
+.srow>.seg,.srow>.sw,.srow>.ticks{justify-self:start}
+body:has(section[data-view=settings]:not(.hidden)) #syncChips{display:none!important}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;flex-wrap:wrap}.seg button{border:0;background:var(--card);color:var(--ink);padding:9px 14px;font:600 13.5px var(--font);cursor:pointer;border-right:1px solid var(--line)}.seg button:last-child{border-right:0}.seg button.on{background:var(--brand-soft);color:var(--brand)}
+.ticks{display:flex;flex-wrap:wrap;gap:8px}.ticks label{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);border-radius:20px;padding:7px 12px;font-weight:600;font-size:13.5px;cursor:pointer;background:var(--card)}
+.ticks input{width:16px!important;height:16px;margin:0;accent-color:var(--brand)}
+.tog{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0;border-top:1px solid var(--line)}.tog b{font-size:14px}.tog small{display:block;color:var(--muted);font-weight:500;font-size:12.5px}
+.tog input{appearance:none;-webkit-appearance:none;width:44px!important;height:26px;border-radius:13px;background:var(--line);position:relative;cursor:pointer;flex:none;margin:0;border:0!important;padding:0}
+.tog input::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:left .15s;box-shadow:0 1px 2px rgba(0,0,0,.2)}
+.tog input:checked{background:var(--brand)}.tog input:checked::after{left:21px}
+.tph{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}.tph code{background:var(--brand-subtle);color:var(--brand);border-radius:6px;padding:2px 6px;font-size:12px;cursor:pointer}
+.tpv{background:var(--tint);border:1px solid var(--line);border-radius:10px;padding:12px 14px;white-space:pre-wrap;font-size:13.5px;line-height:1.5}
+.lgt{width:100%;border-collapse:collapse;font-size:14px}.lgt td,.lgt th{padding:9px 6px;border-top:1px solid var(--line);text-align:left}.lgt th{font-size:12px;color:var(--muted);border-top:0;text-transform:uppercase;letter-spacing:.04em}
+.rl{display:inline-block;border-radius:20px;padding:2px 9px;font-size:12px;font-weight:700;background:var(--brand-soft);color:var(--brand)}
+.addrow{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}.addrow input{flex:1;min-width:180px;padding:9px 11px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);font:500 14px var(--font)}
+.addrow select{padding:9px 11px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink)}
+.saved{position:fixed;right:18px;top:76px;z-index:95;background:var(--ok);color:#fff;padding:7px 14px;border-radius:20px;font-weight:700;font-size:13px;opacity:0;transition:opacity .2s;pointer-events:none}.saved.on{opacity:1}
+:root[data-theme="dark"] .saved{color:#0d0f15}
+@media (max-width:760px){.srow{grid-template-columns:1fr}.sc{padding:4px 14px 14px}.lgt .hm{display:none}}
+
+/* ===== sidebar: same sizes as Reservations ===== */
+html .app{grid-template-columns:188px minmax(0,1fr)}
+html .app.collapsed{grid-template-columns:68px minmax(0,1fr)}
+html .app .side{padding:16px 10px}
+html .app .side .brand{padding:6px 10px 16px;gap:0;min-height:68px;box-sizing:border-box;align-items:center;gap:10px}
+html body .app .side .brand>span.res-mono{display:none!important}
+html .app .side .brand{padding-left:6px!important;padding-right:6px!important}
+/* logo + wordmark as on license.proviewcrm.co.uk: PROVIEW in white, LICENCES in the amber gradient; bigger logo */
+html .app .side .wordmark{font-family:Inter,"Segoe UI",system-ui,-apple-system,Roboto,Helvetica,Arial,sans-serif!important;font-size:15px!important;font-weight:500!important;letter-spacing:.04em!important;line-height:19px!important;color:#fff!important;white-space:normal;text-transform:none}
+html .app .side .wordmark span{display:block;margin-left:0!important}
+html body .app .side .brand .pvlogo.pvlogo.pvlogo.pvlogo{width:42px!important;height:42px!important;border-radius:22%}
+.res-mono{display:none;width:34px;height:34px;border-radius:10px;background:var(--main);color:#fff;place-items:center;font-weight:700;font-size:16px;flex:none}
+html .app .side .nav{padding:0;gap:0}
+html .app .side .nav-sep{display:block;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#8087a2;padding:12px 12px 4px;line-height:15px}
+html .app .side .nav a{height:38px;padding:0 12px;gap:10px;border-radius:9px;font-size:14px;font-weight:500}
+html .app .side .nav a svg{width:20px;height:20px}
+html .app .res-tools{padding:0;gap:0;margin-top:auto}
+html .app .res-who{margin:0;padding:10px 12px;border-radius:10px;background:rgba(255,255,255,.07)}
+html .app .res-tb{margin:6px 0 0;padding:10px 12px;border-radius:9px;font-size:14px;font-weight:600;gap:8px;min-height:40px;box-sizing:border-box}
+html .app .res-tb:first-of-type{margin-top:8px}
+html .app .res-tb svg{width:18px;height:18px}
+html .app .side .side-foot{padding:8px 0 0}
+html .app.collapsed .side{padding:10px 4px}
+html .app.collapsed .side .brand{justify-content:center;padding:4px 0 14px}
+html body .app.collapsed .side .brand .pvlogo.pvlogo.pvlogo.pvlogo{width:44px!important;height:44px!important}
+html .app.collapsed .side .wordmark{display:none}
+
+html .app.collapsed .side .nav-sep,html .app.collapsed .res-who{display:none}
+html .app.collapsed .side .nav a{height:38px;padding:0;justify-content:center}
+html .app.collapsed .res-tools{align-items:center}
+html .app.collapsed .res-tb{width:52px;height:48px;padding:0;justify-content:center;margin:6px 4px 0}
+@media (max-width:760px){
+ html .app,html .app.collapsed{grid-template-columns:68px minmax(0,1fr)!important}
+ html .app .side,html .app.navopen .side{width:68px!important;min-width:68px!important;max-width:68px!important;padding:10px 4px calc(10px + env(safe-area-inset-bottom))!important}
+ html .app .side .brand{display:flex!important;justify-content:center!important;padding:4px 0 14px!important;min-height:0!important}
+ html .app .side .brand .wordmark{display:none!important}
+ html body .app .side .brand .pvlogo.pvlogo.pvlogo.pvlogo{width:44px!important;height:44px!important;margin:0 auto!important}
+ html .app .side .nav{gap:4px!important;align-items:stretch!important}
+ html .app .side .nav>a{width:60px!important;max-width:60px!important;height:53px!important;padding:9px 2px!important;gap:3px!important;margin:0!important;border-radius:9px!important;flex-direction:column!important;justify-content:center!important;align-items:center!important}
+ html .app .side .nav>a svg{width:20px!important;height:20px!important}
+ html body .app .side .nav>a>span{font-size:10.5px!important;line-height:1.1!important;font-weight:500!important;max-width:58px!important}
+ html .app .res-tools{display:flex!important;flex-direction:column!important;align-items:stretch!important;padding:0!important;margin-top:auto!important}
+ html .app .res-who{display:none!important}
+ html .app .res-tb{width:52px!important;height:48px!important;min-height:0!important;padding:0!important;margin:6px 4px 0!important;justify-content:center!important;border-radius:9px!important}
+ html .app .res-tb svg{width:19px!important;height:19px!important}
+}
+/* phones: no signed-in box and no light/dark button (still in Settings > Colours) */
+.rw-i{display:none}
+@media (max-width:760px){
+ html body .app .side .res-tools .res-who,html body.navb .app .side .res-tools .res-who,html body .app .side .res-tools #resTheme,html body.navb .app .side .res-tools #resTheme{display:none!important}
+ html body.navb .app .side .res-tools{gap:6px!important;margin:0!important}
+ html body.navb .app .side .res-tools .res-tb{margin:0!important}
+}
+/* no "All businesses" picker in the top bar */
+html body #hdr-biz,html body .top select#hdr-biz{display:none!important}
+/* no colour key under the search box */
+html body .ckey{display:none!important}
+/* business cards: no licence-count lines under the name or beside "View licences" */
+html body .ov-biz .ov-bh .muted.small,html body .ov-biz .ov-bf>.muted.small{display:none!important}
+html body .ov-biz .ov-bf{justify-content:flex-end!important}
+/* ===== phones: floating dark dock (style E1) instead of the side menu ===== */
+.pv-dock{display:none}
+@media (max-width:760px){
+ html body .app,html body .app.collapsed,html body.navb .app{grid-template-columns:minmax(0,1fr)!important}
+ html body .app .side,html body.navb .app .side,html body .app.navopen .side{display:none!important}
+ html body .main-col,html body.navb .main-col{padding-bottom:calc(96px + env(safe-area-inset-bottom))!important;padding-left:0!important}
+ .res-demo{display:none!important}
+ .pv-dock{display:flex;position:fixed;left:50%;transform:translateX(-50%);bottom:calc(14px + env(safe-area-inset-bottom));z-index:80;gap:4px;padding:6px;border-radius:22px;background:var(--side);box-shadow:0 10px 30px rgba(20,22,40,.35);max-width:calc(100vw - 16px);box-sizing:border-box}
+ .pv-dock button{position:relative;display:flex;align-items:center;justify-content:center;gap:6px;height:44px;min-width:44px;padding:0;border:0;border-radius:16px;background:transparent;color:rgba(255,255,255,.75);font:700 13px var(--font);cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background .15s,color .15s}
+ .pv-dock button svg{width:21px;height:21px;flex:none}
+ .pv-dock button .dl{display:none;white-space:nowrap}
+ .pv-dock button.on{background:#fff;color:var(--side);padding:0 14px}
+ .pv-dock button.on .dl{display:inline}
+ .pv-dock button .dn{position:absolute;top:4px;right:5px;min-width:15px;height:15px;border-radius:8px;background:#e5484d;color:#fff;font:700 9.5px/15px var(--font);padding:0 3px;box-sizing:border-box;text-align:center}
+ .pv-dock button.on .dn{display:none}
+ :root[data-theme="dark"] .pv-dock{background:#1b2131;border:1px solid rgba(255,255,255,.08)}
+ :root[data-theme="dark"] .pv-dock button.on{background:var(--brand);color:#0d0f15}
+}
+@media (min-width:761px){.sc-pay{display:none!important}}
+.sc-pay>h2.sh::after{display:none!important}.sc-pay{padding-bottom:18px!important}
+body:has(section[data-view="customers"].hidden) #syncChips{display:none!important}
+.pay-sec{font-size:17px;font-weight:700;letter-spacing:-.01em;margin:30px 0 12px;scroll-margin-top:80px}#payFailView{scroll-margin-top:80px}
+/* ===== phones: nothing cut off ===== */
+@media (max-width:760px){
+ html body .top{flex-wrap:wrap!important;height:auto!important;min-height:0!important;row-gap:10px!important;padding-top:10px!important;padding-bottom:10px!important}
+ html body .top #pageTitle{flex:1 1 auto!important;order:-1;white-space:nowrap!important;min-width:0;overflow:visible!important;text-overflow:clip!important;max-width:none!important;margin:0!important;font-size:22px!important;line-height:1.2!important}
+ html body .top .menu-btn,html body .top .hdr-pick{display:none!important}
+ html body .top .hdr-cap{margin-left:0!important}
+ html body .top .top-me{margin-left:auto!important}
+ .main-col :is(h1,h2,h3,h4,div,span,b,strong,small,a,p,label,td,th,li):not(.pill):not(.ov-pill):not(.chip):not(.pchip):not(.sr):not(.dn){white-space:normal!important;text-overflow:clip!important;overflow-wrap:anywhere}
+ .main-col .appc-h{flex-wrap:wrap!important}
+ .main-col .appc-h>*{min-width:0}
+ .main-col .appc-h>.grow{flex:1 1 calc(100% - 50px)!important}
+ .main-col .appc-h .tiny{white-space:normal!important;overflow:visible!important}
+ .main-col .appc-h{row-gap:10px!important;column-gap:8px!important}
+ .main-col .ov-tools{flex-wrap:wrap!important}
+ .main-col .ov-tools .ov-search{flex:1 0 100%!important;width:100%!important}
+ .main-col .ov-app .at,.main-col .ov-app .nm{overflow:visible!important}
+ .main-col .ov-app{height:auto!important;min-height:0!important}
+ .main-col .card,.main-col .acct{overflow:visible!important}
+ .main-col .lv{overflow:visible!important}
+ /* tables become stacked cards: every column shown as a labelled line */
+ .main-col table{display:block!important;width:100%!important;min-width:0!important;border:0!important}
+ .main-col table thead{display:block!important}
+ .main-col table thead tr{display:block!important;border:0!important;padding:0 12px!important}
+ .main-col table thead th{display:none!important}
+ .main-col table thead th.cb{display:flex!important;align-items:center;padding:8px 0!important;border:0!important}
+ .main-col table thead th:has(input){display:flex!important;align-items:center;gap:8px;padding:8px 0!important;border:0!important}
+ .main-col table thead th:has(input)::after{content:"Select all";font-size:13px;font-weight:600;color:var(--muted);text-transform:none;letter-spacing:0}
+ .main-col table tbody{display:block!important}
+ .main-col table tr{display:block!important;padding:10px 12px!important;border-top:1px solid var(--line)!important}
+ .main-col table tbody tr:first-child{border-top:0!important}
+ .main-col table td,.main-col table tbody th{display:grid!important;grid-template-columns:96px minmax(0,1fr);gap:2px 10px;align-items:start;padding:4px 0!important;border:0!important;text-align:left!important;width:auto!important;max-width:none!important;min-width:0!important;height:auto!important}
+ .main-col table td>*,.main-col table tbody th>*{grid-column:2}
+ .main-col table td[data-label=""]>*,.main-col table td:not([data-label])>*{grid-column:1}
+ .main-col table td::before,.main-col table tbody th::before{grid-column:1;grid-row:1;content:attr(data-label);font-size:11.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;padding-top:2px}
+ .main-col table td[data-label=""],.main-col table td:not([data-label]){grid-template-columns:minmax(0,1fr)}
+ .main-col table td[data-label=""]::before,.main-col table td:not([data-label])::before{display:none}
+ .main-col table td.acts,.main-col table td:has(>.btn:only-child),.main-col table td:has(>.btn+.btn){display:flex!important;flex-wrap:wrap;gap:8px;justify-content:flex-start}
+ .main-col table td.acts::before{display:none}
+ .main-col table td:has(>input[type=checkbox]:only-child){grid-template-columns:96px auto}
+ .main-col table input:not([type=checkbox]):not([type=radio]){width:100%!important;min-width:0!important;box-sizing:border-box}
+ .main-col table td>*{min-width:0}
+ /* list view: one card per business */
+ .main-col .lv table td.lv-app.off{display:none!important}
+}
+/* phones: product filter as a dropdown; last sync + Sync + New business on one line */
+#pselect{display:none}
+@media (max-width:760px){
+ html body #pchips{display:none!important}
+ html body #pselect{display:block;width:100%;margin:0 0 12px;padding:11px 38px 11px 14px;border:1px solid var(--line);border-radius:12px;background:var(--card) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%235b6072' stroke-width='1.8' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat right 14px center;-webkit-appearance:none;appearance:none;color:var(--ink);font:600 15px var(--font)}
+ html body .pv-loc .pv-ph{display:flex!important;flex-direction:row!important;flex-wrap:nowrap!important;align-items:center!important;gap:8px!important;margin-bottom:14px!important}
+ html body .pv-loc .pv-ph #custDesc{display:none!important}
+ html body .pv-loc .pv-ph #custChips{flex:0 1 auto;min-width:0;margin:0!important}
+ html body .pv-loc .pv-ph #custChips .chip{font-size:12px!important;padding:6px 10px!important;white-space:nowrap!important;line-height:1.2}
+ html body .pv-loc .pv-ph .pv-acts{display:flex!important;flex-wrap:nowrap!important;gap:6px!important;margin:0 0 0 auto!important;flex:none}
+ html body .pv-loc .pv-ph .pv-acts .btn{min-height:38px!important;height:38px!important;padding:0 11px!important;font-size:13.5px!important;gap:5px!important;white-space:nowrap!important}
+ html body .pv-loc .pv-ph .pv-acts .btn svg{width:16px!important;height:16px!important}
+}
+@media (max-width:760px){
+ .main-col .lv table td.lv-app{grid-template-columns:96px auto minmax(0,1fr)!important;column-gap:8px!important}
+ .main-col .lv table td.lv-app>.ov-dot{grid-column:2!important;align-self:center}
+ .main-col .lv table td.lv-app>:not(.ov-dot){grid-column:3!important}
+}
+/* one button for Notifications, Inbox and Notes */
+html body .top .hdr-cap>.hub-chat,html body .top .hdr-cap>.hub-inbox{display:none!important}
+html body .top .hdr-cap>.bell>.bell-dot{display:none!important}
+.pv-allcnt{position:absolute;top:-6px;right:-6px;min-width:18px;height:18px;border-radius:9px;background:#e5484d;color:#fff;font:700 11px/18px var(--font);padding:0 5px;box-sizing:border-box;text-align:center;pointer-events:none}
+.pv-allcnt[hidden]{display:none}
+.pv-pop{position:fixed;z-index:1200;width:min(400px,calc(100vw - 16px));display:flex;flex-direction:column;background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:0 16px 44px rgba(20,22,40,.2);overflow:hidden}
+.pv-tabs{display:flex;gap:4px;padding:8px;border-bottom:1px solid var(--line);flex:none}
+.pv-tabs button{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;border:0;background:transparent;color:var(--muted);font:600 13.5px var(--font);padding:9px 6px;border-radius:10px;cursor:pointer;white-space:nowrap}
+.pv-tabs button:hover{background:var(--tint)}
+.pv-tabs button.on{background:var(--brand-soft);color:var(--brand)}
+.pv-tabs .n{min-width:18px;height:18px;border-radius:9px;background:#e5484d;color:#fff;font:700 11px/18px var(--font);padding:0 5px;box-sizing:border-box;text-align:center}
+.pv-tabs .n[hidden]{display:none}
+.pv-plist{overflow:auto;flex:1 1 auto;min-height:0;padding:4px 0}
+.pv-pnote{padding:18px 16px;color:var(--muted);font-size:13.5px;line-height:1.5}
+.pv-pi{display:flex;gap:12px;padding:11px 16px;border-top:1px solid var(--line);align-items:flex-start}
+.pv-pi:first-child{border-top:0}
+.pv-pi.go{cursor:pointer}.pv-pi.go:hover,.pv-pi.go:focus-visible{background:var(--tint);outline:none}
+.pv-pi.new{background:color-mix(in srgb,var(--brand) 7%,transparent)}
+.pv-pi.new b::after{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--brand);margin-left:7px;vertical-align:middle}
+.pv-pic{width:30px;height:30px;border-radius:9px;background:var(--tint);display:grid;place-items:center;flex:none;color:var(--muted)}
+.pv-pic .emo{font-size:15px;line-height:1}
+.pv-pit{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1}
+.pv-pit b{font-size:14px;font-weight:600;color:var(--ink);overflow-wrap:anywhere}
+.pv-pit span{font-size:13px;color:var(--muted);line-height:1.45;overflow-wrap:anywhere}
+.pv-pit span.pre{white-space:pre-wrap}
+.pv-pit small{font-size:12px;color:var(--muted);opacity:.85}
+.pv-pacts{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+@media (max-width:760px){.pv-tabs button span:not(.n){font-size:13px}.pv-tabs button svg{display:none}}
+@media (max-width:760px){
+ .main-col .lv table td.lv-app{grid-template-columns:96px auto minmax(0,1fr)!important;column-gap:8px!important}
+ .main-col .lv table td.lv-app>.ov-dot{grid-column:2!important;align-self:center}
+ .main-col .lv table td.lv-app>:not(.ov-dot){grid-column:3!important}
+}
+@media (max-width:760px){.pv-pop{left:12px!important;right:12px!important;width:auto!important;max-width:none!important}}
+/* phones: Tiles/List beside the product dropdown; top-bar buttons grouped on the right */
+.pv-frow{display:none}
+@media (max-width:760px){
+ .pv-frow{display:flex;align-items:center;gap:8px;margin:0 0 12px}
+ .pv-frow #pselect{flex:1 1 auto;min-width:0;margin:0!important}
+ .pv-frow .vsw{flex:none;margin:0!important}
+ .pv-frow .vsw button{padding:0 10px!important;height:44px!important}
+ html body .top .hdr-cap{margin-left:auto!important}
+ html body .top .top-me,html body .top .pv-dash{margin-left:6px!important}
+}
+@media (max-width:760px){html body .top{align-items:center!important}html body .top #pageTitle{font-size:21px!important}}
+@media (max-width:760px){
+ html body .pv-loc .pv-ph #custChips{flex:1 1 auto!important;min-width:0!important;overflow:visible}
+ html body .pv-loc .pv-ph #custChips .chip{white-space:normal!important;max-width:100%;display:inline-block;line-height:1.25!important}
+}
+@media (max-width:400px){
+ html body .pv-loc .pv-ph .pv-acts .btn{padding:0 9px!important;font-size:13px!important}
+ html body .pv-loc .pv-ph #custChips .chip{font-size:11.5px!important;padding:5px 8px!important}
+}
+/* white page, easier to read */
+html body,html body .app,html body .main-col,html body main,html body .main{background:var(--page)!important}
+html body{font-size:15px!important;-webkit-font-smoothing:antialiased}
+html body .main-col .card,html body .main-col .stat,html body .main-col .ov-biz,html body .main-col .appc,html body .main-col .sc{border-color:var(--line)!important;box-shadow:0 1px 2px rgba(15,17,23,.04),0 2px 8px rgba(15,17,23,.04)!important}
+html body .muted,html body .small.muted,html body .tiny{color:var(--muted)!important}
+html body .main-col .ov-app{border-color:var(--line)!important}
+html body .main-col .ov-app .at{font-size:13px}
+html body .main-col .stat .k,html body .main-col .stat small{font-size:13px}
+@media (max-width:760px){
+ .main-col table td>.pill,.main-col table td>.ptag,.main-col table td>.ppill,.main-col table td>span[class*="pill"],.main-col table td>.badge{justify-self:start!important;width:auto!important}
+ .main-col table td::before,.main-col table tbody th::before{font-size:12px!important;color:var(--muted)!important}
+ html body .pv-loc .pv-ph #custChips .chip{font-size:12.5px!important;color:var(--ink)!important}
+}
+/* background and text-size choices (Settings > Colours) */
+:root[data-bg="grey"]:not([data-theme="dark"]){--page:#f3f4f6;--tint:#eceef2}
+:root[data-bg="cool"]:not([data-theme="dark"]){--page:#eef2fa;--tint:#e4eaf6}
+:root[data-bg="warm"]:not([data-theme="dark"]){--page:#f8f5ef;--tint:#efe9df}
+:root[data-bg="mint"]:not([data-theme="dark"]){--page:#eff6f2;--tint:#e3eee8}
+:root[data-bg]:not([data-bg="white"]):not([data-theme="dark"]) .top{background:var(--card)!important}
+:root[data-fs="lg"] body{font-size:16.5px!important}
+:root[data-fs="xl"] body{font-size:18px!important}
+:root[data-fs="lg"] .main-col :is(.small,.tiny,small,.muted){font-size:max(14px,1em)!important}
+:root[data-fs="xl"] .main-col :is(.small,.tiny,small,.muted){font-size:max(15.5px,1em)!important}
+.bgsw{display:flex;flex-wrap:wrap;gap:10px}
+.bgsw button{display:flex;flex-direction:column;align-items:center;gap:6px;border:0;background:none;cursor:pointer;font:600 12.5px var(--font);color:var(--ink);padding:0}
+.bgsw .bgp{width:62px;height:44px;border-radius:10px;border:1px solid var(--line);display:grid;place-items:center;box-shadow:0 0 0 2px transparent}
+.bgsw .bgp i{width:34px;height:20px;border-radius:5px;border:1px solid}
+.bgsw button.on .bgp{box-shadow:0 0 0 2px var(--ink)}
+.srow>.bgsw{justify-self:start}
+html body .main-col .acct{background:var(--card)!important}
+/* ===== redesigned Expiring + Payments lists ===== */
+.xtiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:0 0 20px}
+.xt{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;display:flex;flex-direction:column;gap:6px;position:relative;overflow:hidden;box-shadow:0 1px 2px rgba(15,17,23,.04)}
+.xt::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--line)}
+.xt span{font-size:13px;font-weight:600;color:var(--muted)}
+.xt b{font-size:26px;font-weight:800;letter-spacing:-.02em;line-height:1.1;color:var(--ink)}
+.xt small{font-size:12.5px;color:var(--muted)}
+.xt .btn{align-self:flex-start;margin-top:2px}
+.xt-bad::before{background:var(--bad)}.xt-bad b{color:var(--bad)}
+.xt-warn::before{background:#d98a00}.xt-warn b{color:var(--warn)}
+.xt-soon::before{background:var(--brand)}
+.xt-ok::before{background:var(--ok)}.xt-ok b{color:var(--ok)}
+.xt-stripe::before{background:#635bff}
+.xg{margin:0 0 22px}
+.xgh{display:flex;align-items:center;gap:9px;font-size:16px;font-weight:700;letter-spacing:-.01em;margin:0 0 10px;color:var(--ink)}
+.xc{min-width:24px;height:22px;border-radius:11px;background:var(--tint);color:var(--muted);font-size:12.5px;font-weight:700;display:inline-grid;place-items:center;padding:0 7px}
+.xdot{width:10px;height:10px;border-radius:50%;background:var(--brand)}
+.xdot-bad{background:var(--bad)}.xdot-warn{background:#d98a00}.xdot-ok{background:var(--ok)}
+.xl{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden;box-shadow:0 1px 2px rgba(15,17,23,.04),0 2px 8px rgba(15,17,23,.04)}
+.xr{display:grid;grid-template-columns:40px minmax(0,1fr) auto auto;gap:6px 16px;align-items:center;padding:16px 18px 16px 20px;border-top:1px solid var(--line);position:relative}
+.xr:first-child{border-top:0}
+.xr::before{content:"";position:absolute;left:0;top:12px;bottom:12px;width:4px;border-radius:0 4px 4px 0;background:var(--line)}
+.x-bad::before{background:var(--bad)}.x-warn::before{background:#d98a00}.x-soon::before{background:var(--brand)}.x-ok::before{background:var(--ok)}
+.xi{width:40px;height:40px;border-radius:10px;align-self:start}
+.xm{min-width:0;display:flex;flex-direction:column;gap:3px}
+.xb{font-size:16px;font-weight:700;color:var(--ink);letter-spacing:-.01em;overflow-wrap:anywhere}
+.xs{font-size:14px;color:var(--ink);opacity:.85;overflow-wrap:anywhere}
+.xp{font-weight:600}
+.xe{font-size:13px;color:var(--muted);overflow-wrap:anywhere}
+.xw{font-size:13px;color:var(--muted);font-weight:500}
+.xwhy{font-size:13.5px;font-weight:600;color:var(--bad);background:var(--bad-soft);border-radius:8px;padding:5px 9px;align-self:flex-start;margin:3px 0}
+.xd{display:flex;flex-direction:column;align-items:flex-end;text-align:right;min-width:92px}
+.xd b{font-size:24px;font-weight:800;letter-spacing:-.02em;line-height:1.05}
+.xd span{font-size:12.5px;font-weight:600;color:var(--muted)}
+.x-bad .xd b{color:var(--bad)}.x-warn .xd b{color:var(--warn)}.x-soon .xd b{color:var(--brand)}
+.xd-money{gap:6px}.xd-money b{color:var(--ink)!important;font-size:20px}
+.xd-money .pill{font-size:12px}
+.xa{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.xa .btn{min-height:36px}
+.xnote{font-size:13px;color:var(--muted);margin:10px 2px 0;line-height:1.5}
+.xempty{background:var(--card);border:1px dashed var(--line);border-radius:14px;padding:26px 20px;text-align:center;display:flex;flex-direction:column;gap:6px}
+.xempty b{font-size:15px;color:var(--ink)}.xempty span{font-size:13.5px;color:var(--muted)}
+.xl .xempty{border:0;border-radius:0}
+section[data-view="expiring"] .bar{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin:0 0 16px}
+section[data-view="expiring"] .bar select{min-height:40px;border-radius:10px;font-weight:600}
+section[data-view="expiring"] .bar label{font-weight:600;font-size:14px}
+@media (max-width:900px){.xtiles{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:760px){
+ .xtiles{gap:10px;margin-bottom:16px}
+ .xt{padding:12px 14px}.xt b{font-size:22px}
+ .xr{grid-template-columns:40px minmax(0,1fr) auto;padding:14px 14px 14px 16px;gap:8px 12px}
+ .xa{grid-column:1/-1;justify-content:stretch}
+ .xa .btn{flex:1;min-height:42px}
+ .xd{min-width:0}.xd b{font-size:21px}
+ .xb{font-size:15.5px}
+ .xt-stripe{grid-column:1/-1;flex-direction:row;flex-wrap:wrap;align-items:center;gap:4px 10px}
+ .xt-stripe small{flex:1}
+}
+@media (max-width:760px){.xtiles.xpay{grid-template-columns:repeat(3,minmax(0,1fr))}.xtiles.xpay .xt b{font-size:19px;overflow-wrap:anywhere}}
+/* ===== phones: see more of the list at once ===== */
+.pv-synced,.pv-ptr,.pv-minall,.pv-mini{display:none}
+@media (max-width:760px){
+ /* 5. search + "+ Business" on one row; Sync button replaced by pull-to-refresh */
+ html body #syncBtn{display:none!important}
+ html body .pv-loc .pv-ph #custChips{display:none!important}
+ html body .pv-loc .pv-ph{gap:8px!important;margin-bottom:12px!important}
+ html body .pv-loc .pv-ph #q{flex:1 1 auto;min-width:0;width:auto!important;margin:0!important;height:42px;box-sizing:border-box;font-size:15px}
+ html body .pv-loc .pv-ph .pv-acts{margin:0!important}
+ html body .pv-loc .pv-ph #newCustBtn{height:42px!important;min-height:42px!important;padding:0 14px!important}
+ html body #newCustBtn .nb-new{display:none}
+ html body .ov-tools:not(:has(> *:not(.vsw):not([hidden]))){display:none!important}
+ /* sync time under the page title */
+ html body .top{position:relative}
+ body:has(section[data-view="customers"]:not(.hidden)) .pv-synced{display:block;position:absolute;left:16px;bottom:3px;font-size:11.5px;font-weight:600;color:var(--muted);white-space:nowrap;pointer-events:none}
+ body:has(section[data-view="customers"]:not(.hidden)) .top #pageTitle{margin-bottom:10px!important}
+ /* pull to refresh */
+ html,body{overscroll-behavior-y:contain}
+ .pv-ptr{display:flex;position:fixed;left:50%;top:0;z-index:70;transform:translate(-50%,-60px);align-items:center;gap:8px;background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:20px;padding:8px 14px;font:600 13px var(--font);box-shadow:0 8px 24px rgba(15,17,23,.14);transition:transform .2s;pointer-events:none}
+ .pv-ptr svg{width:16px;height:16px;transition:transform .15s}
+ .pv-ptr.ready svg{transform:rotate(180deg)}
+ .pv-ptr.busy svg{animation:pvspin .8s linear infinite}
+ @keyframes pvspin{to{transform:rotate(360deg)}}
+ /* 3. shorter boxes: stats on one line, empty apps on one line, tighter tiles */
+ html body .pv-loc .ov-stats{gap:8px!important;margin-bottom:12px!important}
+ html body .pv-loc .ov-stat{display:flex!important;flex-direction:row-reverse;align-items:center;justify-content:flex-end;gap:8px;padding:9px 10px!important;min-height:0!important}
+ html body .pv-loc .ov-stat .ov-v{font-size:22px!important;line-height:1!important;margin:0!important;flex:none}
+ html body .pv-loc .ov-stat .tiny{font-size:11.5px!important;line-height:1.2!important;margin:0!important}
+ html body .main-col .ov-apps{gap:6px!important;padding:10px 12px 12px!important}
+ html body .main-col .ov-app{min-height:0!important;padding:8px 10px!important;gap:2px!important}
+ html body .main-col .ov-app.off .ad{display:none!important}
+ html body .main-col .ov-app.off{justify-content:center;min-height:38px!important;padding-top:6px!important;padding-bottom:6px!important}
+ html body .main-col .ov-app.off .ov-add{top:50%!important;transform:translateY(-50%)}
+ html body .main-col .ov-bh{padding:12px 14px 10px!important;align-items:center!important}
+ html body .main-col .ov-biz .ov-bf{padding:10px 12px!important}
+ /* 1. minimise cards */
+ .pv-minall{display:inline-flex;align-items:center;justify-content:center;flex:none;width:44px;height:44px;border:1px solid var(--line);border-radius:12px;background:var(--card);color:var(--ink);cursor:pointer;padding:0}
+ .pv-minall svg{width:20px;height:20px}
+ html body .main-col .ov-biz .ov-bh{cursor:pointer;-webkit-tap-highlight-color:transparent}
+ html body .main-col .ov-biz .ov-bh::after{content:"";width:8px;height:8px;border-right:2.2px solid var(--muted);border-bottom:2.2px solid var(--muted);transform:rotate(45deg);margin:0 4px 4px 2px;flex:none;transition:transform .15s}
+ html body .main-col .ov-biz.pv-min .ov-bh::after{transform:rotate(-45deg);margin:0 4px 0 2px}
+ html body .main-col .ov-biz.pv-min .ov-apps,html body .main-col .ov-biz.pv-min .ov-bf{display:none!important}
+ html body .main-col .ov-biz.pv-min .ov-bh{padding-bottom:6px!important}
+ html body .main-col .ov-biz.pv-min .pv-mini{display:flex;flex-wrap:wrap;gap:6px;padding:0 14px 12px}
+ .pv-mini span{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--line);border-radius:8px;padding:3px 7px 3px 4px;font-size:12px;font-weight:600;color:var(--ink);background:var(--card)}
+ .pv-mini img{width:18px;height:18px;border-radius:5px}
+ .pv-mini i{width:7px;height:7px;border-radius:50%;background:var(--ok)}
+ .pv-mini i.warn{background:#d98a00}.pv-mini i.bad{background:var(--bad)}.pv-mini i.none{background:var(--line)}
+ /* 4. list view: real columns that scroll sideways, business name stays put */
+ html body .main-col .lv{overflow-x:auto!important;-webkit-overflow-scrolling:touch}
+ html body .main-col .lv table{display:table!important;min-width:760px!important;width:auto!important;border-collapse:separate!important;border-spacing:0}
+ html body .main-col .lv table thead{display:table-header-group!important}
+ html body .main-col .lv table tbody{display:table-row-group!important}
+ html body .main-col .lv table tr{display:table-row!important;padding:0!important;border:0!important}
+ html body .main-col .lv table th,html body .main-col .lv table td{display:table-cell!important;padding:9px 10px!important;border-top:1px solid var(--line)!important;vertical-align:middle;white-space:nowrap!important;font-size:13px}
+ html body .main-col .lv table thead th{display:table-cell!important;border-top:0!important;font-size:11px!important;background:var(--tint)}
+ html body .main-col .lv table thead th:has(input)::after{content:none}
+ html body .main-col .lv table td::before,html body .main-col .lv table tbody th::before{content:none!important;display:none!important}
+ html body .main-col .lv table td.lv-app.off{display:table-cell!important}
+ html body .main-col .lv table .lv-h img{display:block;margin:0 auto 3px}
+ html body .main-col .lv table .lv-h{text-align:center}
+ html body .main-col .lv table td.lv-n,html body .main-col .lv table thead th:first-child{position:sticky;left:0;z-index:2;background:var(--card);box-shadow:1px 0 0 var(--line);white-space:normal!important;min-width:132px;max-width:150px}
+ html body .main-col .lv table thead th:first-child{background:var(--tint)}
+ html body .main-col .lv table .lv-name{font-size:14px;font-weight:700;text-align:left;white-space:normal}
+ html body .main-col .lv table .lv-sub{font-size:11.5px;white-space:normal}
+ html body .main-col .lv table td.lv-app>*{grid-column:auto!important}
+ html body .main-col .lv table td.lv-app .ov-dot{display:inline-block;vertical-align:middle;margin-right:5px}
+}
+@media (max-width:760px){
+ html body .main-col .lv table td:not(.lv-n) *,html body .main-col .lv table thead th *,html body .main-col .lv table thead th{white-space:nowrap!important;overflow-wrap:normal!important;word-break:normal!important}
+ html body .main-col .lv table .lv-h{font-size:10.5px!important;letter-spacing:.02em}
+ html body .main-col .lv table td.lv-app{min-width:96px}
+}
+@media (max-width:760px){html body .main-col .lv table td.lv-app,html body .main-col .lv table td.lv-app .lv-t{white-space:nowrap!important;overflow-wrap:normal!important}html body .main-col .lv table td.lv-app .lv-t{display:inline!important}}
+@media (max-width:760px){html body .main-col .lv table{width:max-content!important;min-width:100%!important;table-layout:auto!important}}
+@media (max-width:760px){html body .main-col .lv table td.lv-n,html body .main-col .lv table thead th:first-child{width:132px!important;min-width:132px!important;max-width:132px!important}html body .main-col .lv table td.lv-n *{white-space:normal!important}}
+/* ===== layout from the screen recording ===== */
+.aw,.lv-none,.pv-ph2,.bd-x,.bd-phacts,.pv-man,.bd-scrim{display:none}
+.pv-acc>summary{display:none}
+.pv-acc{display:block}
+details>summary{list-style:none}details>summary::-webkit-details-marker{display:none}
+.pv-chev{width:8px;height:8px;border-right:2.2px solid var(--muted);border-bottom:2.2px solid var(--muted);transform:rotate(-45deg);flex:none;margin:0 4px 0 auto;transition:transform .15s}
+details[open]>summary .pv-chev{transform:rotate(45deg);margin-bottom:4px}
+.xg>summary{cursor:pointer}
+.xg:not([open])>summary{margin-bottom:0}
+details.xg{margin:0 0 14px}
+@media (min-width:761px){details.xg>summary .pv-chev{display:none}details.xg>summary{pointer-events:none}}
+@media (max-width:760px){
+ /* cards: only the apps the business has, a status word, Add/Remove/View buttons */
+ html body .main-col .ov-biz .ov-app.off{display:none!important}
+ html body .main-col .ov-app .at{display:none!important}
+ html body .main-col .ov-app .aw{display:inline!important;font-weight:600}
+ html body .main-col .ov-app .ad.r .aw{color:var(--bad)}html body .main-col .ov-app .ad.a .aw{color:var(--warn)}
+ html body .main-col .ov-biz .ov-bf{display:block!important;padding:4px 12px 12px!important;border-top:0!important}
+ html body .main-col .ov-biz .ov-bf>.muted{display:none!important}
+ html body .main-col .ov-biz .ov-bf .pv-acts{display:grid!important;grid-template-columns:1fr 1fr;gap:8px;width:100%}
+ html body .main-col .ov-biz .ov-bf .pv-dsk{display:none!important}
+ html body .main-col .ov-biz .ov-bf .pv-ph2{display:inline-flex!important;justify-content:center;min-height:40px;font-weight:600}
+ html body .main-col .ov-biz .ov-bf .pv-view{grid-column:1/-1;justify-content:center;min-height:42px;font-weight:700}
+ /* list view: dashes, red unlicensed cells, no dots, plain names */
+ html body .main-col .lv .lv-none{display:inline!important;color:var(--muted)}
+ html body .main-col .lv .lv-add{display:none!important}
+ html body .main-col .lv td.lv-bad{background:color-mix(in srgb,var(--bad) 13%,transparent)!important}
+ html body .main-col .lv td.lv-bad .lv-t{color:var(--bad)!important;font-weight:600}
+ html body .main-col .lv td.lv-app .ov-dot{display:none!important}
+ html body .main-col .lv .lv-sub{display:none!important}
+ html body .main-col .lv table td.lv-n{vertical-align:middle}
+ /* business page as a sheet over the list */
+ body.pv-sheet-open{overflow:hidden}
+ .pv-sheetwrap .bd-scrim{display:block;position:fixed;inset:0;background:rgba(10,12,20,.45);z-index:90}
+ .pv-sheetwrap .dback{display:none!important}
+ .pv-sheetwrap .bd{position:fixed;left:10px;right:10px;top:max(12px,env(safe-area-inset-top));bottom:calc(10px + env(safe-area-inset-bottom));z-index:91;overflow:auto;background:var(--card);border-radius:18px;padding:14px 12px 16px;box-shadow:0 20px 50px rgba(0,0,0,.3);-webkit-overflow-scrolling:touch;display:flex;flex-direction:column;gap:10px}
+ .pv-sheetwrap .bd>*{margin:0!important}
+ .pv-sheetwrap .bd-head{border:0!important;box-shadow:none!important;padding:0 2px!important;background:transparent!important}
+ .pv-sheetwrap .bd-head .bd-acts{display:none!important}
+ .pv-sheetwrap .bd-title{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+ .pv-sheetwrap .bd-title h2{font-size:20px!important;margin:0}
+ .bd-x{width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background:var(--card);color:var(--ink);font-size:22px;line-height:1;cursor:pointer;place-items:center;padding:0;margin-left:auto}
+ .pv-sheetwrap .bd-x,.pv-sheet .bd-x{display:grid!important}
+ .pv-sheetwrap .bd-sub{font-size:13px!important;margin-top:4px}
+ .pv-sheetwrap .bd-phacts{display:flex!important;gap:8px;margin-top:12px}
+ .pv-sheetwrap .bd-phacts .btn{min-height:38px;font-weight:600}
+ .pv-sheetwrap .pv-acc{border:1px solid var(--line);border-radius:12px;background:var(--card);overflow:hidden}
+ .pv-sheetwrap .pv-acc>summary{display:flex!important;align-items:center;gap:10px;padding:12px;cursor:pointer}
+ .pv-acc-s img{width:30px;height:30px;border-radius:8px;flex:none}
+ .pv-acc-t{display:flex;flex-direction:column;min-width:0}
+ .pv-acc-t b{font-size:15px;color:var(--ink)}.pv-acc-t small{font-size:12px;color:var(--muted)}
+ .pv-acc-r{margin-left:auto;display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--ink);white-space:nowrap}
+ .pv-acc-r+.pv-chev{margin-left:8px}
+ .pv-sheetwrap .pv-acc>.appc{border:0!important;border-top:1px solid var(--line)!important;border-radius:0!important;box-shadow:none!important;margin:0!important}
+ .pv-sheetwrap .pv-acc>.appc>.appc-h>img{display:none}
+ .pv-sheetwrap .bd-det,.pv-sheetwrap .pv-man{display:block!important;border:1px solid var(--line)!important;border-radius:12px!important;box-shadow:none!important}
+ .pv-sheetwrap .bd-det>summary,.pv-sheetwrap .pv-man>summary{display:flex;align-items:center;gap:10px;padding:14px 12px;font-weight:700;font-size:15px;cursor:pointer}
+ .pv-man>summary span:first-child{display:flex;flex-direction:column}
+ .pv-man>summary small{font-size:12px;color:var(--muted);font-weight:500}
+ .pv-man-b{display:flex;flex-direction:column;gap:8px;padding:0 12px 14px}
+ .pv-man-b .btn{justify-content:center;min-height:42px}
+ .pv-sheetwrap .bd{order:0}
+ /* the add / remove sheets */
+ .pv-sheet{border:0;border-radius:18px;padding:0;width:calc(100vw - 20px);max-width:520px;max-height:calc(100vh - 80px);background:var(--card);color:var(--ink);box-shadow:0 20px 50px rgba(0,0,0,.3)}
+ .pv-sheet::backdrop{background:rgba(10,12,20,.45)}
+ .pv-sh-h{display:flex;align-items:center;gap:10px;padding:14px 14px 10px;font-size:16px;border-bottom:1px solid var(--line)}
+ .pv-sh-b{padding:6px 14px 14px;overflow:auto}
+ .pv-sh-r{display:flex;align-items:center;gap:10px;padding:11px 0;border-top:1px solid var(--line)}
+ .pv-sh-r:first-child{border-top:0}
+ .pv-sh-r img{width:32px;height:32px;border-radius:8px;flex:none}
+ .pv-sh-t{display:flex;flex-direction:column;flex:1;min-width:0}.pv-sh-t b{font-size:15px}.pv-sh-t small{font-size:12.5px;color:var(--muted)}
+ .pv-chip{border:0;border-radius:20px;padding:7px 12px;font:700 12.5px var(--font);cursor:pointer;white-space:nowrap}
+ .pv-chip.ok{background:var(--ok-soft,#e3f5ea);color:var(--ok)}.pv-chip.bad{background:var(--bad-soft,#fde8e8);color:var(--bad)}
+ /* expiring + payments: compact boxes, closed groups */
+ .xt{padding:9px 10px!important;gap:2px!important;flex-direction:row!important;align-items:center;gap:8px!important}
+ .xt b{font-size:19px!important;order:-1}
+ .xt span{font-size:12.5px!important}
+ .xtiles.xpay .xt{flex-direction:column-reverse!important;align-items:flex-start;gap:0!important}
+ .xtiles.xpay .xt b{font-size:18px!important;order:0}
+ .xt-stripe{flex-direction:row!important;align-items:center!important}
+ details.xg>summary{padding:6px 2px;margin:0!important}
+ details.xg[open]>summary{margin-bottom:8px!important}
+ /* payment settings: each section folds */
+ #payView>.acct{margin:0 0 10px!important}
+ #payView>.acct>.ah{cursor:pointer;flex-wrap:wrap;gap:6px 10px!important;padding:12px!important;align-items:center}
+ #payView>.acct>.ah::after{content:"";width:8px;height:8px;border-right:2.2px solid var(--muted);border-bottom:2.2px solid var(--muted);transform:rotate(-45deg);margin-left:auto}
+ #payView>.acct.pv-open>.ah::after{transform:rotate(45deg)}
+ #payView>.acct:not(.pv-open)>:not(.ah){display:none!important}
+ #payView>.acct[data-prices]>.ah .pn{font-size:14.5px;font-weight:700;flex:1;min-width:0}
+ #payView>.acct[data-prices]>.ah .sp{display:none}
+ /* toasts above the floating menu */
+ #toast{bottom:calc(96px + env(safe-area-inset-bottom))!important}
+}
+@media (max-width:760px){
+ .pv-sheetwrap .bd>*{flex-shrink:0!important}
+ .pv-sheetwrap .bd-head{order:1}.pv-sheetwrap .bd-paused{order:2}.pv-sheetwrap .pv-acc,.pv-sheetwrap .bd>section.appc{order:3}
+ .pv-sheetwrap .bd-det{order:5}.pv-sheetwrap .pv-man{order:6}
+ .pv-sheetwrap .pv-acc .pv-chev,.pv-sheetwrap .pv-man .pv-chev{transform:rotate(45deg);margin-bottom:4px}
+ .pv-sheetwrap .pv-acc[open] .pv-chev,.pv-sheetwrap .pv-man[open] .pv-chev{transform:rotate(-135deg);margin-bottom:-2px}
+ .pv-sheetwrap .bd-det>summary::before{display:none!important;content:none!important}
+ .pv-sheetwrap .bd-det>summary::after{content:"";width:8px;height:8px;border-right:2.2px solid var(--muted);border-bottom:2.2px solid var(--muted);transform:rotate(45deg);margin:0 4px 4px auto}
+ .pv-sheetwrap .bd-det[open]>summary::after{transform:rotate(-135deg);margin-bottom:-2px}
+ .xtiles.xpay .xt-stripe{flex-direction:row!important;align-items:center!important;gap:4px 10px!important;flex-wrap:wrap}
+ .xtiles.xpay .xt-stripe span{order:0}.xtiles.xpay .xt-stripe small{order:1;flex:1}.xtiles.xpay .xt-stripe .btn{order:2;margin:0!important}
+}
+@media (min-width:761px){html body .main-col .ov-biz .pv-ph2,html body .bd-phacts,html body .bd-x{display:none!important}}
+body.gate .pv-dock,body.gate .pv-ptr,body.gate .pv-synced,body.gate .res-tools{display:none!important}
+</style>
 </head>
 <body>
 
@@ -632,17 +1251,19 @@ html .side .nav .cnt[hidden]{display:none!important}
 <!-- APP: same shell as Proview Signage -->
 <div id="appView" class="app hidden">
   <aside class="side">
-    <div class="brand"><div class="pvlogo" role="img" aria-label="PROVIEW"></div><span class="wordmark">PROVIEW<span>LICENCES</span></span></div>
+    <div class="brand"><span class="res-mono" aria-hidden="true">P</span><div class="pvlogo" role="img" aria-label="PROVIEW"></div><span class="wordmark">PROVIEW<span>LICENCES</span></span></div>
     <nav class="nav">
       <div class="nav-sep">Licences</div>
       <a data-tab="customers" class="active" href="#customers"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21h18M5 21V7l7-4 7 4v14M9 9h1M9 13h1M9 17h1M14 9h1M14 13h1M14 17h1"/></svg><span>Businesses</span></a>
       <a data-tab="expiring" href="#expiring"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg><span>Expiring</span></a>
-      <a data-tab="paylog" href="#paylog"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 2h12v20l-3-2-3 2-3-2-3 2z"/><path d="M9 7h6M9 11h6M9 15h4"/></svg><span data-long="Recent payments" data-short="Payments">Recent payments</span></a>
-      <a data-tab="payfail" href="#payfail"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 7v6M12 16.5v.5"/></svg><span data-long="Failed payments" data-short="Failed">Failed payments</span><span class="cnt" id="failCnt" hidden></span></a>
-      <a data-tab="payments" href="#payments"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20M6 15h4"/></svg><span>Payment settings</span></a>
+      <a data-tab="paylog" href="#paylog"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 2h12v20l-3-2-3 2-3-2-3 2z"/><path d="M9 7h6M9 11h6M9 15h4"/></svg><span data-long="Payments" data-short="Payments">Payments</span><span class="cnt" id="failCnt" hidden></span></a>
+      <a data-tab="payfail" href="#payfail" hidden style="display:none"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 7v6M12 16.5v.5"/></svg><span data-long="Failed payments" data-short="Failed">Failed payments</span></a>
+      <a data-tab="payments" href="#payments" hidden style="display:none"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20M6 15h4"/></svg><span>Payment settings</span></a>
       <div class="nav-sep">Insights</div>
       <a data-tab="activity" href="#activity"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg><span>Activity</span></a>
+      <a data-tab="settings" href="#settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg><span>Settings</span></a>
     </nav>
+    <div class="res-tools"><div class="res-who" title="Proview · Master"><span class="rw-i" aria-hidden="true">P</span>Proview<small>Master</small></div><button type="button" class="res-tb" id="resNav"></button><button type="button" class="res-tb" id="resTheme"></button></div>
     <div class="side-foot">
       <button class="sf-link" id="collapseBtn" title="Collapse menu" aria-label="Collapse menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg><span class="lbl">COLLAPSE</span></button>
     </div>
@@ -705,7 +1326,7 @@ html .side .nav .cnt[hidden]{display:none!important}
           <option value="60">Next 60 days</option>
           <option value="90">Next 90 days</option>
         </select>
-        <label class="row" style="gap:6px"><input type="checkbox" id="expIncl" checked> include already expired (last 30 days)</label>
+        <label class="row" style="gap:6px"><input type="checkbox" id="expIncl" checked> include expired</label>
         <label class="row" style="gap:6px"><input type="checkbox" id="expTrials"> include trials</label>
       </div>
       <div id="expList"></div>
@@ -715,17 +1336,16 @@ html .side .nav .cnt[hidden]{display:none!important}
     <!-- PAYMENTS -->
     <section data-view="paylog" class="hidden">
       <div id="payLogView"><div class="empty">Loading…</div></div>
-    </section>
-    <section data-view="payfail" class="hidden">
-      <div id="payFailView"><div class="empty">Loading…</div></div>
-    </section>
-    <section data-view="payments" class="hidden">
+      <div id="payFailView" style="margin-top:18px"><div class="empty">Loading…</div></div>
+      <h2 class="pay-sec" id="paySetHead">Payment settings</h2>
       <div id="payView"><div class="empty">Loading…</div></div>
     </section>
+
 
     <section data-view="activity" class="hidden">
       <div id="actList"></div>
     </section>
+<section data-view="settings" class="hidden"><div id="resSettings"></div></section>
   </main>
   </div>
   <div class="nav-scrim" id="navScrim"></div>
@@ -1146,7 +1766,9 @@ function accountBlock(a) {
   const p = PRODUCTS[a.product];
   const units = unitsForAccount(a), key = a.product + "|" + a.ext_id;
   const sub = [unitCount(a.product, units), a.contact_email, a.extra?.self_signup ? "signed up online" : ""].filter(Boolean).join(" · ");
-  return `<section class="card appc">
+  const bad = units.filter((u) => tone(u) === "r"), warn = units.filter((u) => tone(u) === "a"), nx = renewAt(units);
+  const st = !units.length ? ["", "no licences yet"] : bad.length ? ["bad", `${bad.length} unlicensed`] : nx === Infinity ? ["ok", "Lifetime"] : [warn.length ? "warn" : "ok", (units.some((u) => /^m1$/.test(u.license_type)) ? "next payment " : "to ") + shortDate(nx)];
+  return `<details class="pv-acc" ${matchMedia("(max-width: 760px)").matches ? "" : "open"}><summary class="pv-acc-s"><img src="${appLogo(a.product)}" alt=""><span class="pv-acc-t"><b>${p.label}</b><small>${esc(unitCount(a.product, units))}</small></span><span class="pv-acc-r"><span class="ov-dot ${st[0]}"></span>${esc(st[1])}</span><span class="pv-chev" aria-hidden="true"></span></summary><section class="card appc">
     <div class="appc-h">
       <img src="${appLogo(a.product)}" alt="">
       <div class="grow"><div class="appc-t">${p.label} <span class="muted">· ${esc(a.name || "(unnamed)")}</span></div><div class="tiny" title="${esc(sub)}">${esc(sub)}</div></div>
@@ -1156,7 +1778,7 @@ function accountBlock(a) {
     </div>
     ${units.length ? `<table><thead><tr><th class="cb"><button type="button" class="linkbtn" data-selall="${esc(key)}" title="Select every licence here">All</button></th><th>${multiKind(a.product) ? "Licence" : p.unit}</th><th class="hide-sm" style="width:20%">Plan</th><th style="width:20%">Status</th><th style="width:110px"></th></tr></thead><tbody>${units.map(unitRow).join("")}</tbody></table>`
       : `<div class="none">No ${multiKind(a.product) ? "licences" : p.units} yet.</div>`}
-  </section>`;
+  </section></details>`;
 }
 
 function productLine(prod, units) {
@@ -1202,7 +1824,8 @@ function custCard(c) {
     const next = renewAt(units);
     const trial = units.length && units.every((u) => isTrial(u.license_type));
     const right = !units.length ? "none yet" : bad.length ? `${bad.length} unlicensed` : next === Infinity ? "Lifetime" : `${trial ? "Trial to" : "to"} ${shortDate(next)}`;
-    const body = `<span class="an">${logo}<span class="nm">${name}</span></span><span class="ad ${t === "r" || t === "a" ? t : ""}"><span class="ov-dot ${TONE_CLS[t]}"></span><span class="at">${esc(right)}</span></span>`;
+    const word = !units.length ? "No licences" : bad.length ? `${bad.length} unlicensed` : trial ? "Trial" : t === "a" ? "Renewing soon" : next === Infinity ? "Lifetime" : "Active";
+    const body = `<span class="an">${logo}<span class="nm">${name}</span></span><span class="ad ${t === "r" || t === "a" ? t : ""}"><span class="ov-dot ${TONE_CLS[t]}"></span><span class="at">${esc(right)}</span><span class="aw">${esc(word)}</span></span>`;
     const status = `${unitCount(k, units)} · ${right}`;
     // Active = a linked, non-gone account the master can open (same rule as the customer page's "Open in <App>")
     const open = accts.filter((a) => a.product === k && canOpen(a));
@@ -1217,7 +1840,7 @@ function custCard(c) {
     <div class="ov-bh"><div class="grow"><h3 title="${esc(title)}">${esc(title)}</h3><div class="muted small">${esc(nLinked > 1 ? `${nLinked} linked businesses · ${sub}` : sub)}</div></div><span class="ov-pill ${pcls}">${ptxt}</span></div>
     <div class="ov-apps">${TILE_ORDER.map(tile).join("")}</div>
     <div class="ov-bf"><span class="muted small">${esc(custLicText(sum.units))}</span>
-      <span class="pv-acts">${sum.bad.length ? `<button type="button" class="btn sm" data-addlic="${c.id}">Add licence</button>` : ""}<button type="button" class="btn sm primary" data-open="${c.id}">View licences</button></span></div>
+      <span class="pv-acts">${sum.bad.length ? `<button type="button" class="btn sm pv-dsk" data-addlic="${c.id}">Add licence</button>` : ""}<button type="button" class="btn sm pv-ph2" data-addapps="${c.id}">Add licence</button><button type="button" class="btn sm pv-ph2" data-remlic="${c.id}">Remove licence</button><button type="button" class="btn sm primary pv-view" data-open="${c.id}">View licences</button></span></div>
   </article>`;
 }
 
@@ -1267,10 +1890,15 @@ function custDetail(c) {
         <td class="acts"><button class="btn sm" data-unlink="${esc(c.id + "|" + g.origin)}">Unlink</button></td></tr>`).join("")}</tbody></table></section>` : "";
   const old = before.length ? `<div class="bd-paused">${before.map((x) => `${esc(PRODUCTS[x.a.product].label)}: ${esc(x.a.name)} has ${x.units.length} businesses from before (${esc(x.units.map((u) => u.name).join(", "))}).`).join("<br>")} Use “Split them” on the Businesses page to give each its own card.</div>` : "";
   const sub = [c.contact_email || "No contact email", c.phone, c.owner_email ? "Owner login: " + [c.owner_name, c.owner_email].filter(Boolean).join(" ") : ""].filter(Boolean).join(" · ");
-  return `<a class="dback" data-back="1">← All businesses</a>
+  const manage = `<details class="card pv-man"><summary><span><b>Manage business</b><small>Pause · link · delete</small></span><span class="pv-chev" aria-hidden="true"></span></summary><div class="pv-man-b">
+      ${accts.length ? (paused ? `<button class="btn go" data-resume="${c.id}">Resume business</button>` : `<button class="btn warn" data-pause="${c.id}">Pause business</button>`) : ""}
+      <button class="btn" data-link="${c.id}">Link with another business…</button>
+      <button class="btn dangerghost" data-delbiz="${c.id}">Delete business</button></div></details>`;
+  return `<div class="bd-scrim" data-back="1"></div><a class="dback" data-back="1">← All businesses</a>
   <div class="bd" data-cust="${c.id}">
     <header class="card bd-head">
-      <div class="grow"><div class="bd-title"><h2>${esc(cardTitle(c))}</h2>${pill}</div><div class="bd-sub">${esc(sub)}</div></div>
+      <div class="grow"><div class="bd-title"><h2>${esc(cardTitle(c))}</h2>${pill}<button type="button" class="bd-x" data-back="1" aria-label="Close">×</button></div><div class="bd-sub">${esc(sub)}</div>
+        <div class="bd-phacts"><button type="button" class="btn sm" data-addapps="${c.id}">Add licence</button><button type="button" class="btn sm" data-remlic="${c.id}">Remove licence</button></div></div>
       <div class="bd-acts">
         ${accts.length ? (paused ? `<button class="btn sm go" data-resume="${c.id}">Resume business</button>` : `<button class="btn sm warn" data-pause="${c.id}">Pause business</button>`) : ""}
         <button class="btn sm" data-link="${c.id}">Link…</button>
@@ -1290,6 +1918,7 @@ function custDetail(c) {
     </div></details>
     ${linked}
     ${accts.map(accountBlock).join("") || `<div class="card bd-paused" style="background:#fff;border-color:var(--line);color:inherit">No app accounts here. Use “Move…” on an account under another business to bring it here.</div>`}
+    ${manage}
   </div>`;
 }
 const LINK_APPS = ["signage", "bookings", "reservations", "employee", "team", "label", "qrmenu", "wifi"];
@@ -1303,12 +1932,12 @@ function custTable(cs) {
   const cell = (c, k) => {
     const sum = custSummary(c), accts = accountsForCustomer(c), units = sum.units.filter((u) => u.product === k);
     if (!accts.some((a) => a.product === k) && !units.length)
-      return `<td class="lv-app off"><button type="button" class="lv-add" data-addapp="${esc(c.id + "|" + k)}" title="Add ${esc(cardTitle(c))} to ${PRODUCTS[k].label}">+</button></td>`;
+      return `<td class="lv-app off"><span class="lv-none">—</span><button type="button" class="lv-add" data-addapp="${esc(c.id + "|" + k)}" title="Add ${esc(cardTitle(c))} to ${PRODUCTS[k].label}">+</button></td>`;
     const bad = units.filter((u) => tone(u) === "r"), warn = units.filter((u) => tone(u) === "a");
     const t = bad.length ? "r" : warn.length ? "a" : units.length ? "g" : "n";
     const next = renewAt(units);
     const txt = !units.length ? "none yet" : bad.length ? `${bad.length} unlicensed` : next === Infinity ? "Lifetime" : shortDate(next);
-    return `<td class="lv-app" title="${esc(PRODUCTS[k].label + " · " + unitCount(k, units) + " · " + txt)}"><span class="ov-dot ${TONE_CLS[t]}"></span><span class="lv-t ${t === "r" || t === "a" ? t : ""}">${esc(txt)}</span></td>`;
+    return `<td class="lv-app${t === "r" ? " lv-bad" : ""}" title="${esc(PRODUCTS[k].label + " · " + unitCount(k, units) + " · " + txt)}"><span class="ov-dot ${TONE_CLS[t]}"></span><span class="lv-t ${t === "r" || t === "a" ? t : ""}">${esc(txt)}</span></td>`;
   };
   return `<div class="card lv"><table>
     <thead><tr><th>Business</th>${LIST_APPS.map((k) => `<th class="lv-h"><img src="${appLogo(k)}" alt="" width="18" height="18">${PRODUCTS[k].label}</th>`).join("")}<th class="lv-s">Status</th><th></th></tr></thead>
@@ -1322,25 +1951,73 @@ function custTable(cs) {
 function renderCustomers() {
   renderChips(); renderStats();
   const c = S.detail && S.customers.find((x) => x.id === S.detail);
-  $("#custTop").classList.toggle("hidden", !!c);
+  const sheet = !!c && matchMedia("(max-width: 760px)").matches;
+  document.body.classList.toggle("pv-sheet-open", sheet);
+  $("#custTop").classList.toggle("hidden", !!c && !sheet);
   if (c) $("#splitBanner").innerHTML = "";
-  if (c) { $("#custList").innerHTML = custDetail(c); renderBulk(); return; }
-  S.detail = null;
+  if (c && !sheet) { $("#custList").innerHTML = custDetail(c); renderBulk(); return; }
+  if (!c) S.detail = null;
   const q = $("#q").value.trim().toLowerCase();
   const list = S.customers.filter((x) => matches(x, q, S.prod)).map((x) => ({ c: x, s: custSummary(x) }));
   // newest business first (last added at the top), then name
   list.sort((a, b) => (new Date(b.c.created_at || 0) - new Date(a.c.created_at || 0)) || a.c.name.localeCompare(b.c.name));
   paintViewSwitch();
-  $("#custList").innerHTML = list.length ? (VIEW_AS === "list" ? custTable(list.map((x) => x.c)) : `<div class="ov-grid">${list.map((x) => custCard(x.c)).join("")}</div>`)
+  $("#custList").innerHTML = (sheet ? `<div class="pv-sheetwrap">${custDetail(c)}</div>` : "") + (list.length ? (VIEW_AS === "list" ? custTable(list.map((x) => x.c)) : `<div class="ov-grid">${list.map((x) => custCard(x.c)).join("")}</div>`)
     : S.customers.length && q ? `<p class="muted" style="margin:0">No businesses or app accounts match “${esc($("#q").value.trim())}”.</p>`
-    : `<div class="empty">${S.customers.length ? "No businesses match." : "No businesses yet. Press “Sync” to pull them in from the apps."}</div>`;
+    : `<div class="empty">${S.customers.length ? "No businesses match." : "No businesses yet. Press “Sync” to pull them in from the apps."}</div>`);
   const nOld = S.customers.reduce((t, x) => t + groupedFromBefore(x).reduce((n, g) => n + g.units.length - 1, 0), 0);
   $("#splitBanner").innerHTML = nOld ? `<div class="card row" style="margin:0 0 14px;padding:12px 14px;gap:12px;flex-wrap:wrap;align-items:center;background:var(--warnl,#fff8e6);border-color:#f0d08a">
       <span style="flex:1;min-width:220px"><b>${nOld} ${nOld === 1 ? "business is" : "businesses are"} still grouped from before.</b> Before linking existed, one app account could hold several businesses. Split them so each business has its own card, then link the ones that belong together.</span>
       <button type="button" class="btn sm primary" data-split="1">Split them…</button></div>` : "";
   renderBulk();
 }
-function openDetail(id) { S.detail = id; renderCustomers(); syncBizPick(); window.scrollTo({ top: 0 }); }
+function openDetail(id) { S.detail = id; renderCustomers(); syncBizPick(); if (!matchMedia("(max-width: 760px)").matches) window.scrollTo({ top: 0 }); }
+
+
+// ---------- phone sheets: Add licence (apps the business isn't in yet) / Remove licence ----------
+function pvSheet(title, body) {
+  let d = document.getElementById("pvSheet");
+  if (!d) { d = document.createElement("dialog"); d.id = "pvSheet"; d.className = "pv-sheet"; document.body.appendChild(d);
+    d.addEventListener("click", (e) => { if (e.target === d || e.target.closest("[data-sheetx]")) d.close(); }); }
+  d.innerHTML = `<div class="pv-sh-h"><b>${esc(title)}</b><button type="button" class="bd-x" data-sheetx aria-label="Close">×</button></div><div class="pv-sh-b">${body}</div>`;
+  if (!d.open) d.showModal();
+  return d;
+}
+function openAddApps(cid) {
+  const c = S.customers.find((x) => x.id === cid); if (!c) return;
+  const have = new Set(accountsForCustomer(c).map((a) => a.product));
+  const left = LINK_APPS.filter((k) => !have.has(k));
+  const body = left.length ? left.map((k) => `<div class="pv-sh-r"><img src="${appLogo(k)}" alt=""><span class="pv-sh-t"><b>${PRODUCTS[k].label}</b><small>Not on this business yet</small></span><button type="button" class="pv-chip ok" data-shadd="${esc(cid + "|" + k)}">+ Add app</button></div>`).join("")
+    : `<p class="muted" style="margin:6px 2px">${esc(cardTitle(c))} is already in every app. To license more, open it and press Change… on a licence.</p>`;
+  const d = pvSheet(`Add licence · ${cardTitle(c)}`, body);
+  d.onclick2 && d.removeEventListener("click", d.onclick2);
+  d.onclick2 = (e) => { const b = e.target.closest("[data-shadd]"); if (!b) return; const [id, k] = b.dataset.shadd.split("|"); d.close(); addAppTo(id, k); };
+  d.addEventListener("click", d.onclick2);
+}
+function openRemoveLic(cid) {
+  const c = S.customers.find((x) => x.id === cid); if (!c) return;
+  const units = accountsForCustomer(c).flatMap(unitsForAccount).filter((u) => !u.gone);
+  const live = units.filter((u) => status(u).k !== "none");
+  const body = live.length ? live.map((u) => { const s = status(u);
+      return `<div class="pv-sh-r"><img src="${appLogo(u.product)}" alt=""><span class="pv-sh-t"><b>${esc(u.name || "(unnamed)")}</b><small>${esc(PRODUCTS[u.product].label + " · " + s.label)}</small></span><button type="button" class="pv-chip bad" data-shrem="${esc(u.product + "|" + u.ext_id)}">Remove</button></div>`; }).join("")
+    : `<p class="muted" style="margin:6px 2px">${esc(cardTitle(c))} has no licences to remove.</p>`;
+  const d = pvSheet(`Remove licence · ${cardTitle(c)}`, body);
+  d.onclick2 && d.removeEventListener("click", d.onclick2);
+  d.onclick2 = async (e) => {
+    const b = e.target.closest("[data-shrem]"); if (!b) return;
+    const u = findUnit(b.dataset.shrem); if (!u) return;
+    d.close();
+    const ok = await ask({ title: "Remove licence", message: `Remove the licence for “${u.name || "this"}”? It will stop working in ${PRODUCTS[u.product].label}.`, ok: "Remove licence", danger: true });
+    if (!ok) return;
+    await applyChanges([{ product: u.product, kind: kindOf(u), unit: u.ext_id, type: null }]);
+  };
+  d.addEventListener("click", d.onclick2);
+}
+document.addEventListener("click", (e) => {
+  const a = e.target.closest("[data-addapps]"); if (a) { e.stopPropagation(); openAddApps(a.dataset.addapps); return; }
+  const r = e.target.closest("[data-remlic]"); if (r) { e.stopPropagation(); openRemoveLic(r.dataset.remlic); }
+}, true);
+matchMedia("(max-width: 760px)").addEventListener("change", () => { if (S.detail) renderCustomers(); });
 
 function render() { renderCustomers(); renderExpiring(); fillBizPick(); paintHeader(); }
 
@@ -1353,14 +2030,33 @@ function renderExpiring() {
     .sort((a, b) => a.s.days - b.s.days);
   const acc = (u) => S.accounts.find((a) => a.product === u.product && a.ext_id === u.account_ext_id);
   const cust = (a) => a && S.customers.find((c) => c.id === a.customer_id);
-  $("#expList").innerHTML = rows.length ? `<div class="acct" style="margin:0"><table><thead><tr><th>Business</th><th>Product</th><th>What</th><th>Status</th><th></th></tr></thead><tbody>${
-    rows.map(({ u, s }) => { const a = acc(u), c = cust(a), key = u.product + "|" + u.ext_id;
-      return `<tr><td><div>${esc(c?.name || a?.name || "?")}</div><div class="small">${esc(c?.contact_email || "")}</div></td>
-        <td><span class="ptag">${PRODUCTS[u.product].label}</span></td>
-        <td>${esc(u.name || "")}<div class="small">${esc([KIND_LABEL[kindOf(u)], PLAN_LABEL[u.license_type] || u.license_type].join(" · "))}</div></td>
-        <td><span class="pill ${s.cls}">${esc(s.label)}</span></td>
-        <td style="text-align:right;white-space:nowrap"><button class="btn sm" data-quick="${esc(key)}">+12m</button> <button class="btn sm" data-edit="${esc(key)}">Change…</button></td></tr>`; }).join("")
-  }</tbody></table></div>` : `<div class="empty">Nothing expiring in this window.</div>`;
+  if (!rows.length) { $("#expList").innerHTML = `<div class="xempty"><b>Nothing ending in the next ${win} days</b><span>Licences that end soon, or ended in the last 30 days, show up here.</span></div>`; return; }
+  const groups = [
+    ["expired", "Ended", "bad", (s) => s.k === "expired"],
+    ["grace", "In grace period", "warn", (s) => s.k === "grace"],
+    ["week", "Ending this week", "warn", (s) => s.days >= 0 && s.days <= 7],
+    ["later", "Ending later", "soon", (s) => s.days > 7],
+  ];
+  const big = (u, s) => {
+    if (s.k === "expired") return [`Ended`, fmtDate(u.expires_at)];
+    if (s.k === "grace") return [`Grace`, s.label.replace(/^Grace · /, "")];
+    if (s.days === 0) return [`Today`, `ends today`];
+    return [String(s.days), s.days === 1 ? "day left" : "days left"];
+  };
+  const card = ({ u, s }) => { const a = acc(u), c = cust(a), key = u.product + "|" + u.ext_id, [n, t] = big(u, s), bn = c?.name || a?.name || "?";
+    const what = [u.name && u.name !== bn ? u.name : "", KIND_LABEL[kindOf(u)], PLAN_LABEL[u.license_type] || u.license_type].filter(Boolean).join(" · ");
+    return `<div class="xr x-${s.k === "expired" ? "bad" : s.k === "grace" || s.days <= 7 ? "warn" : "soon"}">
+      <img class="xi" src="apps/${esc(u.product)}.svg" alt="" width="40" height="40">
+      <div class="xm"><div class="xb">${esc(bn)}</div>
+        <div class="xs"><span class="xp">${esc(PRODUCTS[u.product]?.label || u.product)}</span>${what ? ` · ${esc(what)}` : ""}</div>
+        ${c?.contact_email ? `<div class="xe">${esc(c.contact_email)}</div>` : ""}
+        <div class="xw">${s.days < 0 ? "Licence ended" : "Ends"} ${esc(fmtDate(u.expires_at))}</div></div>
+      <div class="xd"><b>${esc(n)}</b><span>${esc(t)}</span></div>
+      <div class="xa"><button class="btn sm" data-quick="${esc(key)}">+12 months</button><button class="btn sm primary" data-edit="${esc(key)}">Change…</button></div>
+    </div>`; };
+  const cnt = (f) => rows.filter(({ s }) => f(s)).length;
+  const tiles = groups.map(([k, label, cls, f]) => `<div class="xt xt-${cls}"><span>${label}</span><b>${cnt(f)}</b></div>`).join("");
+  $("#expList").innerHTML = `<div class="xtiles">${tiles}</div>` + groups.map(([k, label, cls, f]) => { const g = rows.filter(({ s }) => f(s)); return g.length ? `<details class="xg" ${matchMedia("(max-width: 760px)").matches ? "" : "open"}><summary class="xgh"><span class="xdot xdot-${cls}"></span>${label}<span class="xc">${g.length}</span><span class="pv-chev" aria-hidden="true"></span></summary><div class="xl">${g.map(card).join("")}</div></details>` : ""; }).join("");
 }
 
 // ---------- activity view ----------
@@ -1847,20 +2543,22 @@ document.addEventListener("change", (e) => {
 $("#q").oninput = renderCustomers;
 $("#expWindow").onchange = renderExpiring; $("#expIncl").onchange = renderExpiring; $("#expTrials").onchange = renderExpiring;
 $("#syncBtn").onclick = () => doSync(); $("#newCustBtn").onclick = newCustomer;
-const TITLES = { customers: "Businesses", expiring: "Expiring", activity: "Activity", payments: "Payment settings", paylog: "Recent payments", payfail: "Failed payments" };
+const TITLES = { customers: "Businesses", expiring: "Expiring", activity: "Activity", payments: "Payments", paylog: "Payments", payfail: "Payments", settings: "Settings" };
 function setTab(tab) {
+  const _jump = tab === "payfail" ? "payFailView" : tab === "payments" ? "paySetHead" : ""; if (_jump) tab = "paylog";
+  setTimeout(() => { if (_jump) document.getElementById(_jump)?.scrollIntoView({ behavior: "smooth", block: "start" }); }, 60);
   $$(".side .nav a[data-tab]").forEach((x) => x.classList.toggle("active", x.dataset.tab === tab));
   $$("[data-view]").forEach((v) => v.classList.toggle("hidden", v.dataset.view !== tab));
   $("#pageTitle").textContent = TITLES[tab] || "";
   $("#appView").classList.remove("navopen");
   syncBizPick();
   if (tab === "activity") loadAudit();
-  if (tab === "payments") P.editing = false;
+  if (tab === "paylog") P.editing = false;
   if (tab === "payments" || tab === "paylog" || tab === "payfail") loadPayments();
 }
 $$(".side .nav a[data-tab]").forEach((x) => x.onclick = (e) => { e.preventDefault(); setTab(x.dataset.tab); });
 // short names under the icons in the narrow menu (iPad and phones), like the other apps' rails
-{ const mq = matchMedia("(max-width: 900px)"), set = () => $$(".side .nav [data-short]").forEach((e) => { e.textContent = mq.matches ? e.dataset.short : e.dataset.long; });
+{ const mq = matchMedia("(max-width: 760px)"), set = () => $$(".side .nav [data-short]").forEach((e) => { e.textContent = mq.matches ? e.dataset.short : e.dataset.long; });
   mq.addEventListener("change", set); set(); }
 $("#menuBtn").onclick = () => $("#appView").classList.toggle("navopen");
 $("#navScrim").onclick = () => $("#appView").classList.remove("navopen");
@@ -1890,37 +2588,47 @@ async function loadPayments() {
 const isPaid = (r) => !r.status || r.status === "paid";
 const isFailed = (r) => isPaid(r) ? !r.applied : !r.resolved;
 function payTable(rows, empty, failedView) {
-  const unitName = (r) => S.units.find((u) => u.product === r.product && u.ext_id === r.unit_ext_id)?.name || r.unit_ext_id;
-  const accName = (r) => { const u = S.units.find((x) => x.product === r.product && x.ext_id === r.unit_ext_id); return u ? (S.accounts || []).find((a) => a.product === u.product && a.ext_id === u.account_ext_id)?.name || "" : ""; };
-  if (!rows.length) return `<div class="empty">${empty}</div>`;
-  const kind = (r) => r.kind === "renewal" ? `<div class="small">Monthly renewal</div>` : r.subscription_id ? `<div class="small">New subscription</div>` : "";
+  const unitOf = (r) => S.units.find((u) => u.product === r.product && u.ext_id === r.unit_ext_id);
+  const unitName = (r) => unitOf(r)?.name || r.unit_ext_id || "";
+  const accName = (r) => { const u = unitOf(r); return u ? (S.accounts || []).find((a) => a.product === u.product && a.ext_id === u.account_ext_id)?.name || "" : ""; };
+  if (!rows.length) return `<div class="xempty"><b>${empty}</b></div>`;
+  const kind = (r) => r.kind === "renewal" ? "Monthly renewal" : r.subscription_id ? "New subscription" : "";
   const status = (r) => {
     if (r.status === "failed") return `<span class="pill bad">${r.kind === "renewal" ? "Renewal failed" : "Declined"}</span>`;
     if (r.status === "abandoned") return `<span class="pill none">Not completed</span>`;
     return r.applied ? `<span class="pill ok">Applied</span>` : `<span class="pill bad">Not applied</span>`;
   };
-  const why = (r) => esc(r.reason || (isPaid(r) && !r.applied ? r.note || "Waiting to be applied" : "")) + (r.note && !(isPaid(r) && !r.applied) ? `<div class="small">${esc(r.note)}</div>` : "");
-  return `<table><thead><tr><th>${failedView ? "When" : "Paid"}</th><th>Product</th><th>For</th><th>Plan</th><th>Amount</th><th class="hide-sm">Email</th><th>Status</th>${failedView ? "<th>Reason</th>" : ""}</tr></thead><tbody>${
-    rows.map((r) => `<tr><td class="small">${esc(fmtDT(r.paid_at || r.created_at))}</td>
-      <td><span class="ptag">${esc(PRODUCTS[r.product]?.label || r.product || "")}</span></td>
-      <td>${r.unit_kind && multiKind(r.product) ? `<span class="pill none">${KIND_LABEL[r.unit_kind] || r.unit_kind}</span> ` : ""}${esc(unitName(r))}${accName(r) ? `<div class="small">${esc(accName(r))}</div>` : ""}</td><td class="small">${esc(PLAN_LABEL[r.plan] || r.plan || "")}${kind(r)}</td>
-      <td>${esc(gbp(r.amount, r.currency || "gbp"))}</td><td class="small hide-sm">${esc(r.email || "")}</td>
-      <td>${status(r)}${!failedView && isPaid(r) && !r.applied ? `<div class="small">${esc(r.note || "Waiting to be applied")}</div>` : ""}</td>
-      ${failedView ? `<td class="small" style="min-width:180px">${why(r)}</td>` : ""}</tr>`).join("")
-  }</tbody></table>`;
+  const reason = (r) => r.reason || (isPaid(r) && !r.applied ? r.note || "Waiting to be applied" : "");
+  return `<div class="xl">${rows.map((r) => { const an = accName(r), un = unitName(r), title = an && an !== un ? `${un} · ${an}` : un || an;
+    const sub = [PRODUCTS[r.product]?.label || r.product, r.unit_kind && multiKind(r.product) ? KIND_LABEL[r.unit_kind] || r.unit_kind : "", PLAN_LABEL[r.plan] || r.plan, kind(r)].filter(Boolean).join(" · ");
+    const why = reason(r);
+    return `<div class="xr ${failedView ? "x-bad" : r.applied || !isPaid(r) ? "x-ok" : "x-bad"}">
+      <img class="xi" src="apps/${esc(r.product || "")}.svg" alt="" width="40" height="40">
+      <div class="xm"><div class="xb">${esc(title)}</div>
+        <div class="xs">${esc(sub)}</div>
+        ${r.email ? `<div class="xe">${esc(r.email)}</div>` : ""}
+        ${failedView && why ? `<div class="xwhy">${esc(why)}</div>` : ""}
+        ${!failedView && isPaid(r) && !r.applied ? `<div class="xwhy">${esc(r.note || "Waiting to be applied")}</div>` : ""}
+        ${r.note && failedView && r.note !== why ? `<div class="xe">${esc(r.note)}</div>` : ""}
+        <div class="xw">${failedView ? "" : "Paid "}${esc(fmtDT(r.paid_at || r.created_at))}</div></div>
+      <div class="xd xd-money"><b>${esc(gbp(r.amount, r.currency || "gbp"))}</b>${status(r)}</div>
+    </div>`; }).join("")}</div>`;
 }
 function renderPayLists() {
   const st = P.settings || {}, all = P.payments || [], paid = all.filter(isPaid), failed = all.filter(isFailed);
   const fc = $("#failCnt"); if (fc) { fc.textContent = failed.length; fc.hidden = !failed.length; }
-  const head = (title, sub) => `<div class="ah"><span class="pn">${title}</span><span class="sp"></span>
-    <span class="small">${st.checked_at ? "Stripe last checked " + esc(fmtDT(st.checked_at)) : "Not checked yet"} · checks every 5 minutes</span>
-    <button class="btn sm" data-paycheck ${st.enabled && st.has_key ? "" : "disabled"}>Check now</button></div>${sub ? `<div class="small" style="padding:10px 14px 0">${sub}</div>` : ""}
-    ${st.last_error ? `<div class="msg err" style="margin:10px 14px 0">Last check: ${esc(st.last_error)}</div>` : ""}`;
+  const head = (title, n, cls) => `<summary class="xgh"><span class="xdot xdot-${cls}"></span>${title}<span class="xc">${n}</span><span class="pv-chev" aria-hidden="true"></span></summary>`;
+  const op = matchMedia("(max-width: 760px)").matches ? "" : "open";
   const total = paid.filter((r) => r.applied).reduce((t, r) => t + (r.amount || 0), 0);
-  if ($("#payLogView")) $("#payLogView").innerHTML = `<div class="acct" style="margin:0">${head("Recent online payments", paid.length ? `${paid.length} payment(s) · ${esc(gbp(total))} applied · monthly renewals are added automatically` : "")}
-    ${payTable(paid, st.enabled && st.has_key ? "No online payments yet." : "Online payments are off. Turn them on in Payment settings.")}</div>`;
-  if ($("#payFailView")) $("#payFailView").innerHTML = `<div class="acct" style="margin:0">${head("Failed payments", "Declined cards, checkouts the owner didn’t finish, failed monthly renewals, and payments that couldn’t be added to a licence, with Stripe’s reason. Once the customer pays successfully, the failure clears by itself.")}
-    ${payTable(failed, "No failed payments.", true)}</div>`;
+  const on = st.enabled && st.has_key;
+  const strip = `<div class="xtiles xpay">
+      <div class="xt xt-ok"><span>Received</span><b>${esc(gbp(total))}</b></div>
+      <div class="xt xt-soon"><span>Payments</span><b>${paid.length}</b></div>
+      <div class="xt xt-${failed.length ? "bad" : "soon"}"><span>Failed</span><b>${failed.length}</b></div>
+      <div class="xt xt-stripe"><span>Stripe ${on ? "· on" : "· off"}</span><small>${st.checked_at ? "Checked " + esc(fmtDT(st.checked_at)) : "Not checked yet"}</small><button class="btn sm" data-paycheck ${on ? "" : "disabled"}>Check now</button></div>
+    </div>${st.last_error ? `<div class="msg err" style="margin:0 0 14px">Last check: ${esc(st.last_error)}</div>` : ""}`;
+  if ($("#payLogView")) $("#payLogView").innerHTML = `${strip}<details class="xg" ${op}>${head("Successful payments", paid.length, "ok")}${payTable(paid, on ? "No online payments yet." : "Online payments are off. Turn them on in Payment settings below.")}<div class="xnote">Monthly renewals are added to the licence automatically. Stripe is checked every 5 minutes.</div></details>`;
+  if ($("#payFailView")) $("#payFailView").innerHTML = `<details class="xg" ${op}>${head("Failed payments", failed.length, failed.length ? "bad" : "soon")}${payTable(failed, "No failed payments.", true)}<div class="xnote">Declined cards, checkouts the owner didn’t finish, failed renewals and payments that couldn’t be added to a licence. A failure clears by itself once the customer pays.</div></details>`;
   $$("[data-paycheck]").forEach((b) => b.onclick = async () => {
     b.disabled = true;
     try { const r = await hub("check_payments"); toast(r.error ? "Stripe: " + r.error : r.skipped ? r.skipped : `Checked ${r.seen} Stripe checkout(s); ${r.applied} licence(s) applied${r.failed ? `, ${r.failed} new failed payment(s)` : ""}`, !!r.error); if (r.applied) loadAll(); }
@@ -2137,6 +2845,17 @@ function openNotes() {
   document.body.appendChild(bg); document.addEventListener("keydown", esc_, true);
 }
 
+window.__pvAll = {
+  notifs: () => bellItems(),
+  notifRead: () => localStorage.getItem("licence.notifRead") || "",
+  markNotifs: () => { localStorage.setItem("licence.notifRead", new Date().toISOString()); paintBell(); },
+  inbox: async () => { await loadHeaderData(); return inboxItems(); },
+  inboxSeen: () => { localStorage.setItem("licence.inboxSeen", JSON.stringify(inboxItems().map((i) => i.key))); window.PVHub?.paint(); },
+  notes: () => { const rows = [];
+  for (const c of S.customers.filter((c) => c.notes)) rows.push({ title: c.name, sub: c.notes, open: () => { setTab("customers"); openDetail(c.id); } });
+  for (const u of S.units.filter((u) => !u.gone && u.notes)) { const c = custOfUnit(u); rows.push({ title: `${c?.name || "?"} · ${PRODUCTS[u.product].label} ${u.name || ""}`, sub: u.notes, open: () => { setTab("customers"); if (c) openDetail(c.id); } }); }
+    return rows; },
+};
 function paintHeader() { paintBell(); window.PVHub?.paint(); }
 (function buildTray() {
   const hub = window.PVHub; if (!hub) return;
@@ -2153,7 +2872,7 @@ function paintHeader() { paintBell(); window.PVHub?.paint(); }
     key: () => S.email || "x",
     searchItems(q) {
       const out = [];
-      [["customers", "Customers"], ["expiring", "Expiring"], ["paylog", "Recent payments"], ["payfail", "Failed payments"], ["payments", "Payment settings"], ["activity", "Activity"]]
+      [["customers", "Customers"], ["expiring", "Expiring"], ["paylog", "Payments"], ["payments", "Payment settings"], ["activity", "Activity"]]
         .filter(([, l]) => !q || l.toLowerCase().includes(q)).forEach(([k, l]) => out.push({ group: "Pages", icon: "page", label: l, run: () => setTab(k) }));
       if (q) {
         S.customers.filter((c) => [c.name, c.contact_email, c.phone].filter(Boolean).join(" ").toLowerCase().includes(q)).slice(0, 10)
@@ -2315,6 +3034,408 @@ sb.auth.onAuthStateChange((ev) => {
   if (ev === "SIGNED_OUT") started = false;
 });
 start();
+</script>
+<script>window.__PV_PROD = true;</script>
+<script>
+(() => {
+  const root = document.documentElement, tb = document.getElementById("resTheme"), nb = document.getElementById("resNav");
+  const I = (d) => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + d + '</svg>';
+  const MOON = I('<path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>');
+  const SUN = I('<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>');
+  const isDark = () => root.dataset.theme ? root.dataset.theme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
+  window.addEventListener("pvl-theme", () => paint());
+  const atBottom = () => document.body.classList.contains("navb");
+  const paint = () => {
+    const d = isDark();
+    tb.innerHTML = (d ? SUN : MOON) + '<span class="tl">' + (d ? "Light mode" : "Dark mode") + "</span>";
+    tb.title = d ? "Switch to light mode" : "Switch to dark mode"; tb.setAttribute("aria-label", tb.title);
+    const b = atBottom();
+    nb.innerHTML = I('<rect x="3" y="4" width="18" height="16" rx="2"/><path d="' + (b ? "M8 4v16" : "M3 15h18") + '"/>') + '<span class="tl">' + (b ? "Menu at left" : "Menu at bottom") + "</span>";
+    nb.title = b ? "Move the menu to the left" : "Move the menu to the bottom"; nb.setAttribute("aria-label", nb.title);
+  };
+  try { const t = localStorage.getItem("pvl.theme"); if (t) root.dataset.theme = t; if (localStorage.getItem("pvl.navpos") === "b") document.body.classList.add("navb"); } catch {}
+  tb.onclick = () => { root.dataset.theme = isDark() ? "light" : "dark"; try { localStorage.setItem("pvl.theme", root.dataset.theme); } catch {} paint(); window.dispatchEvent(new Event("pvl-theme-changed")); };
+  nb.onclick = () => { document.body.classList.toggle("navb"); try { localStorage.setItem("pvl.navpos", atBottom() ? "b" : "l"); } catch {} paint(); };
+  paint();
+})();
+</script>
+
+<script>
+(() => {
+  const KEY = "pvl.settings", CK = "pvl.setcl";
+  const DEF = {
+    main: "pv", theme: "", bg: "white", fs: "md",
+    co: { name: "Proview Demo Ltd", email: "licences@proview.example", phone: "020 0000 0000", addr: "1 Example Street, London", vat: "" },
+    trial: 3, plans: ["1","3","6","12","24","36","life"], grace: 0, soon: 30,
+    rem: { d30: true, d14: true, d7: true, d1: true, d0: true, copy: false, fail: true, renewed: true },
+    tpl: {
+      remind: "Hi {owner},\n\nYour {app} licence for {business} ends on {date}.\nRenew in a minute here: {link}\n\nThanks,\n{company}",
+      expired: "Hi {owner},\n\nYour {app} licence for {business} ended on {date}, so it has stopped working.\nRenew here to switch it straight back on: {link}\n\n{company}",
+      failed: "Hi {owner},\n\nWe couldn't take the payment for {business} ({app}). Please update your card: {link}\n\n{company}",
+      paused: "Hi {owner},\n\n{business} has been paused. Nothing is lost and your licence time is kept. Call us on {phone} to switch it back on.\n\n{company}",
+      renewed: "Hi {owner},\n\nThanks — {business} ({app}) is renewed until {date}.\n\n{company}"
+    },
+    logins: [{ email: "demo@proview.example", role: "Master" }, { email: "office@proview.example", role: "Staff" }],
+    can: { view: true, licence: true, add: true, pause: false, del: false, pay: false }
+  };
+  let st; try { st = Object.assign(structuredClone(DEF), JSON.parse(localStorage.getItem(KEY) || "{}")); } catch { st = structuredClone(DEF); }
+  let cl; try { cl = JSON.parse(localStorage.getItem(CK) || "{}"); } catch { cl = {}; }
+  const root = document.documentElement, esc = (t) => String(t ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  let tmr; const toast = () => { let t = document.querySelector(".saved"); if (!t) { t = document.createElement("div"); t.className = "saved"; t.textContent = "Saved"; document.body.appendChild(t); } t.classList.add("on"); clearTimeout(tmr); tmr = setTimeout(() => t.classList.remove("on"), 1100); };
+  const save = (quiet) => { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch {} if (!quiet) toast(); };
+  const PVG = "linear-gradient(135deg,#2f84d4 0%,#5a5fbb 100%)";
+  const applyLook = () => { root.dataset.bg = st.bg || "white"; root.dataset.fs = st.fs || "md"; };
+  const applyColour = () => { applyLook(); const pv = st.main === "pv"; root.style.setProperty("--main", pv ? "#4471c7" : st.main); root.classList.toggle("pvgrad", pv); };
+  applyColour();
+  const COLS = [["Proview blue (licence site)","pv"],["Blue","#3f5fd0"],["Green","#2f9e5a"],["Teal","#0f8b8d"],["Purple","#7a4fd6"],["Pink","#c2417f"],["Orange","#d9731a"],["Red","#c8382e"],["Slate","#3d4a63"]];
+  const BGS = [["white","White","#ffffff","#d6dbe4"],["grey","Soft grey","#f3f4f6","#d6dbe4"],["cool","Cool blue","#eef2fa","#cfd8ea"],["warm","Warm","#f8f5ef","#e3dccf"],["mint","Mint","#eff6f2","#cfe1d6"]];
+  const TPL = [["remind","Renewal reminder"],["expired","Licence ended"],["failed","Payment failed"],["paused","Business paused"],["renewed","Thank you for renewing"]];
+  const PL = [["1","1 month"],["3","3 months"],["6","6 months"],["12","12 months"],["24","24 months"],["36","36 months"],["life","Lifetime"]];
+  let tplK = "remind";
+  const card = (k, title, body) => `<div class="sc${cl[k] ? " cl" : ""}" data-k="${k}"><h2 class="sh" role="button" tabindex="0" aria-expanded="${!cl[k]}">${title}</h2><div class="sb">${body}</div></div>`;
+  const seg = (name, val, opts) => `<div class="seg" data-seg="${name}">${opts.map(([v, l]) => `<button type="button" data-v="${v}" class="${String(val) === String(v) ? "on" : ""}">${l}</button>`).join("")}</div>`;
+  const tog = (k, b, s) => `<div class="tog"><div><b>${b}</b>${s ? `<small>${s}</small>` : ""}</div><input type="checkbox" data-rem="${k}" ${st.rem[k] ? "checked" : ""} aria-label="${esc(b)}"></div>`;
+  const fill = (t) => t.replace(/\{(\w+)\}/g, (m, k) => ({ owner: "Maya", business: "Harbour Kitchen", app: "Signage", date: "9 Sept 2027", link: "https://pay.example/renew", company: st.co.name, phone: st.co.phone }[k] ?? m));
+  function render() {
+    const el = document.getElementById("resSettings"); if (!el) return;
+    const curTheme = root.dataset.theme || "";
+    el.innerHTML = `<div class="setbar"><button class="btn" data-all="1">Minimise all</button><button class="btn" data-all="0">Expand all</button></div>` +
+      card("col", "Colours", `<p class="mut">The main colour for buttons, links and the side menu.</p>
+        <div class="srow"><span class="sl">Main colour</span><div class="sw">${COLS.map(([n, c]) => `<button type="button" title="${n}" aria-label="${n}" data-col="${c}" class="${st.main === c ? "on" : ""}" style="background:${c === "pv" ? PVG : c}"></button>`).join("")}</div></div>
+        <div class="srow"><span class="sl">Background<small>Behind the cards, in light mode</small></span><div class="bgsw">${BGS.map(([k, n, c, t]) => `<button type="button" data-bg="${k}" class="${(st.bg || "white") === k ? "on" : ""}" aria-label="${n}"><span class="bgp" style="background:${c}"><i style="background:#fff;border-color:${t}"></i></span><span>${n}</span></button>`).join("")}</div></div>
+        <div class="srow"><span class="sl">Text size</span>${seg("fs", st.fs || "md", [["md","Normal"],["lg","Large"],["xl","Extra large"]])}</div>
+        <div class="srow"><span class="sl">Light or dark</span>${seg("theme", curTheme, [["light","Light"],["dark","Dark"],["","Match device"]])}</div>`) +
+      (window.__PV_PROD ? "" : card("co", "Your company", `<p class="mut">Shown on invoices, receipts and every licence email.</p>
+        ${[["name","Company name","text"],["email","Reply-to email","email"],["phone","Phone","tel"],["addr","Address","text"],["vat","VAT number","text"]].map(([k, l, t]) => `<div class="srow"><label for="co-${k}">${l}</label><input id="co-${k}" type="${t}" data-co="${k}" value="${esc(st.co[k])}"></div>`).join("")}`) +
+      card("lic", "Licences", `<p class="mut">Defaults used when you add a business or a licence.</p>
+        <div class="srow"><span class="sl">Free trial<small>For new businesses</small></span>${seg("trial", st.trial, [[0,"None"],[3,"3 days"],[7,"7 days"],[14,"14 days"],[30,"30 days"]])}</div>
+        <div class="srow"><span class="sl">Plans for a first licence<small>Shown in the Change… pop-up</small></span><div class="ticks">${PL.map(([v, l]) => `<label><input type="checkbox" data-plan="${v}" ${st.plans.includes(v) ? "checked" : ""}>${l}</label>`).join("")}</div></div>
+        <div class="srow"><span class="sl">Grace period<small>Keeps working after the end date</small></span>${seg("grace", st.grace, [[0,"None"],[3,"3 days"],[7,"7 days"],[14,"14 days"]])}</div>
+        <div class="srow"><span class="sl">"Renewing soon" from<small>Turns the tile amber</small></span>${seg("soon", st.soon, [[7,"7 days"],[14,"14 days"],[30,"30 days"],[60,"60 days"]])}</div>`) +
+      card("pay", "Plans and prices", `<p class="mut">Prices for each app and plan, and how customers pay.</p><button class="btn" data-gopay>Open payment settings</button>`) +
+      card("rem", "Renewal reminders", `<p class="mut">Emails to the business owner before and after a licence ends.</p>
+        ${tog("d30","30 days before")}${tog("d14","14 days before")}${tog("d7","7 days before")}${tog("d1","The day before")}${tog("d0","On the day it ends")}
+        ${tog("fail","When a payment fails","Asks them to update their card")}${tog("renewed","After they renew","A thank-you with the new end date")}${tog("copy","Send me a copy","Copies go to your reply-to email")}`) +
+      card("msg", "Messages and replies", `<p class="mut">The wording of each email. Tap a tag to add it.</p>
+        <div class="srow"><label for="tplPick">Message</label><select id="tplPick">${TPL.map(([k, l]) => `<option value="${k}" ${k === tplK ? "selected" : ""}>${l}</option>`).join("")}</select></div>
+        <div class="srow"><span class="sl">Text<small>Saved as you type</small></span><div><textarea id="tplTxt">${esc(st.tpl[tplK])}</textarea><div class="tph">${["owner","business","app","date","link","company","phone"].map((t) => `<code data-tag="${t}">{${t}}</code>`).join("")}</div></div></div>
+        <div class="srow"><span class="sl">Preview</span><div class="tpv" id="tplPrev">${esc(fill(st.tpl[tplK]))}</div></div>
+        <div class="srow"><span class="sl"></span><div><button class="btn" data-tplreset>Reset this message</button></div></div>`) +
+      card("acc", "Logins and access", `<p class="mut">Who can sign in to this portal. Master logins can do everything.</p>
+        <table class="lgt"><thead><tr><th>Email</th><th>Role</th><th></th></tr></thead><tbody>${st.logins.map((l, i) => `<tr><td>${esc(l.email)}</td><td><span class="rl">${esc(l.role)}</span></td><td style="text-align:right">${l.role === "Master" && st.logins.filter((x) => x.role === "Master").length === 1 ? "" : `<button class="btn" data-lgdel="${i}">Remove</button>`}</td></tr>`).join("")}</tbody></table>
+        <div class="addrow"><input id="lgEmail" type="email" placeholder="name@company.com" aria-label="New login email"><select id="lgRole" aria-label="Role"><option>Staff</option><option>Master</option></select><button class="btn primary" data-lgadd>Add login</button></div>
+        <p class="mut" style="margin:18px 0 4px"><b style="color:var(--ink)">What Staff logins can do</b></p>
+        ${[["view","See businesses and licences"],["licence","Change licence dates and plans"],["add","Add businesses and apps"],["pause","Pause and resume businesses"],["del","Delete businesses and app accounts"],["pay","See payments and prices"]].map(([k, l]) => `<div class="tog"><div><b>${l}</b></div><input type="checkbox" data-can="${k}" ${st.can[k] ? "checked" : ""} aria-label="${esc(l)}"></div>`).join("")}`) +
+      card("demo", "Demo data", `<p class="mut">Businesses here are made up. Reloading the page brings them back; this also resets your settings.</p><button class="btn" data-reset>Reset demo and settings</button>`));
+  }
+  document.addEventListener("click", (e) => {
+    const t = e.target.closest("button,h2.sh,code[data-tag]"); if (!t || !t.closest("#resSettings")) return;
+    if (t.matches("h2.sh") && t.parentElement.classList.contains("sc-pay")) return;
+    if (t.matches("h2.sh")) { const c = t.parentElement; c.classList.toggle("cl"); t.setAttribute("aria-expanded", !c.classList.contains("cl")); if (c.classList.contains("cl")) cl[c.dataset.k] = 1; else delete cl[c.dataset.k]; try { localStorage.setItem(CK, JSON.stringify(cl)); } catch {} return; }
+    if (t.dataset.all != null) { const m = t.dataset.all === "1"; document.querySelectorAll("#resSettings .sc").forEach((c) => { c.classList.toggle("cl", m); if (m) cl[c.dataset.k] = 1; }); if (!m) cl = {}; try { localStorage.setItem(CK, JSON.stringify(cl)); } catch {} render(); return; }
+    if (t.dataset.bg) { st.bg = t.dataset.bg; applyLook(); save(); render(); return; }
+    if (t.dataset.col) { st.main = t.dataset.col; applyColour(); save(); render(); return; }
+    const sg = t.closest("[data-seg]"); if (sg && t.dataset.v != null) {
+      const k = sg.dataset.seg, v = t.dataset.v;
+      if (k === "theme") { if (v) root.dataset.theme = v; else delete root.dataset.theme; try { v ? localStorage.setItem("pvl.theme", v) : localStorage.removeItem("pvl.theme"); } catch {} window.dispatchEvent(new Event("pvl-theme")); toast(); }
+      else if (k === "fs") { st.fs = v; applyLook(); save(); }
+      else { st[k] = Number(v); save(); }
+      render(); return;
+    }
+    if (t.matches("code[data-tag]")) { const ta = document.getElementById("tplTxt"), tag = "{" + t.dataset.tag + "}", a = ta.selectionStart ?? ta.value.length; ta.value = ta.value.slice(0, a) + tag + ta.value.slice(ta.selectionEnd ?? a); ta.focus(); ta.selectionStart = ta.selectionEnd = a + tag.length; ta.dispatchEvent(new Event("input", { bubbles: true })); return; }
+    if (t.hasAttribute("data-tplreset")) { st.tpl[tplK] = DEF.tpl[tplK]; save(); render(); return; }
+    if (t.hasAttribute("data-lgadd")) { const em = document.getElementById("lgEmail").value.trim(); if (!/^\S+@\S+\.\S+$/.test(em)) { document.getElementById("lgEmail").focus(); return; } if (!st.logins.some((l) => l.email.toLowerCase() === em.toLowerCase())) st.logins.push({ email: em, role: document.getElementById("lgRole").value }); save(); render(); return; }
+    if (t.dataset.lgdel != null) { st.logins.splice(Number(t.dataset.lgdel), 1); save(); render(); return; }
+    if (t.hasAttribute("data-gopay")) { document.querySelector('.side .nav a[data-tab="payments"]')?.click(); return; }
+    if (t.hasAttribute("data-gopay2")) { document.querySelector('.side .nav a[data-tab="payments"]')?.click(); return; }
+    if (t.hasAttribute("data-reset")) { try { [KEY, CK, "pvl.theme", "pvl.navpos"].forEach((k) => localStorage.removeItem(k)); } catch {} location.hash = "#settings"; location.reload(); }
+  });
+  document.addEventListener("change", (e) => {
+    const t = e.target; if (!t.closest || !t.closest("#resSettings")) return;
+    if (t.dataset.rem) { st.rem[t.dataset.rem] = t.checked; save(); }
+    else if (t.dataset.can) { st.can[t.dataset.can] = t.checked; save(); }
+    else if (t.dataset.plan) { const v = t.dataset.plan; st.plans = PL.map((p) => p[0]).filter((p) => p === v ? t.checked : st.plans.includes(p)); save(); }
+    else if (t.id === "tplPick") { tplK = t.value; render(); }
+    else if (t.dataset.co) { st.co[t.dataset.co] = t.value; save(); }
+  });
+  document.addEventListener("input", (e) => {
+    const t = e.target; if (t.id !== "tplTxt") return;
+    st.tpl[tplK] = t.value; save(true); const p = document.getElementById("tplPrev"); if (p) p.textContent = fill(t.value);
+  });
+  window.addEventListener("pvl-theme-changed", render);
+  render();
+  if (location.hash === "#settings") setTimeout(() => document.querySelector('.side .nav a[data-tab="settings"]')?.click(), 600);
+})();
+</script>
+<script>
+(() => {
+  const PICK = ["customers", "expiring", "paylog", "activity", "settings"];
+  const NAME = { customers: "Businesses", expiring: "Expiring", paylog: "Payments", activity: "Activity", settings: "Settings" };
+  const links = () => [...document.querySelectorAll(".side .nav > a[data-tab]")];
+  const dock = document.createElement("nav"); dock.className = "pv-dock"; dock.setAttribute("aria-label", "Menu");
+  PICK.forEach((k) => {
+    const a = links().find((x) => x.dataset.tab === k); if (!a) return;
+    const b = document.createElement("button"); b.type = "button"; b.dataset.tab = k; b.title = NAME[k]; b.setAttribute("aria-label", NAME[k]);
+    b.innerHTML = a.querySelector("svg").outerHTML + '<span class="dl">' + NAME[k] + "</span>";
+    b.onclick = () => { const l = links().find((x) => x.dataset.tab === k); if (l) l.click(); sync(); window.scrollTo({ top: 0 }); };
+    dock.appendChild(b);
+  });
+  document.body.appendChild(dock);
+  function sync() {
+    const al = links().find((x) => x.classList.contains("active"));
+    const act = al ? al.dataset.tab : (location.hash || "#customers").slice(1);
+    dock.querySelectorAll("button").forEach((b) => {
+      const on = b.dataset.tab === act;
+      b.classList.toggle("on", on); b.setAttribute("aria-current", on ? "page" : "false");
+      const src = links().find((x) => x.dataset.tab === b.dataset.tab), c = src && src.querySelector(".cnt");
+      let dn = b.querySelector(".dn"); const n = c && !c.hidden && getComputedStyle(c).display !== "none" && c.textContent.trim();
+      if (n && n !== "0") { if (!dn) { dn = document.createElement("span"); dn.className = "dn"; b.appendChild(dn); } dn.textContent = n; } else if (dn) dn.remove();
+    });
+  }
+  new MutationObserver(sync).observe(document.querySelector(".side .nav"), { subtree: true, attributes: true, attributeFilter: ["class", "hidden"], childList: true, characterData: true });
+  window.addEventListener("hashchange", sync); sync();
+})();
+</script>
+<script>
+/* phones: label every table cell with its column name, so tables can stack into cards */
+(() => {
+  const label = () => document.querySelectorAll(".main-col table").forEach((t) => {
+    const hs = [...t.querySelectorAll("thead tr:last-child th")].map((h) => (h.querySelector("input[type=checkbox]") || h.classList.contains("cb") ? "Select" : (h.innerText || h.textContent || "").trim()));
+    if (!hs.length) return;
+    t.querySelectorAll("tbody tr").forEach((tr) => {
+      let i = 0;
+      [...tr.children].forEach((td) => { const l = hs[i] ?? ""; if (td.getAttribute("data-label") !== l) td.setAttribute("data-label", l); i += Number(td.colSpan) || 1; });
+    });
+  });
+  let q; const run = () => { if (q) return; q = requestAnimationFrame(() => { q = 0; label(); }); };
+  new MutationObserver(run).observe(document.querySelector(".main-col") || document.body, { childList: true, subtree: true });
+  run();
+})();
+</script>
+<script>
+/* phones: the product chips as one dropdown */
+(() => {
+  const chips = document.getElementById("pchips"); if (!chips) return;
+  const sel = document.createElement("select"); sel.id = "pselect"; sel.setAttribute("aria-label", "Filter by product");
+  chips.before(sel);
+  const fill = () => {
+    const bs = [...chips.querySelectorAll(".pchip")];
+    sel.innerHTML = bs.map((b) => `<option value="${b.dataset.prod}">${(b.textContent || "").trim().replace(/[<&]/g, "")}</option>`).join("");
+    const on = bs.find((b) => b.classList.contains("on")); sel.value = on ? on.dataset.prod : "";
+  };
+  sel.onchange = () => { const b = chips.querySelector(`.pchip[data-prod="${sel.value}"]`); if (b) b.click(); };
+  new MutationObserver(fill).observe(chips, { childList: true, subtree: true, attributes: true, attributeFilter: ["class"] });
+  fill();
+})();
+</script>
+<script>
+/* Notifications, Inbox and Notes in one pop-up under the bell */
+(() => {
+  const ICON = {
+    bell: '<path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.9 1.9 0 0 0 3.4 0"/>',
+    inbox: '<path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/>',
+    notes: '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>',
+  };
+  const svg = (k, n = 18) => `<svg width="${n}" height="${n}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICON[k]}</svg>`;
+  const esc = (t) => String(t ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  const when = (at) => { try { const d = new Date(at); return isNaN(d) ? "" : d.toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }); } catch { return ""; } };
+  const num = (el) => { if (!el || el.hidden || el.classList.contains("hidden")) return 0; const t = (el.textContent || "").trim(); return t === "9+" ? 10 : parseInt(t, 10) || 0; };
+  let pop = null;
+  function setup() {
+    const cap = document.querySelector(".top .hdr-cap"), API = window.__pvAll; if (!cap || !API) return false;
+    const bell = cap.querySelector(".bell"), inbox = cap.querySelector(".hub-inbox"), chat = cap.querySelector(".hub-chat");
+    if (!bell) return false; if (bell._pvAll) return true;
+    bell._pvAll = true; bell.title = "Notifications, inbox and notes"; bell.setAttribute("aria-label", "Notifications, inbox and notes"); bell.setAttribute("aria-haspopup", "dialog");
+    const badge = document.createElement("span"); badge.className = "pv-allcnt"; badge.hidden = true; bell.appendChild(badge);
+    const counts = () => ({ bell: num(bell.querySelector(".bell-dot")), inbox: num(inbox && inbox.querySelector(".hub-badge")), notes: 0 });
+    const paint = () => { const c = counts(), n = c.bell + c.inbox, t = n > 9 ? "9+" : String(n); if (badge.textContent !== t) badge.textContent = t; if (badge.hidden !== !n) badge.hidden = !n; };
+    new MutationObserver(paint).observe(cap, { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ["class", "hidden"] });
+    paint();
+
+    const close = () => { if (!pop) return; pop.remove(); pop = null; bell.setAttribute("aria-expanded", "false"); document.removeEventListener("mousedown", out, true); document.removeEventListener("keydown", key, true); };
+    const out = (e) => { if (pop && !pop.contains(e.target) && !bell.contains(e.target)) close(); };
+    const key = (e) => { if (e.key === "Escape") { e.stopPropagation(); close(); bell.focus(); } };
+    const place = () => { if (!pop) return; const r = bell.getBoundingClientRect(), w = pop.offsetWidth; let left = Math.min(r.right - w, innerWidth - w - 8); left = Math.max(8, left); pop.style.left = left + "px"; pop.style.top = Math.round(r.bottom + 8) + "px"; pop.style.maxHeight = Math.max(240, innerHeight - r.bottom - 24) + "px"; };
+
+    async function show(tab) {
+      if (!pop) return;
+      pop.dataset.tab = tab;
+      pop.querySelectorAll(".pv-tabs button").forEach((b) => { const on = b.dataset.k === tab; b.classList.toggle("on", on); b.setAttribute("aria-selected", on); });
+      const list = pop.querySelector(".pv-plist");
+      list.innerHTML = '<div class="pv-pnote">Loading…</div>';
+      let rows = [], empty = "";
+      if (tab === "bell") {
+        const last = API.notifRead(), items = API.notifs().filter((n) => new Date(n.at) <= new Date());
+        rows = items.map((n) => ({ ico: `<span class="emo">${esc(n.ico || "•")}</span>`, title: n.title, sub: n.sub, at: n.at, unread: n.at > last, go: n.go }));
+        empty = "No notifications yet. Online payments, failed licence changes, apps that can’t be reached and licences ending soon show up here.";
+        API.markNotifs();
+      } else if (tab === "inbox") {
+        let items = []; try { items = await API.inbox(); } catch (e) { list.innerHTML = `<div class="pv-pnote">${esc(e.message || "Couldn’t load your inbox")}</div>`; return; }
+        if (!pop || pop.dataset.tab !== "inbox") return;
+        rows = items.map((it) => ({ ico: svg("inbox", 17), title: it.title, sub: it.sub, at: it.at, unread: it.unread, go: it.open, actions: it.actions }));
+        empty = "Nothing needs you. Expired licences and online payments that weren’t applied show up here.";
+        API.inboxSeen();
+      } else {
+        rows = API.notes().map((r) => ({ ico: svg("notes", 17), title: r.title, sub: r.sub, go: r.open, pre: true }));
+        empty = "No notes yet. Add notes on a business’s page, or when you change a licence.";
+      }
+      if (!pop || pop.dataset.tab !== tab) return;
+      list.innerHTML = rows.length ? rows.map((r, i) => `<div class="pv-pi${r.unread ? " new" : ""}${r.go ? " go" : ""}" data-i="${i}"${r.go ? ' role="button" tabindex="0"' : ""}>
+          <span class="pv-pic">${r.ico}</span>
+          <span class="pv-pit"><b>${esc(r.title)}</b>${r.sub ? `<span class="${r.pre ? "pre" : ""}">${esc(r.sub)}</span>` : ""}${r.at ? `<small>${esc(when(r.at))}</small>` : ""}
+          ${r.actions && r.actions.length ? `<span class="pv-pacts">${r.actions.map((a, j) => `<button type="button" class="btn sm" data-a="${j}">${esc(a.label)}</button>`).join("")}</span>` : ""}</span></div>`).join("")
+        : `<div class="pv-pnote">${esc(empty)}</div>`;
+      list.onclick = async (e) => {
+        const row = e.target.closest(".pv-pi"); if (!row) return; const r = rows[+row.dataset.i];
+        const b = e.target.closest("button[data-a]");
+        if (b) { b.disabled = true; try { await r.actions[+b.dataset.a].run(); } catch (er) { alert(er.message || "That didn’t work"); } show(tab); return; }
+        if (r.go) { close(); r.go(); }
+      };
+      list.onkeydown = (e) => { if ((e.key === "Enter" || e.key === " ") && e.target.matches(".pv-pi.go")) { e.preventDefault(); e.target.click(); } };
+      paintTabs();
+    }
+    function paintTabs() {
+      if (!pop) return; const c = counts();
+      pop.querySelectorAll(".pv-tabs button").forEach((b) => { const n = c[b.dataset.k] || 0, s = b.querySelector(".n"); s.textContent = n > 9 ? "9+" : String(n); s.hidden = !n; });
+    }
+    function open() {
+      const c = counts();
+      pop = document.createElement("div"); pop.className = "pv-pop"; pop.setAttribute("role", "dialog"); pop.setAttribute("aria-label", "Notifications, inbox and notes");
+      const tab = (k, label) => `<button type="button" role="tab" data-k="${k}">${svg(k, 16)}<span>${label}</span><span class="n" hidden></span></button>`;
+      pop.innerHTML = `<div class="pv-tabs" role="tablist">${tab("bell", "Notifications")}${tab("inbox", "Inbox")}${tab("notes", "Notes")}</div><div class="pv-plist"></div>`;
+      document.body.appendChild(pop); place(); paintTabs();
+      pop.querySelector(".pv-tabs").onclick = (e) => { const b = e.target.closest("button[data-k]"); if (b) show(b.dataset.k); };
+      bell.setAttribute("aria-expanded", "true");
+      document.addEventListener("mousedown", out, true); document.addEventListener("keydown", key, true);
+      show(c.bell ? "bell" : c.inbox ? "inbox" : "bell");
+    }
+    bell.addEventListener("click", (e) => { e.stopImmediatePropagation(); e.preventDefault(); if (pop) close(); else open(); }, true);
+    addEventListener("resize", place); addEventListener("hashchange", close);
+    return true;
+  }
+  if (!setup()) { const t = setInterval(() => { if (setup()) clearInterval(t); }, 300); setTimeout(() => clearInterval(t), 15000); }
+})();
+</script>
+<script>
+/* phones: put Tiles/List on the same line as the product dropdown */
+(() => {
+  const mq = matchMedia("(max-width: 760px)");
+  let row = null, home = null;
+  const place = () => {
+    const sel = document.getElementById("pselect"), vsw = document.querySelector(".ov-tools .vsw, .pv-frow .vsw");
+    if (!sel || !vsw) return false;
+    if (!row) { row = document.createElement("div"); row.className = "pv-frow"; sel.before(row); home = document.querySelector(".ov-tools"); }
+    if (mq.matches) { if (sel.parentElement !== row) row.appendChild(sel); if (vsw.parentElement !== row) row.appendChild(vsw); }
+    else { if (sel.parentElement === row) row.before(sel); if (home && vsw.parentElement !== home) home.appendChild(vsw); }
+    return true;
+  };
+  if (!place()) { const t = setInterval(() => { if (place()) clearInterval(t); }, 300); setTimeout(() => clearInterval(t), 15000); }
+  mq.addEventListener("change", place);
+})();
+</script>
+<script>
+/* phones: search + "+ Business" row, sync time in the header, pull to refresh, minimise cards */
+(() => {
+  const mq = matchMedia("(max-width: 760px)");
+  const $ = (s, r = document) => r.querySelector(s);
+  // search next to "+ Business"
+  let qHome = null;
+  const placeSearch = () => {
+    const q = $("#q"), acts = $(".pv-loc .pv-ph .pv-acts"); if (!q || !acts) return false;
+    if (!qHome) qHome = q.parentElement;
+    if (!q.dataset.ph) q.dataset.ph = q.placeholder;
+    q.placeholder = mq.matches ? "Search" : q.dataset.ph;
+    if (mq.matches) { if (q.parentElement !== acts.parentElement) acts.before(q); }
+    else if (q.parentElement !== qHome) qHome.prepend(q);
+    return true;
+  };
+  const nb = $("#newCustBtn");
+  if (nb) for (const n of [...nb.childNodes]) if (n.nodeType === 3 && /New business/.test(n.textContent)) { const s = document.createElement("span"); s.innerHTML = '<span class="nb-new">New </span>business'; n.replaceWith(s); }
+  // "+ Business" label on phones
+  const capB = () => { const s = nb && nb.querySelector("span:not(.nb-new)"); if (s) s.childNodes[1] && (s.childNodes[1].textContent = mq.matches ? "Business" : "business"); };
+  // sync time in the header
+  const top = $(".top"), syn = document.createElement("div"); syn.className = "pv-synced"; if (top) top.appendChild(syn);
+  const chips = $("#custChips");
+  const paintSync = () => { const t = chips ? (chips.textContent || "").trim() : ""; if (syn.textContent !== t) syn.textContent = t; };
+  if (chips) new MutationObserver(paintSync).observe(chips, { childList: true, subtree: true, characterData: true });
+  paintSync();
+  // pull to refresh
+  const ptr = document.createElement("div"); ptr.className = "pv-ptr"; ptr.setAttribute("aria-live", "polite");
+  ptr.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M6 13l6 6 6-6"/></svg><span>Pull to refresh</span>';
+  document.body.appendChild(ptr);
+  const lbl = ptr.querySelector("span"), ico = ptr.querySelector("svg");
+  const SPIN = '<path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 4v5h-5"/>', ARROW = '<path d="M12 5v14M6 13l6 6 6-6"/>';
+  let y0 = null, pull = 0, busy = false;
+  const blocked = () => !!document.querySelector("dialog[open], .pv-pop, .hub-panel") || busy;
+  addEventListener("touchstart", (e) => { if (!mq.matches || blocked() || scrollY > 0 || e.touches.length !== 1) { y0 = null; return; } y0 = e.touches[0].clientY; pull = 0; }, { passive: true });
+  addEventListener("touchmove", (e) => {
+    if (y0 === null) return; pull = Math.max(0, e.touches[0].clientY - y0);
+    if (scrollY > 0) { pull = 0; }
+    const hb = top ? top.getBoundingClientRect().bottom : 0, d = Math.min(pull * 0.5, 90 + hb);
+    ptr.style.transition = "none"; ptr.style.transform = `translate(-50%, ${d - 60}px)`;
+    const ready = pull > 140; ptr.classList.toggle("ready", ready); lbl.textContent = ready ? "Release to refresh" : "Pull to refresh";
+  }, { passive: true });
+  addEventListener("touchend", () => {
+    if (y0 === null) return; y0 = null; ptr.style.transition = "";
+    if (pull > 140) refresh(); else ptr.style.transform = "";
+    pull = 0;
+  });
+  function refresh() {
+    const btn = $("#syncBtn"); busy = true; ptr.classList.remove("ready"); ptr.classList.add("busy"); ico.innerHTML = SPIN; lbl.textContent = "Refreshing…";
+    ptr.style.transform = `translate(-50%, ${Math.round((top ? top.getBoundingClientRect().bottom : 0) + 10)}px)`;
+    const before = chips ? chips.textContent : "";
+    if (btn) btn.click();
+    const t0 = Date.now(), done = () => { busy = false; ptr.classList.remove("busy"); ico.innerHTML = ARROW; lbl.textContent = "Up to date"; setTimeout(() => { ptr.style.transform = ""; lbl.textContent = "Pull to refresh"; }, 700); };
+    const iv = setInterval(() => { const changed = chips && chips.textContent !== before, idle = btn && !btn.disabled; if ((changed && idle) || Date.now() - t0 > 8000 || (Date.now() - t0 > 900 && idle)) { clearInterval(iv); done(); } }, 200);
+  }
+  // minimise business cards
+  const KEY = "pvl.min"; let min; try { min = JSON.parse(localStorage.getItem(KEY) || '{"__all":true}'); } catch { min = { __all: true }; }
+  const save = () => { try { localStorage.setItem(KEY, JSON.stringify(min)); } catch {} };
+  const allMin = () => { const cs = [...document.querySelectorAll(".main-col .ov-biz")]; return cs.length && cs.every((c) => c.classList.contains("pv-min")); };
+  const miniStrip = (card) => {
+    let m = card.querySelector(".pv-mini"); if (!m) { m = document.createElement("div"); m.className = "pv-mini"; card.querySelector(".ov-bh")?.after(m); }
+    const on = [...card.querySelectorAll(".ov-app:not(.off)")];
+    const html = on.length ? on.map((a) => { const img = a.querySelector("img")?.getAttribute("src") || "", nm = a.querySelector(".nm")?.textContent || "", d = a.querySelector(".ov-dot"), cls = d ? [...d.classList].find((c) => c !== "ov-dot") || "" : ""; return `<span title="${nm}"><img src="${img}" alt="">${nm}<i class="${cls}"></i></span>`; }).join("") : '<span>No apps yet</span>';
+    if (m.dataset.sig !== html) { m.dataset.sig = html; m.innerHTML = html; }
+  };
+  const apply = () => {
+    document.querySelectorAll(".main-col .ov-biz").forEach((c) => { const id = c.dataset.cust; const want = !!(min[id] || (min.__all && min[id] !== false)); if (c.classList.contains("pv-min") !== want) c.classList.toggle("pv-min", want); if (want) miniStrip(c); });
+    const b = document.querySelector(".pv-minall"); if (b && b.dataset.st !== String(allMin())) { const a = allMin(); b.dataset.st = String(a); b.title = a ? "Expand all businesses" : "Minimise all businesses"; b.setAttribute("aria-label", b.title); b.innerHTML = a ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 9l5-5 5 5M7 15l5 5 5-5"/></svg>' : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4l5 5 5-5M7 20l5-5 5 5"/></svg>'; }
+  };
+  document.addEventListener("click", (e) => {
+    if (!mq.matches) return;
+    const h = e.target.closest(".main-col .ov-biz .ov-bh"); if (!h || e.target.closest("button,a,input,select")) return;
+    e.stopPropagation(); e.preventDefault();
+    const c = h.closest(".ov-biz"), id = c.dataset.cust, now = !c.classList.contains("pv-min");
+    min[id] = now; save(); apply();
+  }, true);
+  const addMinAll = () => {
+    const row = document.querySelector(".pv-frow"); if (!row || row.querySelector(".pv-minall")) return !!row;
+    const b = document.createElement("button"); b.type = "button"; b.className = "pv-minall";
+    b.onclick = () => { const a = allMin(); min = a ? {} : { __all: true }; save(); apply(); };
+    row.appendChild(b); apply(); return true;
+  };
+  const list = document.querySelector("section[data-view='customers']");
+  let q2; if (list) new MutationObserver(() => { if (q2) return; q2 = requestAnimationFrame(() => { q2 = 0; apply(); }); }).observe(list, { childList: true, subtree: true });
+  const init = () => placeSearch() & addMinAll();
+  if (!init()) { const t = setInterval(() => { if (init()) clearInterval(t); }, 300); setTimeout(() => clearInterval(t), 15000); }
+  const onMq = () => { placeSearch(); capB(); apply(); };
+  mq.addEventListener("change", onMq); capB(); apply();
+})();
+</script>
+<script>
+/* phones: payment settings sections fold open/closed */
+(() => {
+  const open = new Set();
+  document.addEventListener("click", (e) => {
+    if (!matchMedia("(max-width: 760px)").matches) return;
+    const h = e.target.closest("#payView > .acct > .ah"); if (!h || e.target.closest("button,input,a,select,label")) return;
+    const a = h.parentElement, k = a.dataset.prices || "stripe";
+    a.classList.toggle("pv-open"); a.classList.contains("pv-open") ? open.add(k) : open.delete(k);
+  });
+  const pv = document.getElementById("payView");
+  if (pv) new MutationObserver(() => pv.querySelectorAll(":scope > .acct").forEach((a) => { const k = a.dataset.prices || "stripe"; if (open.has(k) && !a.classList.contains("pv-open")) a.classList.add("pv-open"); })).observe(pv, { childList: true });
+})();
 </script>
 </body>
 </html>
