@@ -1889,7 +1889,7 @@ function unitRow(u) {
   return `<tr>
     <td class="cb"><input type="checkbox" data-sel="${esc(key)}" ${S.sel.has(key) ? "checked" : ""} aria-label="Select ${esc(u.name || "")}"></td>
     <td><div class="un">${multiKind(u.product) ? `<span class="pill none" title="What this licence is for">${KIND_LABEL[kindOf(u)]}</span> ` : ""}${esc(u.name || "(unnamed)")}</div>${meta ? `<div class="um" title="${esc(meta)}">${esc(meta)}</div>` : ""}</td>
-    <td class="hide-sm">${esc(PLAN_LABEL[u.license_type] || u.license_type || "—")}${u.notes ? `<span class="note" title="${esc(u.notes)}">📝</span>` : ""}</td>
+    <td class="hide-sm">${esc(PLAN_LABEL[u.license_type] || u.license_type || "—")}</td>
     <td><span class="pill ${s.cls}">${esc(s.label)}</span></td>
     <td class="acts"><button class="btn sm" data-edit="${esc(key)}">Change…</button></td></tr>`;
 }
