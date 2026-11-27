@@ -710,6 +710,15 @@ input,select,textarea{border-radius:10px!important;border-color:var(--line)!impo
 .lv tbody tr:nth-child(even){background:color-mix(in srgb,var(--side) 5%,var(--card))}
 .lv tbody tr:hover{background:color-mix(in srgb,var(--side) 10%,var(--card))}
 .lv tbody tr td,.lv tbody tr td.lv-app.off{background:inherit}
+/* list view on desktop: fixed columns, the six app columns all the same width (owner, 27 Nov 2026) */
+@media (min-width:761px){
+.lv table{table-layout:fixed}
+.lv thead th:first-child{width:24%}
+.lv thead th.lv-s{width:12%}
+.lv thead th:last-child{width:84px}
+.lv td.lv-n{white-space:normal}
+.lv td.lv-app{overflow:hidden;text-overflow:ellipsis}
+}
 dialog{border-radius:14px;border:1px solid var(--line);background:var(--card);color:var(--ink)}
 #licDlg .licend,.bd-paused{border-radius:12px}
 #licDlg .licend{background:var(--brand-subtle);border-color:var(--line)}
