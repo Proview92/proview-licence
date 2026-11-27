@@ -713,11 +713,12 @@ input,select,textarea{border-radius:10px!important;border-color:var(--line)!impo
 /* list view on desktop: fixed columns, the six app columns all the same width (owner, 27 Nov 2026) */
 @media (min-width:761px){
 .lv table{table-layout:fixed}
-.lv thead th:first-child{width:24%}
-.lv thead th.lv-s{width:12%}
+.lv thead th:first-child{width:21%}
+.lv thead th.lv-s{width:11%}
 .lv thead th:last-child{width:84px}
 .lv td.lv-n{white-space:normal}
 .lv td.lv-app{overflow:hidden;text-overflow:ellipsis}
+.lv th.lv-h{text-transform:none;letter-spacing:0;font-size:12.5px;overflow:hidden;text-overflow:ellipsis}
 }
 dialog{border-radius:14px;border:1px solid var(--line);background:var(--card);color:var(--ink)}
 #licDlg .licend,.bd-paused{border-radius:12px}
@@ -2068,7 +2069,7 @@ function custTable(cs) {
     const bad = units.filter((u) => tone(u) === "r"), warn = units.filter((u) => tone(u) === "a");
     const t = bad.length ? "r" : warn.length ? "a" : units.length ? "g" : "n";
     const next = renewAt(units);
-    const txt = !units.length ? "none yet" : bad.length ? `${bad.length} unlicensed` : next === Infinity ? "Lifetime" : shortDate(next);
+    const txt = !units.length ? "none yet" : bad.length ? `${bad.length} unlicensed` : next === Infinity ? "Lifetime" : ddmmyy(next);
     return `<td class="lv-app${t === "r" ? " lv-bad" : ""}" title="${esc(PRODUCTS[k].label + " · " + unitCount(k, units) + " · " + txt)}"><span class="ov-dot ${TONE_CLS[t]}"></span><span class="lv-t ${t === "r" || t === "a" ? t : ""}">${esc(txt)}</span></td>`;
   };
   return `<div class="card lv"><table>
